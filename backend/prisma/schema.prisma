@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,10 +7,746 @@ datasource db {
   provider = "mysql"
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model archivo_adjunto {
+  id_archivo_adjunto Int          @id @default(autoincrement())
+  nombre_archivo     String       @db.VarChar(200)
+  ruta_archivo       String       @db.VarChar(500)
+  tipo_archivo       String?      @db.VarChar(50)
+  fecha_carga        DateTime     @db.Date
+  compra             compra[]
+  cotizacion         cotizacion[]
+}
+
+model autoelevadores {
+  id_autoelevadores    Int                    @id @default(autoincrement())
+  nombre               String                 @db.VarChar(100)
+  fecha_alta           DateTime               @db.Date
+  id_estado            Int
+  estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_autoelevadores_estado")
+  control_autoelevador control_autoelevador[]
+  service_autoelevador service_autoelevador[]
+
+  @@index([id_estado], map: "fk_autoelevadores_estado")
+}
+
+model camion {
+  id_camion      Int        @id @default(autoincrement())
+  id_transporte  Int
+  marca          String?    @db.VarChar(50)
+  modelo         String?    @db.VarChar(50)
+  dominio_chasis String     @db.VarChar(20)
+  dominio_semi   String?    @db.VarChar(20)
+  transporte     transporte @relation(fields: [id_transporte], references: [id_transporte], onUpdate: Restrict, map: "fk_camion_transporte")
+  lotes          lotes[]
+
+  @@index([id_transporte], map: "fk_camion_transporte")
+}
+
+model chofer {
+  id_chofer     Int         @id @default(autoincrement())
+  nombre_chofer String      @db.VarChar(150)
+  dni           String      @db.VarChar(20)
+  id_direccion  Int
+  id_transporte Int
+  id_estado     Int
+  direcciones   direcciones @relation(fields: [id_direccion], references: [id_direccion], onUpdate: Restrict, map: "fk_chofer_direccion")
+  estados       estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_chofer_estado")
+  transporte    transporte  @relation(fields: [id_transporte], references: [id_transporte], onUpdate: Restrict, map: "fk_chofer_transporte")
+  lotes         lotes[]
+
+  @@index([id_direccion], map: "fk_chofer_direccion")
+  @@index([id_estado], map: "fk_chofer_estado")
+  @@index([id_transporte], map: "fk_chofer_transporte")
+}
+
+model clientes {
+  id_cliente       Int               @id @default(autoincrement())
+  nombre_cli       String            @db.VarChar(150)
+  id_direccion     Int
+  telefono_cli     String?           @db.VarChar(30)
+  email_cli        String?           @db.VarChar(150)
+  id_estado        Int
+  direcciones      direcciones       @relation(fields: [id_direccion], references: [id_direccion], onUpdate: Restrict, map: "fk_clientes_direccion")
+  estados          estados           @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_clientes_estado")
+  cuenta_corriente cuenta_corriente?
+  pedidos          pedidos[]
+  reclamos         reclamos[]
+
+  @@index([id_direccion], map: "fk_clientes_direccion")
+  @@index([id_estado], map: "fk_clientes_estado")
+}
+
+model compra {
+  id_compra          Int              @id @default(autoincrement())
+  fecha_compra       DateTime         @db.Date
+  id_proveedor       Int
+  id_estado          Int
+  id_archivo_adjunto Int?
+  archivo_adjunto    archivo_adjunto? @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: Restrict, onUpdate: Restrict, map: "fk_compra_archivo_adjunto")
+  estados            estados          @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_compra_estado")
+  proveedor          proveedor        @relation(fields: [id_proveedor], references: [id_proveedor], onUpdate: Restrict, map: "fk_compra_proveedor")
+  compra_detalle     compra_detalle[]
+
+  @@index([id_archivo_adjunto], map: "fk_compra_archivo_adjunto")
+  @@index([id_estado], map: "fk_compra_estado")
+  @@index([id_proveedor], map: "fk_compra_proveedor")
+}
+
+model compra_detalle {
+  id_compra_detalle        Int                   @id @default(autoincrement())
+  id_compra                Int
+  id_insumo                Int
+  id_requerimiento_detalle Int
+  cantidad                 Decimal               @db.Decimal(10, 2)
+  precio_compra            Decimal               @db.Decimal(10, 2)
+  compra                   compra                @relation(fields: [id_compra], references: [id_compra], onDelete: Cascade, onUpdate: Restrict, map: "fk_compra_detalle_compra")
+  insumo                   insumo                @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_compra_detalle_insumo")
+  requerimiento_detalle    requerimiento_detalle @relation(fields: [id_requerimiento_detalle], references: [id_requerimiento_detalle], onUpdate: Restrict, map: "fk_compra_detalle_requerimiento_detalle")
+
+  @@index([id_compra], map: "fk_compra_detalle_compra")
+  @@index([id_insumo], map: "fk_compra_detalle_insumo")
+  @@index([id_requerimiento_detalle], map: "fk_compra_detalle_requerimiento_detalle")
+}
+
+model control_autoelevador {
+  id_control_autoelevador   Int                         @id @default(autoincrement())
+  fecha                     DateTime                    @db.Date
+  id_usuario                Int
+  id_autoelevador           Int
+  autoelevadores            autoelevadores              @relation(fields: [id_autoelevador], references: [id_autoelevadores], onUpdate: Restrict, map: "fk_control_autoelevador_autoelevador")
+  usuarios                  usuarios                    @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_control_autoelevador_usuario")
+  item_control_autoelevador item_control_autoelevador[]
+
+  @@index([id_autoelevador], map: "fk_control_autoelevador_autoelevador")
+  @@index([id_usuario], map: "fk_control_autoelevador_usuario")
+}
+
+model cotizacion {
+  id_cotizacion      Int                  @id @default(autoincrement())
+  id_proveedor       Int
+  fecha_cotizacion   DateTime             @db.Date
+  id_estado          Int
+  id_archivo_adjunto Int?
+  archivo_adjunto    archivo_adjunto?     @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: Restrict, onUpdate: Restrict, map: "fk_cotizacion_archivo_adjunto")
+  estados            estados              @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_cotizacion_estado")
+  proveedor          proveedor            @relation(fields: [id_proveedor], references: [id_proveedor], onUpdate: Restrict, map: "fk_cotizacion_proveedor")
+  cotizacion_detalle cotizacion_detalle[]
+
+  @@index([id_archivo_adjunto], map: "fk_cotizacion_archivo_adjunto")
+  @@index([id_estado], map: "fk_cotizacion_estado")
+  @@index([id_proveedor], map: "fk_cotizacion_proveedor")
+}
+
+model cotizacion_detalle {
+  id_cotizacion_detalle    Int                   @id @default(autoincrement())
+  id_cotizacion            Int
+  id_requerimiento_detalle Int
+  cantidad                 Decimal               @db.Decimal(10, 2)
+  precio_cotizado          Decimal               @db.Decimal(10, 2)
+  cotizacion               cotizacion            @relation(fields: [id_cotizacion], references: [id_cotizacion], onDelete: Cascade, onUpdate: Restrict, map: "fk_cotizacion_detalle_cotizacion")
+  requerimiento_detalle    requerimiento_detalle @relation(fields: [id_requerimiento_detalle], references: [id_requerimiento_detalle], onUpdate: Restrict, map: "fk_cotizacion_detalle_requerimiento_detalle")
+
+  @@index([id_cotizacion], map: "fk_cotizacion_detalle_cotizacion")
+  @@index([id_requerimiento_detalle], map: "fk_cotizacion_detalle_requerimiento_detalle")
+}
+
+model cuenta_corriente {
+  id_cuenta_corriente         Int                           @id @default(autoincrement())
+  limite_credito              Decimal                       @default(0.00) @db.Decimal(10, 2)
+  id_cliente                  Int                           @unique(map: "id_cliente")
+  clientes                    clientes                      @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_cuenta_corriente_cliente")
+  movimiento_cuenta_corriente movimiento_cuenta_corriente[]
+}
+
+model deposito {
+  id_deposito                  Int                     @id @default(autoincrement())
+  nombre_deposito              String                  @db.VarChar(100)
+  id_estado                    Int
+  estados                      estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_deposito_estado")
+  movimientos_insumo_destino   movimiento_insumo[]     @relation("movimiento_insumo_id_deposito_destinoTodeposito")
+  movimientos_insumo_origen    movimiento_insumo[]     @relation("movimiento_insumo_id_deposito_origenTodeposito")
+  movimientos_producto_destino movimiento_producto[]   @relation("movimiento_producto_id_deposito_destinoTodeposito")
+  movimientos_producto_origen  movimiento_producto[]   @relation("movimiento_producto_id_deposito_origenTodeposito")
+  stock_insumo_deposito        stock_insumo_deposito[]
+
+  @@index([id_estado], map: "fk_deposito_estado")
+}
+
+model direcciones {
+  id_direccion Int          @id @default(autoincrement())
+  calle        String       @db.VarChar(100)
+  numero       String?      @db.VarChar(20)
+  entrecalle1  String?      @db.VarChar(100)
+  entrecalle2  String?      @db.VarChar(100)
+  localidad    String       @db.VarChar(100)
+  provincia    String       @db.VarChar(100)
+  id_estado    Int
+  chofer       chofer[]
+  clientes     clientes[]
+  estados      estados      @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_direcciones_estado")
+  transporte   transporte[]
+
+  @@index([id_estado], map: "fk_direcciones_estado")
+}
+
+model estados {
+  id_estado           Int                   @id @default(autoincrement())
+  nombreEstado        String                @db.VarChar(100)
+  autoelevadores      autoelevadores[]
+  chofer              chofer[]
+  clientes            clientes[]
+  compra              compra[]
+  cotizacion          cotizacion[]
+  deposito            deposito[]
+  direcciones         direcciones[]
+  fletero             fletero[]
+  insumo              insumo[]
+  lote_prod           lote_prod[]
+  lotes               lotes[]
+  movimiento_insumo   movimiento_insumo[]
+  movimiento_producto movimiento_producto[]
+  pedido_insumos      pedido_insumos[]
+  pedidos             pedidos[]
+  plan_produccion     plan_produccion[]
+  productos           productos[]
+  proveedor           proveedor[]
+  receta              receta[]
+  reclamos            reclamos[]
+  requerimiento       requerimiento[]
+  tipo_movimiento     tipo_movimiento[]
+  transporte          transporte[]
+  turnos              turnos[]
+  usuarios            usuarios[]
+}
+
+model fletero {
+  id_fletero     Int     @id @default(autoincrement())
+  nombre_fletero String  @db.VarChar(150)
+  cuit           String? @db.VarChar(20)
+  telefono       String? @db.VarChar(30)
+  id_estado      Int
+  estados        estados @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_fletero_estado")
+
+  @@index([id_estado], map: "fk_fletero_estado")
+}
+
+model insumo {
+  id_insumo             Int                     @id @default(autoincrement())
+  codigo_insumo         String                  @db.VarChar(50)
+  nombre_insumo         String                  @db.VarChar(100)
+  id_unidad_medida      Int
+  stock_minimo          Int                     @default(0)
+  stock_actual          Int                     @default(0)
+  id_estado             Int
+  compra_detalle        compra_detalle[]
+  estados               estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_insumo_estado")
+  unidad_medida         unidad_medida           @relation(fields: [id_unidad_medida], references: [id_unidad_medida], onUpdate: Restrict, map: "fk_insumo_unidad_medida")
+  item_pedido_insumo    item_pedido_insumo[]
+  movimiento_insumo     movimiento_insumo[]
+  receta_item           receta_item[]
+  requerimiento_detalle requerimiento_detalle[]
+  stock_insumo_deposito stock_insumo_deposito[]
+
+  @@index([id_estado], map: "fk_insumo_estado")
+  @@index([id_unidad_medida], map: "fk_insumo_unidad_medida")
+}
+
+model item_control_autoelevador {
+  id_item_control         Int                  @id @default(autoincrement())
+  item_nombre             String               @db.VarChar(150)
+  estado_ok               Boolean
+  observacion             String?              @db.VarChar(255)
+  id_control_autoelevador Int
+  control_autoelevador    control_autoelevador @relation(fields: [id_control_autoelevador], references: [id_control_autoelevador], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_control_autoelevador_control")
+
+  @@index([id_control_autoelevador], map: "fk_item_control_autoelevador_control")
+}
+
+model item_lote {
+  id_item_lote       Int           @id @default(autoincrement())
+  descripcion_item   String        @db.VarChar(200)
+  id_unidad_medida   Int
+  cantidad_item_lote Decimal       @db.Decimal(10, 2)
+  id_lote            Int
+  lotes              lotes         @relation(fields: [id_lote], references: [id_lote], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_lote_lote")
+  unidad_medida      unidad_medida @relation(fields: [id_unidad_medida], references: [id_unidad_medida], onUpdate: Restrict, map: "fk_item_lote_unidad_medida")
+
+  @@index([id_lote], map: "fk_item_lote_lote")
+  @@index([id_unidad_medida], map: "fk_item_lote_unidad_medida")
+}
+
+model item_pedido {
+  id_item_pedido    Int       @id @default(autoincrement())
+  id_producto       Int
+  cantidad_bolsones Int
+  id_pedido         Int
+  pedidos           pedidos   @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_pedido_pedido")
+  productos         productos @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_item_pedido_producto")
+
+  @@index([id_pedido], map: "fk_item_pedido_pedido")
+  @@index([id_producto], map: "fk_item_pedido_producto")
+}
+
+model item_pedido_insumo {
+  id_item_pedido_insumo Int                 @id @default(autoincrement())
+  id_pedido_insumos     Int
+  id_insumo             Int
+  cantidad_solicitada   Decimal             @db.Decimal(10, 2)
+  cantidad_abastecida   Decimal             @default(0.00) @db.Decimal(10, 2)
+  insumo                insumo              @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_item_pedido_insumo_insumo")
+  pedido_insumos        pedido_insumos      @relation(fields: [id_pedido_insumos], references: [id_pedido_insumos], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_pedido_insumo_pedido")
+  movimiento_insumo     movimiento_insumo[]
+
+  @@index([id_insumo], map: "fk_item_pedido_insumo_insumo")
+  @@index([id_pedido_insumos], map: "fk_item_pedido_insumo_pedido")
+}
+
+model item_plan_produccion {
+  id_item_plan_produccion Int             @id @default(autoincrement())
+  id_plan_produccion      Int
+  id_lineas               Int
+  id_producto             Int
+  id_turno                Int
+  fecha                   DateTime        @db.Date
+  cantidad                Int
+  lineas                  lineas          @relation(fields: [id_lineas], references: [id_lineas], onUpdate: Restrict, map: "fk_item_plan_prod_lineas")
+  plan_produccion         plan_produccion @relation(fields: [id_plan_produccion], references: [id_plan_produccion], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_plan_prod_plan")
+  productos               productos       @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_item_plan_prod_producto")
+  turnos                  turnos          @relation(fields: [id_turno], references: [id_turno], onUpdate: Restrict, map: "fk_item_plan_prod_turno")
+
+  @@index([id_lineas], map: "fk_item_plan_prod_lineas")
+  @@index([id_plan_produccion], map: "fk_item_plan_prod_plan")
+  @@index([id_producto], map: "fk_item_plan_prod_producto")
+  @@index([id_turno], map: "fk_item_plan_prod_turno")
+}
+
+model item_prod {
+  id_item     Int       @id @default(autoincrement())
+  id_producto Int
+  cantidad    Int
+  id_lote     Int
+  id_lineas   Int
+  lineas      lineas    @relation(fields: [id_lineas], references: [id_lineas], onUpdate: Restrict, map: "fk_item_prod_lineas")
+  lote_prod   lote_prod @relation(fields: [id_lote], references: [id_lote], onUpdate: Restrict, map: "fk_item_prod_lote")
+  productos   productos @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_item_prod_producto")
+
+  @@index([id_lineas], map: "fk_item_prod_lineas")
+  @@index([id_lote], map: "fk_item_prod_lote")
+  @@index([id_producto], map: "fk_item_prod_producto")
+}
+
+model lineas {
+  id_lineas            Int                    @id @default(autoincrement())
+  descripcion_lineas   String                 @db.VarChar(100)
+  item_plan_produccion item_plan_produccion[]
+  item_prod            item_prod[]
+}
+
+model lote_prod {
+  id_lote         Int         @id @default(autoincrement())
+  id_turno        Int
+  fecha_lote_prod DateTime    @db.Date
+  id_estado       Int
+  item_prod       item_prod[]
+  estados         estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lote_prod_estado")
+  turnos          turnos      @relation(fields: [id_turno], references: [id_turno], onUpdate: Restrict, map: "fk_lote_prod_turno")
+
+  @@index([id_estado], map: "fk_lote_prod_estado")
+  @@index([id_turno], map: "fk_lote_prod_turno")
+}
+
+model lotes {
+  id_lote       Int         @id @default(autoincrement())
+  fecha_lote    DateTime    @db.Date
+  id_chofer     Int
+  id_camion     Int
+  id_tipo_lote  Int
+  id_estado     Int
+  observaciones String?     @db.VarChar(255)
+  motivo        String?     @db.VarChar(255)
+  item_lote     item_lote[]
+  camion        camion      @relation(fields: [id_camion], references: [id_camion], onUpdate: Restrict, map: "fk_lotes_camion")
+  chofer        chofer      @relation(fields: [id_chofer], references: [id_chofer], onUpdate: Restrict, map: "fk_lotes_chofer")
+  estados       estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lotes_estado")
+  tipo_lote     tipo_lote   @relation(fields: [id_tipo_lote], references: [id_tipo_lote], onUpdate: Restrict, map: "fk_lotes_tipo_lote")
+
+  @@index([id_camion], map: "fk_lotes_camion")
+  @@index([id_chofer], map: "fk_lotes_chofer")
+  @@index([id_estado], map: "fk_lotes_estado")
+  @@index([id_tipo_lote], map: "fk_lotes_tipo_lote")
+}
+
+model movimiento_cuenta_corriente {
+  id_movimiento_cta_cte Int              @id @default(autoincrement())
+  fecha                 DateTime         @db.Date
+  monto                 Decimal          @db.Decimal(10, 2)
+  id_tipo_documento     Int
+  saldo_resultante      Decimal          @db.Decimal(10, 2)
+  id_cuenta_corriente   Int
+  cuenta_corriente      cuenta_corriente @relation(fields: [id_cuenta_corriente], references: [id_cuenta_corriente], onUpdate: Restrict, map: "fk_movimiento_cta_cte_cuenta")
+  tipo_documento        tipo_documento   @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onUpdate: Restrict, map: "fk_movimiento_cta_cte_tipo_doc")
+
+  @@index([id_cuenta_corriente], map: "fk_movimiento_cta_cte_cuenta")
+  @@index([id_tipo_documento], map: "fk_movimiento_cta_cte_tipo_doc")
+}
+
+model movimiento_insumo {
+  id_movimiento_insumo  Int                 @id @default(autoincrement())
+  id_insumo             Int
+  id_tipo_movimiento    Int
+  cantidad              Decimal             @db.Decimal(10, 2)
+  fecha_movimiento      DateTime            @db.Date
+  id_deposito_origen    Int?
+  id_deposito_destino   Int?
+  observaciones         String?             @db.VarChar(255)
+  id_item_pedido_insumo Int?
+  motivo                String?             @db.VarChar(255)
+  id_estado             Int
+  deposito_destino      deposito?           @relation("movimiento_insumo_id_deposito_destinoTodeposito", fields: [id_deposito_destino], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_dep_destino")
+  deposito_origen       deposito?           @relation("movimiento_insumo_id_deposito_origenTodeposito", fields: [id_deposito_origen], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_dep_origen")
+  estados               estados             @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_mov_insumo_estado")
+  insumo                insumo              @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_mov_insumo_insumo")
+  item_pedido_insumo    item_pedido_insumo? @relation(fields: [id_item_pedido_insumo], references: [id_item_pedido_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_item_pedido_insumo")
+  tipo_movimiento       tipo_movimiento     @relation(fields: [id_tipo_movimiento], references: [id_tipo_movimiento], onUpdate: Restrict, map: "fk_mov_insumo_tipo")
+
+  @@index([id_deposito_destino], map: "fk_mov_insumo_dep_destino")
+  @@index([id_deposito_origen], map: "fk_mov_insumo_dep_origen")
+  @@index([id_estado], map: "fk_mov_insumo_estado")
+  @@index([id_insumo], map: "fk_mov_insumo_insumo")
+  @@index([id_item_pedido_insumo], map: "fk_mov_insumo_item_pedido_insumo")
+  @@index([id_tipo_movimiento], map: "fk_mov_insumo_tipo")
+}
+
+model movimiento_producto {
+  id_movimiento_producto Int             @id @default(autoincrement())
+  id_producto            Int
+  id_tipo_movimiento     Int
+  cantidad               Int
+  fecha_movimiento       DateTime        @db.Date
+  id_deposito_origen     Int?
+  id_deposito_destino    Int?
+  observaciones          String?         @db.VarChar(255)
+  motivo                 String?         @db.VarChar(255)
+  id_estado              Int
+  deposito_destino       deposito?       @relation("movimiento_producto_id_deposito_destinoTodeposito", fields: [id_deposito_destino], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_producto_dep_destino")
+  deposito_origen        deposito?       @relation("movimiento_producto_id_deposito_origenTodeposito", fields: [id_deposito_origen], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_producto_dep_origen")
+  estados                estados         @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_mov_producto_estado")
+  productos              productos       @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_mov_producto_producto")
+  tipo_movimiento        tipo_movimiento @relation(fields: [id_tipo_movimiento], references: [id_tipo_movimiento], onUpdate: Restrict, map: "fk_mov_producto_tipo")
+
+  @@index([id_deposito_destino], map: "fk_mov_producto_dep_destino")
+  @@index([id_deposito_origen], map: "fk_mov_producto_dep_origen")
+  @@index([id_estado], map: "fk_mov_producto_estado")
+  @@index([id_producto], map: "fk_mov_producto_producto")
+  @@index([id_tipo_movimiento], map: "fk_mov_producto_tipo")
+}
+
+model naturaleza {
+  id_naturaleza     Int               @id @default(autoincrement())
+  nombre_naturaleza String            @db.VarChar(50)
+  tipo_movimiento   tipo_movimiento[]
+}
+
+model pedido_insumos {
+  id_pedido_insumos  Int                  @id @default(autoincrement())
+  id_usuario         Int
+  fecha_carga        DateTime             @db.Date
+  fecha_necesidad    DateTime             @db.Date
+  id_estado          Int
+  motivo_rechazo     String?              @db.VarChar(255)
+  item_pedido_insumo item_pedido_insumo[]
+  estados            estados              @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedido_insumos_estado")
+  usuarios           usuarios             @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedido_insumos_usuario")
+
+  @@index([id_estado], map: "fk_pedido_insumos_estado")
+  @@index([id_usuario], map: "fk_pedido_insumos_usuario")
+}
+
+model pedidos {
+  id_pedido       Int           @id @default(autoincrement())
+  id_cliente      Int
+  fecha_carga     DateTime      @db.Date
+  fecha_prometido DateTime?     @db.Date
+  id_estado       Int
+  id_usuario      Int
+  item_pedido     item_pedido[]
+  clientes        clientes      @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_pedidos_cliente")
+  estados         estados       @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedidos_estado")
+  usuarios        usuarios      @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedidos_usuario")
+
+  @@index([id_cliente], map: "fk_pedidos_cliente")
+  @@index([id_estado], map: "fk_pedidos_estado")
+  @@index([id_usuario], map: "fk_pedidos_usuario")
+}
+
+model permisos {
+  id_permiso     Int            @id @default(autoincrement())
+  nombre_permiso String         @db.VarChar(100)
+  rol_permisos   rol_permisos[]
+}
+
+model plan_produccion {
+  id_plan_produccion   Int                    @id @default(autoincrement())
+  id_usuario           Int
+  fecha_inicio_semana  DateTime               @db.Date
+  id_estado            Int
+  item_plan_produccion item_plan_produccion[]
+  estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_plan_produccion_estado")
+  usuarios             usuarios               @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_plan_produccion_usuario")
+
+  @@index([id_estado], map: "fk_plan_produccion_estado")
+  @@index([id_usuario], map: "fk_plan_produccion_usuario")
+}
+
+model productos {
+  id_producto          Int                    @id @default(autoincrement())
+  codigo_producto      String                 @db.VarChar(50)
+  descripcion_producto String                 @db.VarChar(200)
+  bolsones_por_pallet  Int?
+  peso_por_bolson      Decimal?               @db.Decimal(10, 2)
+  precio_venta         Decimal                @db.Decimal(10, 2)
+  stock_actual         Int                    @default(0)
+  stock_minimo         Int                    @default(0)
+  id_estado            Int
+  item_pedido          item_pedido[]
+  item_plan_produccion item_plan_produccion[]
+  item_prod            item_prod[]
+  movimiento_producto  movimiento_producto[]
+  estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_productos_estado")
+  receta               receta[]
+
+  @@index([id_estado], map: "fk_productos_estado")
+}
+
+model proveedor {
+  id_proveedor     Int          @id @default(autoincrement())
+  nombre_proveedor String       @db.VarChar(150)
+  direccion        String?      @db.VarChar(200)
+  email            String?      @db.VarChar(150)
+  nombre_contacto  String?      @db.VarChar(150)
+  telefono         String?      @db.VarChar(30)
+  cbu              String?      @db.VarChar(30)
+  alias            String?      @db.VarChar(50)
+  id_estado        Int
+  compra           compra[]
+  cotizacion       cotizacion[]
+  estados          estados      @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_proveedor_estado")
+
+  @@index([id_estado], map: "fk_proveedor_estado")
+}
+
+model receta {
+  id_receta   Int           @id @default(autoincrement())
+  id_producto Int
+  id_estado   Int
+  estados     estados       @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_receta_estado")
+  productos   productos     @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_receta_producto")
+  receta_item receta_item[]
+
+  @@index([id_estado], map: "fk_receta_estado")
+  @@index([id_producto], map: "fk_receta_producto")
+}
+
+model receta_item {
+  id_receta_item     Int     @id @default(autoincrement())
+  id_insumo          Int
+  id_receta          Int
+  cantidad_utilizada Decimal @db.Decimal(10, 2)
+  insumo             insumo  @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_receta_item_insumo")
+  receta             receta  @relation(fields: [id_receta], references: [id_receta], onDelete: Cascade, onUpdate: Restrict, map: "fk_receta_item_receta")
+
+  @@index([id_insumo], map: "fk_receta_item_insumo")
+  @@index([id_receta], map: "fk_receta_item_receta")
+}
+
+model reclamos {
+  id_reclamo  Int      @id @default(autoincrement())
+  fecha       DateTime @db.Date
+  descripcion String?  @db.VarChar(500)
+  id_cliente  Int
+  id_estado   Int
+  id_usuario  Int
+  clientes    clientes @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_reclamos_cliente")
+  estados     estados  @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_reclamos_estado")
+  usuarios    usuarios @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_reclamos_usuario")
+
+  @@index([id_cliente], map: "fk_reclamos_cliente")
+  @@index([id_estado], map: "fk_reclamos_estado")
+  @@index([id_usuario], map: "fk_reclamos_usuario")
+}
+
+model requerimiento {
+  id_requerimiento      Int                     @id @default(autoincrement())
+  id_usuario            Int
+  fecha_carga           DateTime                @db.Date
+  fecha_necesidad       DateTime                @db.Date
+  observaciones         String?                 @db.VarChar(255)
+  id_estado             Int
+  estados               estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_requerimiento_estado")
+  usuarios              usuarios                @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_requerimiento_usuario")
+  requerimiento_detalle requerimiento_detalle[]
+
+  @@index([id_estado], map: "fk_requerimiento_estado")
+  @@index([id_usuario], map: "fk_requerimiento_usuario")
+}
+
+model requerimiento_detalle {
+  id_requerimiento_detalle Int                  @id @default(autoincrement())
+  id_requerimiento         Int
+  id_insumo                Int
+  cantidad                 Decimal              @db.Decimal(10, 2)
+  compra_detalle           compra_detalle[]
+  cotizacion_detalle       cotizacion_detalle[]
+  insumo                   insumo               @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_requerimiento_detalle_insumo")
+  requerimiento            requerimiento        @relation(fields: [id_requerimiento], references: [id_requerimiento], onDelete: Cascade, onUpdate: Restrict, map: "fk_requerimiento_detalle_requerimiento")
+
+  @@index([id_insumo], map: "fk_requerimiento_detalle_insumo")
+  @@index([id_requerimiento], map: "fk_requerimiento_detalle_requerimiento")
+}
+
+model rol_permisos {
+  id_rol     Int
+  id_permiso Int
+  permisos   permisos @relation(fields: [id_permiso], references: [id_permiso], onDelete: Cascade, onUpdate: Restrict, map: "fk_rol_permisos_permiso")
+  roles      roles    @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: Restrict, map: "fk_rol_permisos_rol")
+
+  @@id([id_rol, id_permiso])
+  @@index([id_permiso], map: "fk_rol_permisos_permiso")
+}
+
+model roles {
+  id_rol        Int             @id @default(autoincrement())
+  nombre_rol    String          @db.VarChar(100)
+  rol_permisos  rol_permisos[]
+  usuario_roles usuario_roles[]
+}
+
+model sectores {
+  id_sector    Int        @id @default(autoincrement())
+  nombreSector String     @db.VarChar(100)
+  usuarios     usuarios[]
+}
+
+model service_autoelevador {
+  id_service_autoelevador Int            @id @default(autoincrement())
+  id_autoelevador         Int
+  horas                   Decimal        @db.Decimal(10, 2)
+  detalle                 String?        @db.VarChar(255)
+  autoelevadores          autoelevadores @relation(fields: [id_autoelevador], references: [id_autoelevadores], onUpdate: Restrict, map: "fk_service_autoelevador_autoelevador")
+
+  @@index([id_autoelevador], map: "fk_service_autoelevador_autoelevador")
+}
+
+model stock_insumo_deposito {
+  id_stock_insumo_deposito Int      @id @default(autoincrement())
+  id_insumo                Int
+  id_deposito              Int
+  cantidad                 Int      @default(0)
+  deposito                 deposito @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_stock_insumo_dep_deposito")
+  insumo                   insumo   @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_stock_insumo_dep_insumo")
+
+  @@unique([id_insumo, id_deposito], map: "uq_insumo_deposito")
+  @@index([id_deposito], map: "fk_stock_insumo_dep_deposito")
+}
+
+model tipo_documento {
+  id_tipo_documento           Int                           @id @default(autoincrement())
+  descripcion                 String                        @db.VarChar(100)
+  id_tipo_impacto             Int
+  movimiento_cuenta_corriente movimiento_cuenta_corriente[]
+  tipo_impacto                tipo_impacto                  @relation(fields: [id_tipo_impacto], references: [id_tipo_impacto], onUpdate: Restrict, map: "fk_tipo_documento_tipo_impacto")
+
+  @@index([id_tipo_impacto], map: "fk_tipo_documento_tipo_impacto")
+}
+
+model tipo_impacto {
+  id_tipo_impacto Int              @id @default(autoincrement())
+  descripcion     String           @db.VarChar(100)
+  tipo_documento  tipo_documento[]
+}
+
+model tipo_lote {
+  id_tipo_lote     Int     @id @default(autoincrement())
+  descripcion_lote String  @db.VarChar(100)
+  lotes            lotes[]
+}
+
+model tipo_movimiento {
+  id_tipo_movimiento  Int                   @id @default(autoincrement())
+  nombre_movimiento   String                @db.VarChar(100)
+  id_naturaleza       Int
+  id_estado           Int
+  movimiento_insumo   movimiento_insumo[]
+  movimiento_producto movimiento_producto[]
+  estados             estados               @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_tipo_mov_estado")
+  naturaleza          naturaleza            @relation(fields: [id_naturaleza], references: [id_naturaleza], onUpdate: Restrict, map: "fk_tipo_mov_naturaleza")
+
+  @@index([id_estado], map: "fk_tipo_mov_estado")
+  @@index([id_naturaleza], map: "fk_tipo_mov_naturaleza")
+}
+
+model transporte {
+  id_transporte         Int         @id @default(autoincrement())
+  nombre_transporte     String      @db.VarChar(150)
+  cuit                  String      @db.VarChar(20)
+  nombre_contacto       String?     @db.VarChar(150)
+  id_direccion          Int
+  telefono              String?     @db.VarChar(30)
+  cbu_cuenta_bancaria   String?     @db.VarChar(30)
+  alias_cuenta_bancaria String?     @db.VarChar(50)
+  id_estado             Int
+  camion                camion[]
+  chofer                chofer[]
+  direcciones           direcciones @relation(fields: [id_direccion], references: [id_direccion], onUpdate: Restrict, map: "fk_transporte_direccion")
+  estados               estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_transporte_estado")
+
+  @@index([id_direccion], map: "fk_transporte_direccion")
+  @@index([id_estado], map: "fk_transporte_estado")
+}
+
+model turnos {
+  id_turno             Int                    @id @default(autoincrement())
+  descripcion_turnos   String                 @db.VarChar(100)
+  id_estado            Int
+  item_plan_produccion item_plan_produccion[]
+  lote_prod            lote_prod[]
+  estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_turnos_estado")
+
+  @@index([id_estado], map: "fk_turnos_estado")
+}
+
+model unidad_medida {
+  id_unidad_medida     Int         @id @default(autoincrement())
+  nombre_unidad_medida String      @db.VarChar(50)
+  insumo               insumo[]
+  item_lote            item_lote[]
+}
+
+model usuario_roles {
+  id_usuario Int
+  id_rol     Int
+  roles      roles    @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: Restrict, map: "fk_usuario_roles_rol")
+  usuarios   usuarios @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: Restrict, map: "fk_usuario_roles_usuario")
+
+  @@id([id_usuario, id_rol])
+  @@index([id_rol], map: "fk_usuario_roles_rol")
+}
+
+model usuarios {
+  id_usuario           Int                    @id @default(autoincrement())
+  nombre_usuario       String                 @db.VarChar(100)
+  id_sector            Int
+  id_estado            Int
+  control_autoelevador control_autoelevador[]
+  pedido_insumos       pedido_insumos[]
+  pedidos              pedidos[]
+  plan_produccion      plan_produccion[]
+  reclamos             reclamos[]
+  requerimiento        requerimiento[]
+  usuario_roles        usuario_roles[]
+  estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_usuarios_estado")
+  sectores             sectores               @relation(fields: [id_sector], references: [id_sector], onUpdate: Restrict, map: "fk_usuarios_sector")
+
+  @@index([id_estado], map: "fk_usuarios_estado")
+  @@index([id_sector], map: "fk_usuarios_sector")
 }

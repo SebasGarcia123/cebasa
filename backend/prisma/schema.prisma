@@ -734,7 +734,8 @@ model usuario_roles {
 
 model usuarios {
   id_usuario           Int                    @id @default(autoincrement())
-  nombre_usuario       String                 @db.VarChar(100)
+  nombre_usuario       String                 @unique(map: "uq_usuarios_nombre_usuario") @db.VarChar(100)
+  password             String                 @db.VarChar(255)
   id_sector            Int
   id_estado            Int
   control_autoelevador control_autoelevador[]
@@ -742,6 +743,7 @@ model usuarios {
   pedidos              pedidos[]
   plan_produccion      plan_produccion[]
   reclamos             reclamos[]
+  refresh_tokens       refresh_tokens[]
   requerimiento        requerimiento[]
   usuario_roles        usuario_roles[]
   estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_usuarios_estado")
@@ -749,4 +751,16 @@ model usuarios {
 
   @@index([id_estado], map: "fk_usuarios_estado")
   @@index([id_sector], map: "fk_usuarios_sector")
+}
+
+model refresh_tokens {
+  id_refresh_token Int       @id @default(autoincrement())
+  token_hash       String    @unique(map: "uq_refresh_tokens_token_hash") @db.VarChar(255)
+  id_usuario       Int
+  expires_at       DateTime
+  revoked_at       DateTime?
+  created_at       DateTime  @default(now())
+  usuarios         usuarios  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: Restrict, map: "fk_refresh_tokens_usuario")
+
+  @@index([id_usuario], map: "fk_refresh_tokens_usuario")
 }

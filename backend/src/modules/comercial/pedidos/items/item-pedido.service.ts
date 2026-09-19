@@ -27,7 +27,9 @@ export class ItemPedidoService {
       include: { productos: true },
     });
     if (!item) {
-      throw new NotFoundException(`Item ${idItem} no encontrado en el pedido ${idPedido}`);
+      throw new NotFoundException(
+        `Item ${idItem} no encontrado en el pedido ${idPedido}`,
+      );
     }
     return item;
   }
@@ -42,6 +44,8 @@ export class ItemPedidoService {
 
   async remove(idPedido: number, idItem: number) {
     await this.findOne(idPedido, idItem);
-    return this.prisma.item_pedido.delete({ where: { id_item_pedido: idItem } });
+    return this.prisma.item_pedido.delete({
+      where: { id_item_pedido: idItem },
+    });
   }
 }

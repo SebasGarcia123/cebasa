@@ -6,6 +6,12 @@ import { UsuarioRolesModule } from './usuario-roles/usuario-roles.module.js';
 import { RolPermisosModule } from './rol-permisos/rol-permisos.module.js';
 
 @Module({
-  imports: [RolesModule, PermisosModule, UsuariosEntityModule, UsuarioRolesModule, RolPermisosModule],
+  imports: [
+    RolesModule,
+    PermisosModule,
+    UsuariosEntityModule,
+    UsuarioRolesModule,
+    RolPermisosModule,
+  ],
 })
 export class UsuariosModule {}

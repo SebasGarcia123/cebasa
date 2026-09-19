@@ -1,6 +1,15 @@
-import { Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { UsuarioRolesService } from './usuario-roles.service.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Usuario Roles')
 @Controller('usuarios/:idUsuario/roles')
 export class UsuarioRolesController {
   constructor(private readonly usuarioRolesService: UsuarioRolesService) {}

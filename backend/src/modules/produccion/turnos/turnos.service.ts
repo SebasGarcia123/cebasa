@@ -16,7 +16,9 @@ export class TurnosService {
   }
 
   async findOne(id: number) {
-    const turno = await this.prisma.turnos.findUnique({ where: { id_turno: id } });
+    const turno = await this.prisma.turnos.findUnique({
+      where: { id_turno: id },
+    });
     if (!turno) {
       throw new NotFoundException(`Turno ${id} no encontrado`);
     }

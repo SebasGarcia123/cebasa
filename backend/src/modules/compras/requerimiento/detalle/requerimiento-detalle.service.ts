@@ -23,7 +23,10 @@ export class RequerimientoDetalleService {
 
   async findOne(idRequerimiento: number, idDetalle: number) {
     const detalle = await this.prisma.requerimiento_detalle.findFirst({
-      where: { id_requerimiento_detalle: idDetalle, id_requerimiento: idRequerimiento },
+      where: {
+        id_requerimiento_detalle: idDetalle,
+        id_requerimiento: idRequerimiento,
+      },
       include: { insumo: true },
     });
     if (!detalle) {
@@ -34,7 +37,11 @@ export class RequerimientoDetalleService {
     return detalle;
   }
 
-  async update(idRequerimiento: number, idDetalle: number, dto: UpdateRequerimientoDetalleDto) {
+  async update(
+    idRequerimiento: number,
+    idDetalle: number,
+    dto: UpdateRequerimientoDetalleDto,
+  ) {
     await this.findOne(idRequerimiento, idDetalle);
     return this.prisma.requerimiento_detalle.update({
       where: { id_requerimiento_detalle: idDetalle },

@@ -14,7 +14,9 @@ export class LoteProdService {
   }
 
   findAll() {
-    return this.prisma.lote_prod.findMany({ include: { turnos: true, estados: true } });
+    return this.prisma.lote_prod.findMany({
+      include: { turnos: true, estados: true },
+    });
   }
 
   async findOne(id: number) {
@@ -38,7 +40,9 @@ export class LoteProdService {
       where: { id_lote: id },
       data: {
         ...dto,
-        fecha_lote_prod: dto.fecha_lote_prod ? new Date(dto.fecha_lote_prod) : undefined,
+        fecha_lote_prod: dto.fecha_lote_prod
+          ? new Date(dto.fecha_lote_prod)
+          : undefined,
       },
     });
   }

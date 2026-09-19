@@ -24,7 +24,9 @@ export class ItemControlService {
       where: { id_item_control: idItem, id_control_autoelevador: idControl },
     });
     if (!item) {
-      throw new NotFoundException(`Item ${idItem} no encontrado en el control ${idControl}`);
+      throw new NotFoundException(
+        `Item ${idItem} no encontrado en el control ${idControl}`,
+      );
     }
     return item;
   }
@@ -39,6 +41,8 @@ export class ItemControlService {
 
   async remove(idControl: number, idItem: number) {
     await this.findOne(idControl, idItem);
-    return this.prisma.item_control_autoelevador.delete({ where: { id_item_control: idItem } });
+    return this.prisma.item_control_autoelevador.delete({
+      where: { id_item_control: idItem },
+    });
   }
 }

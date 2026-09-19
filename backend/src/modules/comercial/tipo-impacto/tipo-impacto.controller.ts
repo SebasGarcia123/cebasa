@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TipoImpactoService } from './tipo-impacto.service.js';
 import { CreateTipoImpactoDto } from './dto/create-tipo-impacto.dto.js';
 import { UpdateTipoImpactoDto } from './dto/update-tipo-impacto.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Tipo Impacto')
 @Controller('tipo-impacto')
 export class TipoImpactoController {
   constructor(private readonly tipoImpactoService: TipoImpactoService) {}
@@ -23,7 +34,10 @@ export class TipoImpactoController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTipoImpactoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTipoImpactoDto,
+  ) {
     return this.tipoImpactoService.update(id, dto);
   }
 

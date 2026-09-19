@@ -16,7 +16,9 @@ export class FleteroService {
   }
 
   async findOne(id: number) {
-    const fletero = await this.prisma.fletero.findUnique({ where: { id_fletero: id } });
+    const fletero = await this.prisma.fletero.findUnique({
+      where: { id_fletero: id },
+    });
     if (!fletero) {
       throw new NotFoundException(`Fletero ${id} no encontrado`);
     }

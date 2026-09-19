@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TipoLoteService } from './tipo-lote.service.js';
 import { CreateTipoLoteDto } from './dto/create-tipo-lote.dto.js';
 import { UpdateTipoLoteDto } from './dto/update-tipo-lote.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Tipo Lote')
 @Controller('tipo-lote')
 export class TipoLoteController {
   constructor(private readonly tipoLoteService: TipoLoteService) {}
@@ -23,7 +34,10 @@ export class TipoLoteController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTipoLoteDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTipoLoteDto,
+  ) {
     return this.tipoLoteService.update(id, dto);
   }
 

@@ -16,7 +16,9 @@ export class EstadosService {
   }
 
   async findOne(id: number) {
-    const estado = await this.prisma.estados.findUnique({ where: { id_estado: id } });
+    const estado = await this.prisma.estados.findUnique({
+      where: { id_estado: id },
+    });
     if (!estado) {
       throw new NotFoundException(`Estado ${id} no encontrado`);
     }

@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { PermisosService } from './permisos.service.js';
 import { CreatePermisoDto } from './dto/create-permiso.dto.js';
 import { UpdatePermisoDto } from './dto/update-permiso.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Permisos')
 @Controller('permisos')
 export class PermisosController {
   constructor(private readonly permisosService: PermisosService) {}

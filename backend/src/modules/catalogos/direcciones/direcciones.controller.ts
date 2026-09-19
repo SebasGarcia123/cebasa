@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { DireccionesService } from './direcciones.service.js';
 import { CreateDireccionDto } from './dto/create-direccion.dto.js';
 import { UpdateDireccionDto } from './dto/update-direccion.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Direcciones')
 @Controller('direcciones')
 export class DireccionesController {
   constructor(private readonly direccionesService: DireccionesService) {}
@@ -23,7 +34,10 @@ export class DireccionesController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateDireccionDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateDireccionDto,
+  ) {
     return this.direccionesService.update(id, dto);
   }
 

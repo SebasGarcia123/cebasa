@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { RecetaService } from './receta.service.js';
 import { CreateRecetaDto } from './dto/create-receta.dto.js';
 import { UpdateRecetaDto } from './dto/update-receta.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Receta')
 @Controller('recetas')
 export class RecetaController {
   constructor(private readonly recetaService: RecetaService) {}

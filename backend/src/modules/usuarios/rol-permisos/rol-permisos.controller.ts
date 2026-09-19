@@ -1,6 +1,15 @@
-import { Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { RolPermisosService } from './rol-permisos.service.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Rol Permisos')
 @Controller('roles/:idRol/permisos')
 export class RolPermisosController {
   constructor(private readonly rolPermisosService: RolPermisosService) {}

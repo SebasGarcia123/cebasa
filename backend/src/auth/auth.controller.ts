@@ -9,9 +9,11 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService, AuthResult } from './auth.service.js';
+import { PermissionsCatalogService } from './permissions-catalog.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { Public } from './decorators/public.decorator.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
@@ -24,9 +26,13 @@ import {
   REFRESH_TOKEN_TTL_MS,
 } from './constants/auth.constants.js';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly permissionsCatalogService: PermissionsCatalogService,
+  ) {}
 
   private setAuthCookies(res: Response, result: AuthResult) {
     const secure = process.env.NODE_ENV === 'production';
@@ -98,5 +104,10 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: JwtPayload) {
     return user;
+  }
+
+  @Get('permisos-disponibles')
+  permisosDisponibles() {
+    return this.permissionsCatalogService.getAvailablePermissions();
   }
 }

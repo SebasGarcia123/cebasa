@@ -25,7 +25,9 @@ export class RolPermisosService {
         where: { id_rol_id_permiso: { id_rol: idRol, id_permiso: idPermiso } },
       });
     } catch {
-      throw new NotFoundException(`El rol ${idRol} no tiene asignado el permiso ${idPermiso}`);
+      throw new NotFoundException(
+        `El rol ${idRol} no tiene asignado el permiso ${idPermiso}`,
+      );
     }
   }
 }

@@ -28,7 +28,10 @@ export class DepositoService {
 
   async update(id: number, dto: UpdateDepositoDto) {
     await this.findOne(id);
-    return this.prisma.deposito.update({ where: { id_deposito: id }, data: dto });
+    return this.prisma.deposito.update({
+      where: { id_deposito: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

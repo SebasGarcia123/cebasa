@@ -28,7 +28,10 @@ export class ProveedorService {
 
   async update(id: number, dto: UpdateProveedorDto) {
     await this.findOne(id);
-    return this.prisma.proveedor.update({ where: { id_proveedor: id }, data: dto });
+    return this.prisma.proveedor.update({
+      where: { id_proveedor: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

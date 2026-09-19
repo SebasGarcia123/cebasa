@@ -21,7 +21,10 @@ export class ServiciosAutoelevadorService {
 
   async findOne(idAutoelevador: number, idServicio: number) {
     const servicio = await this.prisma.service_autoelevador.findFirst({
-      where: { id_service_autoelevador: idServicio, id_autoelevador: idAutoelevador },
+      where: {
+        id_service_autoelevador: idServicio,
+        id_autoelevador: idAutoelevador,
+      },
     });
     if (!servicio) {
       throw new NotFoundException(
@@ -31,7 +34,11 @@ export class ServiciosAutoelevadorService {
     return servicio;
   }
 
-  async update(idAutoelevador: number, idServicio: number, dto: UpdateServicioAutoelevadorDto) {
+  async update(
+    idAutoelevador: number,
+    idServicio: number,
+    dto: UpdateServicioAutoelevadorDto,
+  ) {
     await this.findOne(idAutoelevador, idServicio);
     return this.prisma.service_autoelevador.update({
       where: { id_service_autoelevador: idServicio },

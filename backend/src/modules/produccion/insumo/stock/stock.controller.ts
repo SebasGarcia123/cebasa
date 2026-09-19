@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { StockInsumoDepositoService } from './stock.service.js';
 import { CreateStockInsumoDepositoDto } from './dto/create-stock.dto.js';
 import { UpdateStockInsumoDepositoDto } from './dto/update-stock.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Insumo - Stock')
 @Controller('insumos/:idInsumo/stock')
 export class StockInsumoDepositoController {
   constructor(private readonly stockService: StockInsumoDepositoService) {}

@@ -1,11 +1,24 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ControlesAutoelevadorService } from './controles.service.js';
 import { CreateControlAutoelevadorDto } from './dto/create-control.dto.js';
 import { UpdateControlAutoelevadorDto } from './dto/update-control.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Controles Autoelevador')
 @Controller('controles-autoelevador')
 export class ControlesAutoelevadorController {
-  constructor(private readonly controlesService: ControlesAutoelevadorService) {}
+  constructor(
+    private readonly controlesService: ControlesAutoelevadorService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateControlAutoelevadorDto) {
@@ -23,7 +36,10 @@ export class ControlesAutoelevadorController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateControlAutoelevadorDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateControlAutoelevadorDto,
+  ) {
     return this.controlesService.update(id, dto);
   }
 

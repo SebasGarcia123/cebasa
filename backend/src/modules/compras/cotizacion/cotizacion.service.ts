@@ -41,7 +41,9 @@ export class CotizacionService {
       where: { id_cotizacion: id },
       data: {
         ...dto,
-        fecha_cotizacion: dto.fecha_cotizacion ? new Date(dto.fecha_cotizacion) : undefined,
+        fecha_cotizacion: dto.fecha_cotizacion
+          ? new Date(dto.fecha_cotizacion)
+          : undefined,
       },
     });
   }

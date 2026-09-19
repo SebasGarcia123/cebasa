@@ -16,7 +16,9 @@ export class TipoLoteService {
   }
 
   async findOne(id: number) {
-    const tipoLote = await this.prisma.tipo_lote.findUnique({ where: { id_tipo_lote: id } });
+    const tipoLote = await this.prisma.tipo_lote.findUnique({
+      where: { id_tipo_lote: id },
+    });
     if (!tipoLote) {
       throw new NotFoundException(`Tipo de lote ${id} no encontrado`);
     }
@@ -25,7 +27,10 @@ export class TipoLoteService {
 
   async update(id: number, dto: UpdateTipoLoteDto) {
     await this.findOne(id);
-    return this.prisma.tipo_lote.update({ where: { id_tipo_lote: id }, data: dto });
+    return this.prisma.tipo_lote.update({
+      where: { id_tipo_lote: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

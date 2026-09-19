@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { LineasService } from './lineas.service.js';
 import { CreateLineaDto } from './dto/create-linea.dto.js';
 import { UpdateLineaDto } from './dto/update-linea.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Lineas')
 @Controller('lineas')
 export class LineasController {
   constructor(private readonly lineasService: LineasService) {}

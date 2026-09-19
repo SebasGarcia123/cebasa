@@ -15,7 +15,9 @@ export class ChoferService {
   }
 
   create(idTransporte: number, dto: CreateChoferDto) {
-    return this.prisma.chofer.create({ data: { ...dto, id_transporte: idTransporte } });
+    return this.prisma.chofer.create({
+      data: { ...dto, id_transporte: idTransporte },
+    });
   }
 
   async findOne(idTransporte: number, idChofer: number) {
@@ -24,14 +26,19 @@ export class ChoferService {
       include: { direcciones: true, estados: true },
     });
     if (!chofer) {
-      throw new NotFoundException(`Chofer ${idChofer} no encontrado en el transporte ${idTransporte}`);
+      throw new NotFoundException(
+        `Chofer ${idChofer} no encontrado en el transporte ${idTransporte}`,
+      );
     }
     return chofer;
   }
 
   async update(idTransporte: number, idChofer: number, dto: UpdateChoferDto) {
     await this.findOne(idTransporte, idChofer);
-    return this.prisma.chofer.update({ where: { id_chofer: idChofer }, data: dto });
+    return this.prisma.chofer.update({
+      where: { id_chofer: idChofer },
+      data: dto,
+    });
   }
 
   async remove(idTransporte: number, idChofer: number) {

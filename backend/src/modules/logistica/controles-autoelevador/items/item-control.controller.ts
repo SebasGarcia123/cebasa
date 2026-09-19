@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ItemControlService } from './item-control.service.js';
 import { CreateItemControlDto } from './dto/create-item-control.dto.js';
 import { UpdateItemControlDto } from './dto/update-item-control.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Controles Autoelevador - Items')
 @Controller('controles-autoelevador/:idControl/items')
 export class ItemControlController {
   constructor(private readonly itemControlService: ItemControlService) {}
@@ -13,7 +24,10 @@ export class ItemControlController {
   }
 
   @Post()
-  create(@Param('idControl', ParseIntPipe) idControl: number, @Body() dto: CreateItemControlDto) {
+  create(
+    @Param('idControl', ParseIntPipe) idControl: number,
+    @Body() dto: CreateItemControlDto,
+  ) {
     return this.itemControlService.create(idControl, dto);
   }
 

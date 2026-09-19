@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ItemPlanProduccionService } from './item-plan-produccion.service.js';
 import { CreateItemPlanProduccionDto } from './dto/create-item-plan-produccion.dto.js';
 import { UpdateItemPlanProduccionDto } from './dto/update-item-plan-produccion.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Plan Produccion - Items')
 @Controller('planes-produccion/:idPlan/items')
 export class ItemPlanProduccionController {
   constructor(private readonly itemService: ItemPlanProduccionService) {}

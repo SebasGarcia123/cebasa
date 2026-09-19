@@ -27,7 +27,9 @@ export class RecetaItemService {
       include: { insumo: true },
     });
     if (!item) {
-      throw new NotFoundException(`Item ${idItem} no encontrado en la receta ${idReceta}`);
+      throw new NotFoundException(
+        `Item ${idItem} no encontrado en la receta ${idReceta}`,
+      );
     }
     return item;
   }
@@ -42,6 +44,8 @@ export class RecetaItemService {
 
   async remove(idReceta: number, idItem: number) {
     await this.findOne(idReceta, idItem);
-    return this.prisma.receta_item.delete({ where: { id_receta_item: idItem } });
+    return this.prisma.receta_item.delete({
+      where: { id_receta_item: idItem },
+    });
   }
 }

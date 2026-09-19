@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { RecetaItemService } from './receta-item.service.js';
 import { CreateRecetaItemDto } from './dto/create-receta-item.dto.js';
 import { UpdateRecetaItemDto } from './dto/update-receta-item.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Receta - Items')
 @Controller('recetas/:idReceta/items')
 export class RecetaItemController {
   constructor(private readonly recetaItemService: RecetaItemService) {}
@@ -13,7 +24,10 @@ export class RecetaItemController {
   }
 
   @Post()
-  create(@Param('idReceta', ParseIntPipe) idReceta: number, @Body() dto: CreateRecetaItemDto) {
+  create(
+    @Param('idReceta', ParseIntPipe) idReceta: number,
+    @Body() dto: CreateRecetaItemDto,
+  ) {
     return this.recetaItemService.create(idReceta, dto);
   }
 

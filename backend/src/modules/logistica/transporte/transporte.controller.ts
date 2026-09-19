@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TransporteService } from './transporte.service.js';
 import { CreateTransporteDto } from './dto/create-transporte.dto.js';
 import { UpdateTransporteDto } from './dto/update-transporte.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Transporte')
 @Controller('transporte')
 export class TransporteController {
   constructor(private readonly transporteService: TransporteService) {}
@@ -23,7 +34,10 @@ export class TransporteController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTransporteDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTransporteDto,
+  ) {
     return this.transporteService.update(id, dto);
   }
 

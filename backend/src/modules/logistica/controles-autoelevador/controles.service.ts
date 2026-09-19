@@ -29,7 +29,9 @@ export class ControlesAutoelevadorService {
       },
     });
     if (!control) {
-      throw new NotFoundException(`Control de autoelevador ${id} no encontrado`);
+      throw new NotFoundException(
+        `Control de autoelevador ${id} no encontrado`,
+      );
     }
     return control;
   }
@@ -47,6 +49,8 @@ export class ControlesAutoelevadorService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.control_autoelevador.delete({ where: { id_control_autoelevador: id } });
+    return this.prisma.control_autoelevador.delete({
+      where: { id_control_autoelevador: id },
+    });
   }
 }

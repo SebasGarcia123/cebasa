@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { RequerimientoService } from './requerimiento.service.js';
 import { CreateRequerimientoDto } from './dto/create-requerimiento.dto.js';
 import { UpdateRequerimientoDto } from './dto/update-requerimiento.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Requerimiento')
 @Controller('requerimientos')
 export class RequerimientoController {
   constructor(private readonly requerimientoService: RequerimientoService) {}
@@ -23,7 +34,10 @@ export class RequerimientoController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRequerimientoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateRequerimientoDto,
+  ) {
     return this.requerimientoService.update(id, dto);
   }
 

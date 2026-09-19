@@ -40,6 +40,8 @@ export class ArchivoAdjuntoService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.archivo_adjunto.delete({ where: { id_archivo_adjunto: id } });
+    return this.prisma.archivo_adjunto.delete({
+      where: { id_archivo_adjunto: id },
+    });
   }
 }

@@ -18,7 +18,9 @@ export class RequerimientoService {
   }
 
   findAll() {
-    return this.prisma.requerimiento.findMany({ include: { usuarios: true, estados: true } });
+    return this.prisma.requerimiento.findMany({
+      include: { usuarios: true, estados: true },
+    });
   }
 
   async findOne(id: number) {
@@ -43,13 +45,17 @@ export class RequerimientoService {
       data: {
         ...dto,
         fecha_carga: dto.fecha_carga ? new Date(dto.fecha_carga) : undefined,
-        fecha_necesidad: dto.fecha_necesidad ? new Date(dto.fecha_necesidad) : undefined,
+        fecha_necesidad: dto.fecha_necesidad
+          ? new Date(dto.fecha_necesidad)
+          : undefined,
       },
     });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.requerimiento.delete({ where: { id_requerimiento: id } });
+    return this.prisma.requerimiento.delete({
+      where: { id_requerimiento: id },
+    });
   }
 }

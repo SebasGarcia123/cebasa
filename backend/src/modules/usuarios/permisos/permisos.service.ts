@@ -16,7 +16,9 @@ export class PermisosService {
   }
 
   async findOne(id: number) {
-    const permiso = await this.prisma.permisos.findUnique({ where: { id_permiso: id } });
+    const permiso = await this.prisma.permisos.findUnique({
+      where: { id_permiso: id },
+    });
     if (!permiso) {
       throw new NotFoundException(`Permiso ${id} no encontrado`);
     }
@@ -25,7 +27,10 @@ export class PermisosService {
 
   async update(id: number, dto: UpdatePermisoDto) {
     await this.findOne(id);
-    return this.prisma.permisos.update({ where: { id_permiso: id }, data: dto });
+    return this.prisma.permisos.update({
+      where: { id_permiso: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

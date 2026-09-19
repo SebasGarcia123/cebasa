@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ArchivoAdjuntoService } from './archivo-adjunto.service.js';
 import { CreateArchivoAdjuntoDto } from './dto/create-archivo-adjunto.dto.js';
 import { UpdateArchivoAdjuntoDto } from './dto/update-archivo-adjunto.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Archivo Adjunto')
 @Controller('archivos-adjuntos')
 export class ArchivoAdjuntoController {
   constructor(private readonly archivoAdjuntoService: ArchivoAdjuntoService) {}
@@ -23,7 +34,10 @@ export class ArchivoAdjuntoController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateArchivoAdjuntoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateArchivoAdjuntoDto,
+  ) {
     return this.archivoAdjuntoService.update(id, dto);
   }
 

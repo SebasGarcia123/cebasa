@@ -12,7 +12,9 @@ export class TipoMovimientoService {
   }
 
   findAll() {
-    return this.prisma.tipo_movimiento.findMany({ include: { naturaleza: true, estados: true } });
+    return this.prisma.tipo_movimiento.findMany({
+      include: { naturaleza: true, estados: true },
+    });
   }
 
   async findOne(id: number) {
@@ -28,11 +30,16 @@ export class TipoMovimientoService {
 
   async update(id: number, dto: UpdateTipoMovimientoDto) {
     await this.findOne(id);
-    return this.prisma.tipo_movimiento.update({ where: { id_tipo_movimiento: id }, data: dto });
+    return this.prisma.tipo_movimiento.update({
+      where: { id_tipo_movimiento: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.tipo_movimiento.delete({ where: { id_tipo_movimiento: id } });
+    return this.prisma.tipo_movimiento.delete({
+      where: { id_tipo_movimiento: id },
+    });
   }
 }

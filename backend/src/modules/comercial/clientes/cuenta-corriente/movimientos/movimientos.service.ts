@@ -12,7 +12,9 @@ export class MovimientosCuentaCorrienteService {
       where: { id_cliente: idCliente },
     });
     if (!cuenta) {
-      throw new NotFoundException(`El cliente ${idCliente} no tiene cuenta corriente`);
+      throw new NotFoundException(
+        `El cliente ${idCliente} no tiene cuenta corriente`,
+      );
     }
     return cuenta;
   }
@@ -55,7 +57,11 @@ export class MovimientosCuentaCorrienteService {
     return movimiento;
   }
 
-  async update(idCliente: number, idMovimiento: number, dto: UpdateMovimientoCuentaCorrienteDto) {
+  async update(
+    idCliente: number,
+    idMovimiento: number,
+    dto: UpdateMovimientoCuentaCorrienteDto,
+  ) {
     await this.findOne(idCliente, idMovimiento);
     return this.prisma.movimiento_cuenta_corriente.update({
       where: { id_movimiento_cta_cte: idMovimiento },

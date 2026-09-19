@@ -27,7 +27,9 @@ export class ItemLoteService {
       include: { unidad_medida: true },
     });
     if (!item) {
-      throw new NotFoundException(`Item ${idItem} no encontrado en el lote ${idLote}`);
+      throw new NotFoundException(
+        `Item ${idItem} no encontrado en el lote ${idLote}`,
+      );
     }
     return item;
   }

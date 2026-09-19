@@ -27,7 +27,10 @@ export class TipoImpactoService {
 
   async update(id: number, dto: UpdateTipoImpactoDto) {
     await this.findOne(id);
-    return this.prisma.tipo_impacto.update({ where: { id_tipo_impacto: id }, data: dto });
+    return this.prisma.tipo_impacto.update({
+      where: { id_tipo_impacto: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

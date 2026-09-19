@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { DepositoService } from './deposito.service.js';
 import { CreateDepositoDto } from './dto/create-deposito.dto.js';
 import { UpdateDepositoDto } from './dto/update-deposito.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Deposito')
 @Controller('deposito')
 export class DepositoController {
   constructor(private readonly depositoService: DepositoService) {}
@@ -23,7 +34,10 @@ export class DepositoController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateDepositoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateDepositoDto,
+  ) {
     return this.depositoService.update(id, dto);
   }
 

@@ -27,12 +27,18 @@ export class ItemPedidoInsumoService {
       include: { insumo: true },
     });
     if (!item) {
-      throw new NotFoundException(`Item ${idItem} no encontrado en el pedido de insumos ${idPedido}`);
+      throw new NotFoundException(
+        `Item ${idItem} no encontrado en el pedido de insumos ${idPedido}`,
+      );
     }
     return item;
   }
 
-  async update(idPedido: number, idItem: number, dto: UpdateItemPedidoInsumoDto) {
+  async update(
+    idPedido: number,
+    idItem: number,
+    dto: UpdateItemPedidoInsumoDto,
+  ) {
     await this.findOne(idPedido, idItem);
     return this.prisma.item_pedido_insumo.update({
       where: { id_item_pedido_insumo: idItem },
@@ -42,6 +48,8 @@ export class ItemPedidoInsumoService {
 
   async remove(idPedido: number, idItem: number) {
     await this.findOne(idPedido, idItem);
-    return this.prisma.item_pedido_insumo.delete({ where: { id_item_pedido_insumo: idItem } });
+    return this.prisma.item_pedido_insumo.delete({
+      where: { id_item_pedido_insumo: idItem },
+    });
   }
 }

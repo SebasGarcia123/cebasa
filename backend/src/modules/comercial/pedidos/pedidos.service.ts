@@ -12,7 +12,9 @@ export class PedidosService {
       data: {
         ...dto,
         fecha_carga: new Date(dto.fecha_carga),
-        fecha_prometido: dto.fecha_prometido ? new Date(dto.fecha_prometido) : undefined,
+        fecha_prometido: dto.fecha_prometido
+          ? new Date(dto.fecha_prometido)
+          : undefined,
       },
     });
   }
@@ -46,7 +48,9 @@ export class PedidosService {
       data: {
         ...dto,
         fecha_carga: dto.fecha_carga ? new Date(dto.fecha_carga) : undefined,
-        fecha_prometido: dto.fecha_prometido ? new Date(dto.fecha_prometido) : undefined,
+        fecha_prometido: dto.fecha_prometido
+          ? new Date(dto.fecha_prometido)
+          : undefined,
       },
     });
   }

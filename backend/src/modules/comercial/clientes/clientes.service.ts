@@ -30,7 +30,10 @@ export class ClientesService {
 
   async update(id: number, dto: UpdateClienteDto) {
     await this.findOne(id);
-    return this.prisma.clientes.update({ where: { id_cliente: id }, data: dto });
+    return this.prisma.clientes.update({
+      where: { id_cliente: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { PedidoInsumosService } from './pedido-insumos.service.js';
 import { CreatePedidoInsumosDto } from './dto/create-pedido-insumos.dto.js';
 import { UpdatePedidoInsumosDto } from './dto/update-pedido-insumos.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Pedido Insumos')
 @Controller('pedidos-insumos')
 export class PedidoInsumosController {
   constructor(private readonly pedidoInsumosService: PedidoInsumosService) {}
@@ -23,7 +34,10 @@ export class PedidoInsumosController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePedidoInsumosDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePedidoInsumosDto,
+  ) {
     return this.pedidoInsumosService.update(id, dto);
   }
 

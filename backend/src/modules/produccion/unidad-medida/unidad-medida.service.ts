@@ -27,11 +27,16 @@ export class UnidadMedidaService {
 
   async update(id: number, dto: UpdateUnidadMedidaDto) {
     await this.findOne(id);
-    return this.prisma.unidad_medida.update({ where: { id_unidad_medida: id }, data: dto });
+    return this.prisma.unidad_medida.update({
+      where: { id_unidad_medida: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.unidad_medida.delete({ where: { id_unidad_medida: id } });
+    return this.prisma.unidad_medida.delete({
+      where: { id_unidad_medida: id },
+    });
   }
 }

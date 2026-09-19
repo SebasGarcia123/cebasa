@@ -27,7 +27,10 @@ export class NaturalezaService {
 
   async update(id: number, dto: UpdateNaturalezaDto) {
     await this.findOne(id);
-    return this.prisma.naturaleza.update({ where: { id_naturaleza: id }, data: dto });
+    return this.prisma.naturaleza.update({
+      where: { id_naturaleza: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

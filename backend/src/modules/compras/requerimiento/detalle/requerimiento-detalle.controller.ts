@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { RequerimientoDetalleService } from './requerimiento-detalle.service.js';
 import { CreateRequerimientoDetalleDto } from './dto/create-requerimiento-detalle.dto.js';
 import { UpdateRequerimientoDetalleDto } from './dto/update-requerimiento-detalle.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Requerimiento - Detalle')
 @Controller('requerimientos/:idRequerimiento/detalle')
 export class RequerimientoDetalleController {
   constructor(private readonly detalleService: RequerimientoDetalleService) {}

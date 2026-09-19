@@ -14,7 +14,9 @@ export class PlanProduccionService {
   }
 
   findAll() {
-    return this.prisma.plan_produccion.findMany({ include: { usuarios: true, estados: true } });
+    return this.prisma.plan_produccion.findMany({
+      include: { usuarios: true, estados: true },
+    });
   }
 
   async findOne(id: number) {
@@ -23,7 +25,9 @@ export class PlanProduccionService {
       include: {
         usuarios: true,
         estados: true,
-        item_plan_produccion: { include: { productos: true, lineas: true, turnos: true } },
+        item_plan_produccion: {
+          include: { productos: true, lineas: true, turnos: true },
+        },
       },
     });
     if (!plan) {
@@ -47,6 +51,8 @@ export class PlanProduccionService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.plan_produccion.delete({ where: { id_plan_produccion: id } });
+    return this.prisma.plan_produccion.delete({
+      where: { id_plan_produccion: id },
+    });
   }
 }

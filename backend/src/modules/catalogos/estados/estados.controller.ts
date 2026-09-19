@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { EstadosService } from './estados.service.js';
 import { CreateEstadoDto } from './dto/create-estado.dto.js';
 import { UpdateEstadoDto } from './dto/update-estado.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Estados')
 @Controller('estados')
 export class EstadosController {
   constructor(private readonly estadosService: EstadosService) {}

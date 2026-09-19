@@ -47,13 +47,17 @@ export class MovimientoProductoService {
       where: { id_movimiento_producto: id },
       data: {
         ...dto,
-        fecha_movimiento: dto.fecha_movimiento ? new Date(dto.fecha_movimiento) : undefined,
+        fecha_movimiento: dto.fecha_movimiento
+          ? new Date(dto.fecha_movimiento)
+          : undefined,
       },
     });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.movimiento_producto.delete({ where: { id_movimiento_producto: id } });
+    return this.prisma.movimiento_producto.delete({
+      where: { id_movimiento_producto: id },
+    });
   }
 }

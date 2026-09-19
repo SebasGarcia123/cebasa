@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TipoMovimientoService } from './tipo-movimiento.service.js';
 import { CreateTipoMovimientoDto } from './dto/create-tipo-movimiento.dto.js';
 import { UpdateTipoMovimientoDto } from './dto/update-tipo-movimiento.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Tipo Movimiento')
 @Controller('tipo-movimiento')
 export class TipoMovimientoController {
   constructor(private readonly tipoMovimientoService: TipoMovimientoService) {}
@@ -23,7 +34,10 @@ export class TipoMovimientoController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTipoMovimientoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTipoMovimientoDto,
+  ) {
     return this.tipoMovimientoService.update(id, dto);
   }
 

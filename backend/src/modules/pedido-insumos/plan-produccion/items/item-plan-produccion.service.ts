@@ -27,12 +27,18 @@ export class ItemPlanProduccionService {
       include: { productos: true, lineas: true, turnos: true },
     });
     if (!item) {
-      throw new NotFoundException(`Item ${idItem} no encontrado en el plan de producción ${idPlan}`);
+      throw new NotFoundException(
+        `Item ${idItem} no encontrado en el plan de producción ${idPlan}`,
+      );
     }
     return item;
   }
 
-  async update(idPlan: number, idItem: number, dto: UpdateItemPlanProduccionDto) {
+  async update(
+    idPlan: number,
+    idItem: number,
+    dto: UpdateItemPlanProduccionDto,
+  ) {
     await this.findOne(idPlan, idItem);
     return this.prisma.item_plan_produccion.update({
       where: { id_item_plan_produccion: idItem },

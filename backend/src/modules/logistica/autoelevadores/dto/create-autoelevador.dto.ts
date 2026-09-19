@@ -1,4 +1,10 @@
-import { IsDateString, IsInt, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateAutoelevadorDto {
   @IsString()

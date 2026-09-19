@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ItemLoteService } from './item-lote.service.js';
 import { CreateItemLoteDto } from './dto/create-item-lote.dto.js';
 import { UpdateItemLoteDto } from './dto/update-item-lote.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Lotes - Items')
 @Controller('lotes/:idLote/items')
 export class ItemLoteController {
   constructor(private readonly itemLoteService: ItemLoteService) {}
@@ -13,7 +24,10 @@ export class ItemLoteController {
   }
 
   @Post()
-  create(@Param('idLote', ParseIntPipe) idLote: number, @Body() dto: CreateItemLoteDto) {
+  create(
+    @Param('idLote', ParseIntPipe) idLote: number,
+    @Body() dto: CreateItemLoteDto,
+  ) {
     return this.itemLoteService.create(idLote, dto);
   }
 

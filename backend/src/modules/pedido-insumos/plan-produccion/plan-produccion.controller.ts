@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { PlanProduccionService } from './plan-produccion.service.js';
 import { CreatePlanProduccionDto } from './dto/create-plan-produccion.dto.js';
 import { UpdatePlanProduccionDto } from './dto/update-plan-produccion.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Plan Produccion')
 @Controller('planes-produccion')
 export class PlanProduccionController {
   constructor(private readonly planProduccionService: PlanProduccionService) {}
@@ -23,7 +34,10 @@ export class PlanProduccionController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePlanProduccionDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePlanProduccionDto,
+  ) {
     return this.planProduccionService.update(id, dto);
   }
 

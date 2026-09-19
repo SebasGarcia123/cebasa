@@ -12,7 +12,9 @@ export class InsumoService {
   }
 
   findAll() {
-    return this.prisma.insumo.findMany({ include: { unidad_medida: true, estados: true } });
+    return this.prisma.insumo.findMany({
+      include: { unidad_medida: true, estados: true },
+    });
   }
 
   async findOne(id: number) {

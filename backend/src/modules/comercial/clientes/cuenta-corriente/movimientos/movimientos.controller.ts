@@ -1,11 +1,24 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { MovimientosCuentaCorrienteService } from './movimientos.service.js';
 import { CreateMovimientoCuentaCorrienteDto } from './dto/create-movimiento.dto.js';
 import { UpdateMovimientoCuentaCorrienteDto } from './dto/update-movimiento.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Clientes - Cuenta Corriente - Movimientos')
 @Controller('clientes/:idCliente/cuenta-corriente/movimientos')
 export class MovimientosCuentaCorrienteController {
-  constructor(private readonly movimientosService: MovimientosCuentaCorrienteService) {}
+  constructor(
+    private readonly movimientosService: MovimientosCuentaCorrienteService,
+  ) {}
 
   @Get()
   findAll(@Param('idCliente', ParseIntPipe) idCliente: number) {

@@ -12,7 +12,9 @@ export class TransporteService {
   }
 
   findAll() {
-    return this.prisma.transporte.findMany({ include: { direcciones: true, estados: true } });
+    return this.prisma.transporte.findMany({
+      include: { direcciones: true, estados: true },
+    });
   }
 
   async findOne(id: number) {
@@ -28,7 +30,10 @@ export class TransporteService {
 
   async update(id: number, dto: UpdateTransporteDto) {
     await this.findOne(id);
-    return this.prisma.transporte.update({ where: { id_transporte: id }, data: dto });
+    return this.prisma.transporte.update({
+      where: { id_transporte: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

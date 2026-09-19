@@ -1,4 +1,11 @@
-import { IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateMovimientoInsumoDto {
   @IsInt()

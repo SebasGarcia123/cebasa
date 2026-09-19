@@ -16,7 +16,9 @@ export class LineasService {
   }
 
   async findOne(id: number) {
-    const linea = await this.prisma.lineas.findUnique({ where: { id_lineas: id } });
+    const linea = await this.prisma.lineas.findUnique({
+      where: { id_lineas: id },
+    });
     if (!linea) {
       throw new NotFoundException(`Línea ${id} no encontrada`);
     }

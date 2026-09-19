@@ -41,6 +41,8 @@ export class AutoelevadoresService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.autoelevadores.delete({ where: { id_autoelevadores: id } });
+    return this.prisma.autoelevadores.delete({
+      where: { id_autoelevadores: id },
+    });
   }
 }

@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CamionService } from './camion.service.js';
 import { CreateCamionDto } from './dto/create-camion.dto.js';
 import { UpdateCamionDto } from './dto/update-camion.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Transporte - Camion')
 @Controller('transporte/:idTransporte/camiones')
 export class CamionController {
   constructor(private readonly camionService: CamionService) {}
@@ -13,7 +24,10 @@ export class CamionController {
   }
 
   @Post()
-  create(@Param('idTransporte', ParseIntPipe) idTransporte: number, @Body() dto: CreateCamionDto) {
+  create(
+    @Param('idTransporte', ParseIntPipe) idTransporte: number,
+    @Body() dto: CreateCamionDto,
+  ) {
     return this.camionService.create(idTransporte, dto);
   }
 

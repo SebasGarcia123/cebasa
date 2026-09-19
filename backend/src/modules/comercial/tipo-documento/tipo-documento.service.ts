@@ -12,7 +12,9 @@ export class TipoDocumentoService {
   }
 
   findAll() {
-    return this.prisma.tipo_documento.findMany({ include: { tipo_impacto: true } });
+    return this.prisma.tipo_documento.findMany({
+      include: { tipo_impacto: true },
+    });
   }
 
   async findOne(id: number) {
@@ -28,11 +30,16 @@ export class TipoDocumentoService {
 
   async update(id: number, dto: UpdateTipoDocumentoDto) {
     await this.findOne(id);
-    return this.prisma.tipo_documento.update({ where: { id_tipo_documento: id }, data: dto });
+    return this.prisma.tipo_documento.update({
+      where: { id_tipo_documento: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.tipo_documento.delete({ where: { id_tipo_documento: id } });
+    return this.prisma.tipo_documento.delete({
+      where: { id_tipo_documento: id },
+    });
   }
 }

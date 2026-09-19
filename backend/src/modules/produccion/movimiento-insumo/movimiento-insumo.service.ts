@@ -15,7 +15,12 @@ export class MovimientoInsumoService {
 
   findAll() {
     return this.prisma.movimiento_insumo.findMany({
-      include: { insumo: true, tipo_movimiento: true, deposito_origen: true, deposito_destino: true },
+      include: {
+        insumo: true,
+        tipo_movimiento: true,
+        deposito_origen: true,
+        deposito_destino: true,
+      },
     });
   }
 
@@ -42,13 +47,17 @@ export class MovimientoInsumoService {
       where: { id_movimiento_insumo: id },
       data: {
         ...dto,
-        fecha_movimiento: dto.fecha_movimiento ? new Date(dto.fecha_movimiento) : undefined,
+        fecha_movimiento: dto.fecha_movimiento
+          ? new Date(dto.fecha_movimiento)
+          : undefined,
       },
     });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.movimiento_insumo.delete({ where: { id_movimiento_insumo: id } });
+    return this.prisma.movimiento_insumo.delete({
+      where: { id_movimiento_insumo: id },
+    });
   }
 }

@@ -18,7 +18,9 @@ export class PedidoInsumosService {
   }
 
   findAll() {
-    return this.prisma.pedido_insumos.findMany({ include: { usuarios: true, estados: true } });
+    return this.prisma.pedido_insumos.findMany({
+      include: { usuarios: true, estados: true },
+    });
   }
 
   async findOne(id: number) {
@@ -43,13 +45,17 @@ export class PedidoInsumosService {
       data: {
         ...dto,
         fecha_carga: dto.fecha_carga ? new Date(dto.fecha_carga) : undefined,
-        fecha_necesidad: dto.fecha_necesidad ? new Date(dto.fecha_necesidad) : undefined,
+        fecha_necesidad: dto.fecha_necesidad
+          ? new Date(dto.fecha_necesidad)
+          : undefined,
       },
     });
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.pedido_insumos.delete({ where: { id_pedido_insumos: id } });
+    return this.prisma.pedido_insumos.delete({
+      where: { id_pedido_insumos: id },
+    });
   }
 }

@@ -25,7 +25,9 @@ export class UsuarioRolesService {
         where: { id_usuario_id_rol: { id_usuario: idUsuario, id_rol: idRol } },
       });
     } catch {
-      throw new NotFoundException(`El usuario ${idUsuario} no tiene asignado el rol ${idRol}`);
+      throw new NotFoundException(
+        `El usuario ${idUsuario} no tiene asignado el rol ${idRol}`,
+      );
     }
   }
 }

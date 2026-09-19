@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { SectoresService } from './sectores.service.js';
 import { CreateSectorDto } from './dto/create-sector.dto.js';
 import { UpdateSectorDto } from './dto/update-sector.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Sectores')
 @Controller('sectores')
 export class SectoresController {
   constructor(private readonly sectoresService: SectoresService) {}

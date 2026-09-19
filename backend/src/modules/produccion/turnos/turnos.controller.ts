@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TurnosService } from './turnos.service.js';
 import { CreateTurnoDto } from './dto/create-turno.dto.js';
 import { UpdateTurnoDto } from './dto/update-turno.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Turnos')
 @Controller('turnos')
 export class TurnosController {
   constructor(private readonly turnosService: TurnosService) {}

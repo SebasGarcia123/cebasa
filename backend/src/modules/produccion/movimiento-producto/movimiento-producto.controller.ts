@@ -1,11 +1,24 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { MovimientoProductoService } from './movimiento-producto.service.js';
 import { CreateMovimientoProductoDto } from './dto/create-movimiento-producto.dto.js';
 import { UpdateMovimientoProductoDto } from './dto/update-movimiento-producto.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Movimiento Producto')
 @Controller('movimientos-producto')
 export class MovimientoProductoController {
-  constructor(private readonly movimientoProductoService: MovimientoProductoService) {}
+  constructor(
+    private readonly movimientoProductoService: MovimientoProductoService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateMovimientoProductoDto) {
@@ -23,7 +36,10 @@ export class MovimientoProductoController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMovimientoProductoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMovimientoProductoDto,
+  ) {
     return this.movimientoProductoService.update(id, dto);
   }
 

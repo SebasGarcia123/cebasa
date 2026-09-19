@@ -1,11 +1,24 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ServiciosAutoelevadorService } from './servicios.service.js';
 import { CreateServicioAutoelevadorDto } from './dto/create-servicio.dto.js';
 import { UpdateServicioAutoelevadorDto } from './dto/update-servicio.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Autoelevadores - Servicios')
 @Controller('autoelevadores/:idAutoelevador/servicios')
 export class ServiciosAutoelevadorController {
-  constructor(private readonly serviciosService: ServiciosAutoelevadorService) {}
+  constructor(
+    private readonly serviciosService: ServiciosAutoelevadorService,
+  ) {}
 
   @Get()
   findAll(@Param('idAutoelevador', ParseIntPipe) idAutoelevador: number) {

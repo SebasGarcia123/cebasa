@@ -10,7 +10,12 @@ export interface AuthResult {
   accessToken: string;
   refreshToken: string;
   csrfToken: string;
-  user: { id_usuario: number; nombre_usuario: string; roles: string[]; permisos: string[] };
+  user: {
+    id_usuario: number;
+    nombre_usuario: string;
+    roles: string[];
+    permisos: string[];
+  };
 }
 
 @Injectable()
@@ -42,7 +47,11 @@ export class AuthService {
     });
   }
 
-  private buildPayload(usuario: NonNullable<Awaited<ReturnType<typeof this.loadUsuarioConRolesYPermisos>>>) {
+  private buildPayload(
+    usuario: NonNullable<
+      Awaited<ReturnType<typeof this.loadUsuarioConRolesYPermisos>>
+    >,
+  ) {
     const roles = usuario.usuario_roles.map((ur) => ur.roles.nombre_rol);
     const permisos = [
       ...new Set(
@@ -54,7 +63,10 @@ export class AuthService {
     return { roles, permisos };
   }
 
-  private async issueTokens(usuarioId: number, payload: JwtPayload): Promise<AuthResult> {
+  private async issueTokens(
+    usuarioId: number,
+    payload: JwtPayload,
+  ): Promise<AuthResult> {
     const accessToken = this.jwtService.sign(payload);
 
     const refreshTokenPlain = randomBytes(48).toString('hex');
@@ -123,8 +135,13 @@ export class AuthService {
       data: { revoked_at: new Date() },
     });
 
-    const usuario = await this.loadUsuarioConRolesYPermisos(stored.usuarios.nombre_usuario);
-    if (!usuario || usuario.estados.nombreEstado.trim().toLowerCase() !== 'activo') {
+    const usuario = await this.loadUsuarioConRolesYPermisos(
+      stored.usuarios.nombre_usuario,
+    );
+    if (
+      !usuario ||
+      usuario.estados.nombreEstado.trim().toLowerCase() !== 'activo'
+    ) {
       throw new UnauthorizedException('El usuario no está activo');
     }
 

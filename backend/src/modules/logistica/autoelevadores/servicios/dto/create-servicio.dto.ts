@@ -1,4 +1,10 @@
-import { IsNumber, IsOptional, IsString, Min, MaxLength } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateServicioAutoelevadorDto {
   @IsNumber()

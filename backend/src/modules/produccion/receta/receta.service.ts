@@ -12,7 +12,9 @@ export class RecetaService {
   }
 
   findAll() {
-    return this.prisma.receta.findMany({ include: { productos: true, estados: true } });
+    return this.prisma.receta.findMany({
+      include: { productos: true, estados: true },
+    });
   }
 
   async findOne(id: number) {

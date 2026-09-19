@@ -34,7 +34,11 @@ export class CotizacionDetalleService {
     return detalle;
   }
 
-  async update(idCotizacion: number, idDetalle: number, dto: UpdateCotizacionDetalleDto) {
+  async update(
+    idCotizacion: number,
+    idDetalle: number,
+    dto: UpdateCotizacionDetalleDto,
+  ) {
     await this.findOne(idCotizacion, idDetalle);
     return this.prisma.cotizacion_detalle.update({
       where: { id_cotizacion_detalle: idDetalle },

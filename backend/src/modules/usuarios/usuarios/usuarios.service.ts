@@ -48,7 +48,9 @@ export class UsuariosService {
       where: { id_usuario: id },
       data: {
         ...rest,
-        ...(password ? { password: await bcrypt.hash(password, SALT_ROUNDS) } : {}),
+        ...(password
+          ? { password: await bcrypt.hash(password, SALT_ROUNDS) }
+          : {}),
       },
       omit: { password: true },
     });
@@ -56,6 +58,9 @@ export class UsuariosService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.usuarios.delete({ where: { id_usuario: id }, omit: { password: true } });
+    return this.prisma.usuarios.delete({
+      where: { id_usuario: id },
+      omit: { password: true },
+    });
   }
 }

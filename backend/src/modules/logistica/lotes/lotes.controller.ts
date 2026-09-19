@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { LotesService } from './lotes.service.js';
 import { CreateLoteDto } from './dto/create-lote.dto.js';
 import { UpdateLoteDto } from './dto/update-lote.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Lotes')
 @Controller('lotes')
 export class LotesController {
   constructor(private readonly lotesService: LotesService) {}

@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CompraDetalleService } from './compra-detalle.service.js';
 import { CreateCompraDetalleDto } from './dto/create-compra-detalle.dto.js';
 import { UpdateCompraDetalleDto } from './dto/update-compra-detalle.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Compra - Detalle')
 @Controller('compras/:idCompra/detalle')
 export class CompraDetalleController {
   constructor(private readonly detalleService: CompraDetalleService) {}
@@ -13,7 +24,10 @@ export class CompraDetalleController {
   }
 
   @Post()
-  create(@Param('idCompra', ParseIntPipe) idCompra: number, @Body() dto: CreateCompraDetalleDto) {
+  create(
+    @Param('idCompra', ParseIntPipe) idCompra: number,
+    @Body() dto: CreateCompraDetalleDto,
+  ) {
     return this.detalleService.create(idCompra, dto);
   }
 

@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CotizacionDetalleService } from './cotizacion-detalle.service.js';
 import { CreateCotizacionDetalleDto } from './dto/create-cotizacion-detalle.dto.js';
 import { UpdateCotizacionDetalleDto } from './dto/update-cotizacion-detalle.dto.js';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Cotizacion - Detalle')
 @Controller('cotizaciones/:idCotizacion/detalle')
 export class CotizacionDetalleController {
   constructor(private readonly detalleService: CotizacionDetalleService) {}

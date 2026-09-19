@@ -16,7 +16,9 @@ export class DireccionesService {
   }
 
   async findOne(id: number) {
-    const direccion = await this.prisma.direcciones.findUnique({ where: { id_direccion: id } });
+    const direccion = await this.prisma.direcciones.findUnique({
+      where: { id_direccion: id },
+    });
     if (!direccion) {
       throw new NotFoundException(`Dirección ${id} no encontrada`);
     }
@@ -25,7 +27,10 @@ export class DireccionesService {
 
   async update(id: number, dto: UpdateDireccionDto) {
     await this.findOne(id);
-    return this.prisma.direcciones.update({ where: { id_direccion: id }, data: dto });
+    return this.prisma.direcciones.update({
+      where: { id_direccion: id },
+      data: dto,
+    });
   }
 
   async remove(id: number) {

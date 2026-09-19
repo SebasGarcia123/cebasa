@@ -1,0 +1,36 @@
+// Design tokens de Celulosa Baradero SA.
+// Espejo en TypeScript: src/theme/brand-preset.ts (paleta primaria de PrimeNG).
+// Cambiar un color de marca implica tocar los dos archivos.
+
+:root {
+  // Marca
+  --color-primary: #85b81b;
+  --color-primary-text: #171717; // texto oscuro: blanco falla WCAG AA sobre este verde (2.4:1)
+  --color-secondary: #ae1d84;
+  --color-secondary-text: #ffffff; // 6.3:1, pasa WCAG AA
+
+  // Semánticos (independientes de la marca, para no generar ambigüedad con botones/acciones)
+  --color-success: #2e7d32;
+  --color-warning: #ed6c02;
+  --color-danger: #d32f2f;
+  --color-info: #0288d1;
+
+  // Neutros - claro
+  --color-background: #f2f2f4;
+  --color-surface: #ffffff;
+  --color-border: #e0e0e3;
+  --color-text: #171717;
+  --color-text-muted: #5f6368;
+
+  // Tipografía
+  --font-family-display: 'Poppins', sans-serif; // títulos, nav, botones
+  --font-family-body: 'Inter', sans-serif; // texto de tablas, formularios, contenido
+}
+
+[data-theme='dark'] {
+  --color-background: #17181b;
+  --color-surface: #202226;
+  --color-border: #33353a;
+  --color-text: #f2f2f4;
+  --color-text-muted: #a0a4ab;
+}

@@ -1,0 +1,104 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Clientes</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="clientes()" [loading]="loading()" dataKey="id_cliente" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Dirección</th>
+        <th scope="col">Email</th>
+        <th scope="col">Teléfono</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-cliente>
+      <tr>
+        <td>{{ cliente.nombre_cli }}</td>
+        <td>{{ cliente.direcciones ? direccionLabel(cliente.direcciones) : '—' }}</td>
+        <td>{{ cliente.email_cli || '—' }}</td>
+        <td>{{ cliente.telefono_cli || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(cliente)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(cliente)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay clientes cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '440px' }"
+    [header]="editingId() ? 'Editar cliente' : 'Nuevo cliente'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_cli">Nombre</label>
+        <input id="nombre_cli" type="text" pInputText formControlName="nombre_cli" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_direccion">Dirección</label>
+        <p-select
+          inputId="id_direccion"
+          formControlName="id_direccion"
+          [options]="direcciones()"
+          optionLabel="calle"
+          optionValue="id_direccion"
+          [filter]="true"
+          filterBy="calle,localidad"
+          placeholder="Seleccionar dirección"
+        >
+          <ng-template #selectedItem let-direccion>
+            {{ direccionLabel(direccion) }}
+          </ng-template>
+          <ng-template #item let-direccion>
+            {{ direccionLabel(direccion) }}
+          </ng-template>
+        </p-select>
+      </div>
+
+      <div class="page__field">
+        <label for="email_cli">Email</label>
+        <input id="email_cli" type="email" pInputText formControlName="email_cli" />
+      </div>
+
+      <div class="page__field">
+        <label for="telefono_cli">Teléfono</label>
+        <input id="telefono_cli" type="text" pInputText formControlName="telefono_cli" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

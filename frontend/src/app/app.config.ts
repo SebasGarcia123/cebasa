@@ -3,9 +3,12 @@ import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { routes } from './app.routes';
 import { BrandPreset } from '../theme/brand-preset';
+import { csrfInterceptor } from './core/auth/csrf.interceptor';
+import { refreshInterceptor } from './core/auth/refresh.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,6 +24,8 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
-    provideHttpClient(withInterceptors([])),
+    provideHttpClient(withInterceptors([csrfInterceptor, refreshInterceptor])),
+    ConfirmationService,
+    MessageService,
   ],
 };

@@ -1,19 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ButtonModule],
+  imports: [RouterOutlet, ToastModule, ConfirmDialogModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  protected readonly title = signal('Cebasa');
-  protected readonly darkMode = signal(false);
-
-  toggleDarkMode(): void {
-    this.darkMode.update((value) => !value);
-    document.documentElement.dataset['theme'] = this.darkMode() ? 'dark' : 'light';
-  }
-}
+export class App {}

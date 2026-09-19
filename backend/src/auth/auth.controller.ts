@@ -103,7 +103,14 @@ export class AuthController {
 
   @Get('me')
   me(@CurrentUser() user: JwtPayload) {
-    return user;
+    return {
+      user: {
+        id_usuario: user.sub,
+        nombre_usuario: user.nombre_usuario,
+        roles: user.roles,
+        permisos: user.permisos,
+      },
+    };
   }
 
   @Get('permisos-disponibles')

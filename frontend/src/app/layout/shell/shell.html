@@ -1,0 +1,47 @@
+<div class="shell">
+  <aside class="shell__sidebar">
+    <div class="shell__brand">Cebasa</div>
+
+    <nav class="shell__nav">
+      @for (group of navGroups; track group.label) {
+        <div class="shell__nav-group">
+          <span class="shell__nav-group-label">{{ group.label }}</span>
+          @for (item of group.items; track item.route) {
+            <a
+              class="shell__nav-item"
+              [routerLink]="item.route"
+              routerLinkActive="shell__nav-item--active"
+            >
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </div>
+      }
+    </nav>
+  </aside>
+
+  <div class="shell__main">
+    <header class="shell__topbar">
+      <span class="shell__user">{{ user()?.nombre_usuario }}</span>
+      <p-button
+        [icon]="darkMode() ? 'pi pi-sun' : 'pi pi-moon'"
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        (onClick)="toggleDarkMode()"
+      />
+      <p-button
+        icon="pi pi-sign-out"
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        (onClick)="logout()"
+      />
+    </header>
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

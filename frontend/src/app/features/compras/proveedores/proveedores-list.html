@@ -1,0 +1,106 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Proveedores</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="proveedores()" [loading]="loading()" dataKey="id_proveedor" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Contacto</th>
+        <th scope="col">Teléfono</th>
+        <th scope="col">Email</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-proveedor>
+      <tr>
+        <td>{{ proveedor.nombre_proveedor }}</td>
+        <td>{{ proveedor.nombre_contacto || '—' }}</td>
+        <td>{{ proveedor.telefono || '—' }}</td>
+        <td>{{ proveedor.email || '—' }}</td>
+        <td>{{ proveedor.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(proveedor)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(proveedor)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6">No hay proveedores cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '440px' }"
+    [header]="editingId() ? 'Editar proveedor' : 'Nuevo proveedor'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_proveedor">Nombre</label>
+        <input id="nombre_proveedor" type="text" pInputText formControlName="nombre_proveedor" />
+      </div>
+
+      <div class="page__field">
+        <label for="nombre_contacto">Nombre de contacto</label>
+        <input id="nombre_contacto" type="text" pInputText formControlName="nombre_contacto" />
+      </div>
+
+      <div class="page__field">
+        <label for="telefono">Teléfono</label>
+        <input id="telefono" type="text" pInputText formControlName="telefono" />
+      </div>
+
+      <div class="page__field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" />
+      </div>
+
+      <div class="page__field">
+        <label for="direccion">Dirección</label>
+        <input id="direccion" type="text" pInputText formControlName="direccion" />
+      </div>
+
+      <div class="page__field">
+        <label for="cbu">CBU</label>
+        <input id="cbu" type="text" pInputText formControlName="cbu" />
+      </div>
+
+      <div class="page__field">
+        <label for="alias">Alias</label>
+        <input id="alias" type="text" pInputText formControlName="alias" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

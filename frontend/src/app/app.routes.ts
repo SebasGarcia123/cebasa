@@ -28,6 +28,11 @@ export const routes: Routes = [
           import('./features/catalogos/sectores/sectores-list').then((m) => m.SectoresList),
       },
       {
+        path: 'catalogos/unidad-medida',
+        loadComponent: () =>
+          import('./features/catalogos/unidad-medida/unidad-medida-list').then((m) => m.UnidadMedidaList),
+      },
+      {
         path: 'comercial/clientes',
         loadComponent: () =>
           import('./features/comercial/clientes/clientes-list').then((m) => m.ClientesList),
@@ -58,6 +63,29 @@ export const routes: Routes = [
           import('./features/comercial/tipo-documento/tipo-documento-list').then(
             (m) => m.TipoDocumentoList,
           ),
+      },
+      {
+        path: 'compras/proveedores',
+        loadComponent: () =>
+          import('./features/compras/proveedores/proveedores-list').then((m) => m.ProveedoresList),
+      },
+      {
+        path: 'compras/insumos',
+        loadComponent: () => import('./features/compras/insumos/insumos-list').then((m) => m.InsumosList),
+      },
+      {
+        path: 'compras/requerimientos',
+        loadComponent: () =>
+          import('./features/compras/requerimientos/requerimientos-list').then((m) => m.RequerimientosList),
+      },
+      {
+        path: 'compras/cotizaciones',
+        loadComponent: () =>
+          import('./features/compras/cotizaciones/cotizaciones-list').then((m) => m.CotizacionesList),
+      },
+      {
+        path: 'compras/compras',
+        loadComponent: () => import('./features/compras/compras/compras-list').then((m) => m.ComprasList),
       },
       {
         path: 'usuarios/usuarios',

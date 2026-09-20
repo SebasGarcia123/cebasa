@@ -1,0 +1,108 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Insumos</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="insumos()" [loading]="loading()" dataKey="id_insumo" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Código</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Unidad</th>
+        <th scope="col">Stock actual</th>
+        <th scope="col">Stock mínimo</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-insumo>
+      <tr>
+        <td>{{ insumo.codigo_insumo }}</td>
+        <td>{{ insumo.nombre_insumo }}</td>
+        <td>{{ insumo.unidad_medida?.nombre_unidad_medida || '—' }}</td>
+        <td [class.insumos__stock--bajo]="insumo.stock_actual < insumo.stock_minimo">
+          {{ insumo.stock_actual }}
+        </td>
+        <td>{{ insumo.stock_minimo }}</td>
+        <td>{{ insumo.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(insumo)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(insumo)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">No hay insumos cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    [header]="editingId() ? 'Editar insumo' : 'Nuevo insumo'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="codigo_insumo">Código</label>
+        <input id="codigo_insumo" type="text" pInputText formControlName="codigo_insumo" />
+      </div>
+
+      <div class="page__field">
+        <label for="nombre_insumo">Nombre</label>
+        <input id="nombre_insumo" type="text" pInputText formControlName="nombre_insumo" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_unidad_medida">Unidad de medida</label>
+        <p-select
+          inputId="id_unidad_medida"
+          formControlName="id_unidad_medida"
+          [options]="unidadesMedida()"
+          optionLabel="nombre_unidad_medida"
+          optionValue="id_unidad_medida"
+          placeholder="Seleccionar unidad"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="stock_actual">Stock actual</label>
+        <p-inputNumber inputId="stock_actual" formControlName="stock_actual" [min]="0" />
+      </div>
+
+      <div class="page__field">
+        <label for="stock_minimo">Stock mínimo</label>
+        <p-inputNumber inputId="stock_minimo" formControlName="stock_minimo" [min]="0" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

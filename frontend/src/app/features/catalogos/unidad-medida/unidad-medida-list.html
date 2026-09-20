@@ -1,0 +1,56 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Unidades de Medida</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="unidades()" [loading]="loading()" dataKey="id_unidad_medida" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col" style="width: 5rem">ID</th>
+        <th scope="col">Nombre</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-unidad>
+      <tr>
+        <td>{{ unidad.id_unidad_medida }}</td>
+        <td>{{ unidad.nombre_unidad_medida }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(unidad)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(unidad)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="3">No hay unidades de medida cargadas todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar unidad de medida' : 'Nueva unidad de medida'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_unidad_medida">Nombre</label>
+        <input id="nombre_unidad_medida" type="text" pInputText formControlName="nombre_unidad_medida" />
+      </div>
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

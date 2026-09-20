@@ -20,6 +20,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Estados', icon: 'pi pi-flag', route: '/catalogos/estados' },
       { label: 'Sectores', icon: 'pi pi-sitemap', route: '/catalogos/sectores' },
+      { label: 'Unidad de Medida', icon: 'pi pi-arrows-h', route: '/catalogos/unidad-medida' },
     ],
   },
   {
@@ -31,6 +32,16 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Reclamos', icon: 'pi pi-exclamation-circle', route: '/comercial/reclamos' },
       { label: 'Tipo de Impacto', icon: 'pi pi-bolt', route: '/comercial/tipo-impacto' },
       { label: 'Tipo de Documento', icon: 'pi pi-file', route: '/comercial/tipo-documento' },
+    ],
+  },
+  {
+    label: 'Compras',
+    items: [
+      { label: 'Proveedores', icon: 'pi pi-truck', route: '/compras/proveedores' },
+      { label: 'Insumos', icon: 'pi pi-inbox', route: '/compras/insumos' },
+      { label: 'Requerimientos', icon: 'pi pi-file-edit', route: '/compras/requerimientos' },
+      { label: 'Cotizaciones', icon: 'pi pi-percentage', route: '/compras/cotizaciones' },
+      { label: 'Compras', icon: 'pi pi-shopping-bag', route: '/compras/compras' },
     ],
   },
   {

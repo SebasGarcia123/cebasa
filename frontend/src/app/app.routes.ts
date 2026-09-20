@@ -159,6 +159,20 @@ export const routes: Routes = [
         loadComponent: () => import('./features/logistica/lotes/lotes-list').then((m) => m.LotesList),
       },
       {
+        path: 'pedido-insumos/pedido-insumos',
+        loadComponent: () =>
+          import('./features/pedido-insumos/pedido-insumos/pedido-insumos-list').then(
+            (m) => m.PedidoInsumosList,
+          ),
+      },
+      {
+        path: 'pedido-insumos/plan-produccion',
+        loadComponent: () =>
+          import('./features/pedido-insumos/plan-produccion/plan-produccion-list').then(
+            (m) => m.PlanProduccionList,
+          ),
+      },
+      {
         path: 'usuarios/usuarios',
         loadComponent: () =>
           import('./features/usuarios/usuarios/usuarios-list').then((m) => m.UsuariosList),

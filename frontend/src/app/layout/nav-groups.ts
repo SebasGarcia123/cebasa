@@ -69,6 +69,13 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: 'Pedido de Insumos',
+    items: [
+      { label: 'Pedido de Insumos', icon: 'pi pi-inbox', route: '/pedido-insumos/pedido-insumos' },
+      { label: 'Plan de Producción', icon: 'pi pi-calendar', route: '/pedido-insumos/plan-produccion' },
+    ],
+  },
+  {
     label: 'Usuarios',
     items: [
       { label: 'Usuarios', icon: 'pi pi-user', route: '/usuarios/usuarios' },

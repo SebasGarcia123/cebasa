@@ -50,6 +50,7 @@
       <div class="page__field">
         <label for="password">{{ editingId() ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
         <p-password inputId="password" formControlName="password" [feedback]="false" [toggleMask]="true" />
+        <small class="usuarios__hint">Mínimo 8 caracteres.</small>
       </div>
 
       <div class="page__field">
@@ -70,18 +71,20 @@
         />
       </div>
 
-      <div class="page__field">
-        <label for="id_estado">Estado</label>
-        <p-select
-          inputId="id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
-          [appendTo]="'body'"
-        />
-      </div>
+      @if (editingId()) {
+        <div class="page__field">
+          <label for="id_estado">Estado</label>
+          <p-select
+            inputId="id_estado"
+            formControlName="id_estado"
+            [options]="estadosUsuario()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
 
       <div class="page__form-actions">
         <p-button

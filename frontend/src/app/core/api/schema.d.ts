@@ -1996,9 +1996,10 @@ export interface components {
             /** Format: email */
             email?: string;
             id_sector: number;
-            id_estado: number;
         };
-        UpdateUsuarioDto: Record<string, never>;
+        UpdateUsuarioDto: {
+            id_estado?: number;
+        };
         CreateTipoImpactoDto: {
             descripcion: string;
         };

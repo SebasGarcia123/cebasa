@@ -8,6 +8,8 @@ import {
   MinLength,
 } from 'class-validator';
 
+// No incluye id_estado: un usuario nuevo siempre arranca "Activo", lo
+// asigna el sistema (ver UsuariosService.create).
 export class CreateUsuarioDto {
   @IsString()
   @IsNotEmpty()
@@ -29,7 +31,4 @@ export class CreateUsuarioDto {
 
   @IsInt()
   id_sector: number;
-
-  @IsInt()
-  id_estado: number;
 }

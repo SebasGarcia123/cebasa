@@ -1,19 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateUsuarioDto } from './dto/create-usuario.dto.js';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto.js';
 
 const SALT_ROUNDS = 10;
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Cancelado']);
 
 @Injectable()
 export class UsuariosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
   async create(dto: CreateUsuarioDto) {
     const password = await bcrypt.hash(dto.password, SALT_ROUNDS);
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.usuarios.create({
-      data: { ...dto, password },
+      data: { ...dto, password, id_estado: idEstadoActivo },
       omit: { password: true },
     });
   }
@@ -43,6 +50,16 @@ export class UsuariosService {
 
   async update(id: number, dto: UpdateUsuarioDto) {
     await this.findOne(id);
+
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un usuario solo puede estar Activo o Cancelado');
+      }
+    }
+
     const { password, ...rest } = dto;
     return this.prisma.usuarios.update({
       where: { id_usuario: id },

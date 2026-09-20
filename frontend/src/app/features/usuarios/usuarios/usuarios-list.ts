@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin, map } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -18,6 +18,8 @@ import { Usuario } from '../../../core/models/usuario.model';
 import { Sector } from '../../../core/models/sector.model';
 import { Estado } from '../../../core/models/estado.model';
 import { AssignmentDialog, AssignableItem } from '../../../shared/assignment-dialog/assignment-dialog';
+
+const ESTADOS_USUARIO = new Set(['Activo', 'Cancelado']);
 
 @Component({
   selector: 'app-usuarios-list',
@@ -53,12 +55,17 @@ export class UsuariosList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo" (ver
+  // save()). El selector de estado solo se muestra al editar, y
+  // restringido a Activo/Cancelado (no el resto del catálogo genérico).
+  protected readonly estadosUsuario = computed(() => this.estados().filter((e) => ESTADOS_USUARIO.has(e.nombreEstado)));
+
   protected readonly form = this.fb.nonNullable.group({
     nombre_usuario: ['', Validators.required],
     password: [''],
     email: ['', Validators.email],
     id_sector: [null as number | null, Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   protected readonly rolesDialogVisible = signal(false);
@@ -142,7 +149,6 @@ export class UsuariosList implements OnInit {
           nombre_usuario: raw.nombre_usuario,
           password: raw.password,
           id_sector: raw.id_sector!,
-          id_estado: raw.id_estado!,
           ...(raw.email ? { email: raw.email } : {}),
         });
 

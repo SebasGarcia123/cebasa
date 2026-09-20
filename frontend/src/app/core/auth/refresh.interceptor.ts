@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
+import { attachCsrfHeader } from './csrf.interceptor';
 
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/refresh', '/auth/logout'];
 
@@ -27,7 +28,10 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       return authService.refresh().pipe(
-        switchMap(() => next(req)),
+        // El refresh rota la cookie csrf_token en el servidor; el header
+        // que `req` trae (armado antes de este 401) quedó viejo, así que
+        // hay que releerla recién ahora o el reintento se cae con 403.
+        switchMap(() => next(attachCsrfHeader(req))),
         catchError((refreshError) => {
           authService.clearSession();
           void router.navigate(['/login']);

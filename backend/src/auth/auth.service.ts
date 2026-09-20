@@ -32,6 +32,13 @@ export class AuthService {
   private async loadUsuarioConRolesYPermisos(nombreUsuario: string) {
     return this.prisma.usuarios.findUnique({
       where: { nombre_usuario: nombreUsuario },
+      // PrismaService omite `password` globalmente para que nunca se
+      // filtre por un include descuidado (pedidos, reclamos, etc.). Acá
+      // se necesita de verdad para comparar contra bcrypt en login(), así
+      // que se pide explícitamente — nunca sale de este service: el
+      // objeto `usuario` no se devuelve entero, solo se usan campos
+      // puntuales (id_usuario, nombre_usuario, roles, permisos).
+      omit: { password: false },
       include: {
         estados: true,
         usuario_roles: {

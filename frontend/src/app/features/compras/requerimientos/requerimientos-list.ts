@@ -13,12 +13,17 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { RequerimientosApiService } from '../../../core/api/requerimientos-api.service';
 import { RequerimientoDetalleApiService } from '../../../core/api/requerimiento-detalle-api.service';
-import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { InsumosApiService } from '../../../core/api/insumos-api.service';
 import { Requerimiento } from '../../../core/models/requerimiento.model';
 import { RequerimientoDetalle } from '../../../core/models/requerimiento-detalle.model';
-import { Estado } from '../../../core/models/estado.model';
 import { Insumo } from '../../../core/models/insumo.model';
+
+interface ItemNuevo {
+  id_insumo: number;
+  codigo_insumo: string;
+  nombre_insumo: string;
+  cantidad: number;
+}
 
 @Component({
   selector: 'app-requerimientos-list',
@@ -40,42 +45,14 @@ import { Insumo } from '../../../core/models/insumo.model';
 export class RequerimientosList implements OnInit {
   private readonly api = inject(RequerimientosApiService);
   private readonly detalleApi = inject(RequerimientoDetalleApiService);
-  private readonly estadosApi = inject(EstadosApiService);
   private readonly insumosApi = inject(InsumosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
   protected readonly requerimientos = signal<Requerimiento[]>([]);
-  protected readonly estados = signal<Estado[]>([]);
   protected readonly insumos = signal<Insumo[]>([]);
   protected readonly loading = signal(false);
-  protected readonly saving = signal(false);
-  protected readonly dialogVisible = signal(false);
-  protected readonly editingId = signal<number | null>(null);
-
-  // id_usuario: quien solicita. Por ahora se fija a 1 (usuario de prueba);
-  // cuando haya un selector de "usuario actual" real, se reemplaza por el
-  // id de la sesión.
-  protected readonly form = this.fb.nonNullable.group({
-    fecha_carga: [null as Date | null, Validators.required],
-    fecha_necesidad: [null as Date | null, Validators.required],
-    observaciones: [''],
-    id_estado: [null as number | null, Validators.required],
-  });
-
-  // Diálogo de detalle (líneas de insumos requeridos)
-  protected readonly detalleDialogVisible = signal(false);
-  protected readonly detalleLoading = signal(false);
-  protected readonly detalleSaving = signal(false);
-  protected readonly detalle = signal<RequerimientoDetalle[]>([]);
-  protected readonly editingDetalleId = signal<number | null>(null);
-  private requerimientoActivo: Requerimiento | null = null;
-
-  protected readonly detalleForm = this.fb.nonNullable.group({
-    id_insumo: [null as number | null, Validators.required],
-    cantidad: [null as number | null, [Validators.required, Validators.min(0.01)]],
-  });
 
   ngOnInit(): void {
     this.load();
@@ -85,12 +62,10 @@ export class RequerimientosList implements OnInit {
     this.loading.set(true);
     forkJoin({
       requerimientos: this.api.list(),
-      estados: this.estadosApi.list(),
       insumos: this.insumosApi.list(),
     }).subscribe({
-      next: ({ requerimientos, estados, insumos }) => {
+      next: ({ requerimientos, insumos }) => {
         this.requerimientos.set(requerimientos);
-        this.estados.set(estados);
         this.insumos.set(insumos);
         this.loading.set(false);
       },
@@ -101,56 +76,163 @@ export class RequerimientosList implements OnInit {
     });
   }
 
+  // ---- Nuevo requerimiento: formulario grande, se arma la lista de
+  // insumos en memoria y recién se manda todo junto al presionar Guardar.
+  // La fecha de carga y el estado los pone el sistema (no se piden acá).
+  protected readonly createDialogVisible = signal(false);
+  protected readonly creating = signal(false);
+  protected readonly nuevosItems = signal<ItemNuevo[]>([]);
+
+  protected readonly createForm = this.fb.nonNullable.group({
+    fecha_necesidad: [null as Date | null, Validators.required],
+    observaciones: [''],
+  });
+
+  protected readonly itemForm = this.fb.nonNullable.group({
+    id_insumo: [null as number | null, Validators.required],
+    cantidad: [null as number | null, [Validators.required, Validators.min(0.01)]],
+  });
+
   openCreate(): void {
-    this.editingId.set(null);
-    this.form.reset();
-    this.dialogVisible.set(true);
+    this.createForm.reset();
+    this.itemForm.reset();
+    this.nuevosItems.set([]);
+    this.createDialogVisible.set(true);
   }
+
+  closeCreateDialog(): void {
+    this.createDialogVisible.set(false);
+  }
+
+  agregarItemNuevo(): void {
+    if (this.itemForm.invalid) {
+      return;
+    }
+    const raw = this.itemForm.getRawValue();
+    const insumo = this.insumos().find((i) => i.id_insumo === raw.id_insumo);
+    if (!insumo) {
+      return;
+    }
+    this.nuevosItems.update((items) => [
+      ...items,
+      { id_insumo: insumo.id_insumo, codigo_insumo: insumo.codigo_insumo, nombre_insumo: insumo.nombre_insumo, cantidad: raw.cantidad! },
+    ]);
+    this.itemForm.reset();
+  }
+
+  quitarItemNuevo(index: number): void {
+    this.nuevosItems.update((items) => items.filter((_, i) => i !== index));
+  }
+
+  guardarRequerimiento(): void {
+    if (this.createForm.invalid || this.nuevosItems().length === 0 || this.creating()) {
+      if (this.nuevosItems().length === 0) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Faltan insumos',
+          detail: 'Agregá al menos un insumo a la lista antes de guardar',
+        });
+      }
+      return;
+    }
+
+    this.creating.set(true);
+    const raw = this.createForm.getRawValue();
+    this.api
+      .create({
+        fecha_necesidad: raw.fecha_necesidad!.toISOString().slice(0, 10),
+        id_usuario: 1,
+        ...(raw.observaciones ? { observaciones: raw.observaciones } : {}),
+      })
+      .subscribe({
+        next: (requerimiento) => {
+          forkJoin(
+            this.nuevosItems().map((item) =>
+              this.detalleApi.create(requerimiento.id_requerimiento, {
+                id_insumo: item.id_insumo,
+                cantidad: item.cantidad,
+              }),
+            ),
+          ).subscribe({
+            next: () => {
+              this.creating.set(false);
+              this.createDialogVisible.set(false);
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Enviado a compras',
+                detail: 'El requerimiento se guardó correctamente',
+              });
+              this.load();
+            },
+            error: () => {
+              this.creating.set(false);
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'El requerimiento se creó pero algunos insumos no se pudieron cargar. Completalos desde "Insumos".',
+              });
+              this.createDialogVisible.set(false);
+              this.load();
+            },
+          });
+        },
+        error: () => {
+          this.creating.set(false);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear el requerimiento' });
+        },
+      });
+  }
+
+  // ---- Editar campos básicos de un requerimiento ya cargado (fecha de
+  // necesidad y observaciones). El estado y la fecha de carga los maneja
+  // el sistema y no se editan acá.
+  protected readonly editDialogVisible = signal(false);
+  protected readonly saving = signal(false);
+  protected readonly editingId = signal<number | null>(null);
+
+  protected readonly editForm = this.fb.nonNullable.group({
+    fecha_necesidad: [null as Date | null, Validators.required],
+    observaciones: [''],
+  });
 
   openEdit(requerimiento: Requerimiento): void {
     this.editingId.set(requerimiento.id_requerimiento);
-    this.form.setValue({
-      fecha_carga: new Date(requerimiento.fecha_carga),
+    this.editForm.setValue({
       fecha_necesidad: new Date(requerimiento.fecha_necesidad),
       observaciones: requerimiento.observaciones ?? '',
-      id_estado: requerimiento.id_estado,
     });
-    this.dialogVisible.set(true);
+    this.editDialogVisible.set(true);
   }
 
-  closeDialog(): void {
-    this.dialogVisible.set(false);
+  closeEditDialog(): void {
+    this.editDialogVisible.set(false);
   }
 
-  save(): void {
-    if (this.form.invalid || this.saving()) {
+  saveEdit(): void {
+    const id = this.editingId();
+    if (this.editForm.invalid || this.saving() || !id) {
       return;
     }
 
     this.saving.set(true);
-    const raw = this.form.getRawValue();
-    const dto = {
-      fecha_carga: raw.fecha_carga!.toISOString().slice(0, 10),
-      fecha_necesidad: raw.fecha_necesidad!.toISOString().slice(0, 10),
-      id_estado: raw.id_estado!,
-      id_usuario: 1,
-      ...(raw.observaciones ? { observaciones: raw.observaciones } : {}),
-    };
-    const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
-
-    request$.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.dialogVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
-        this.load();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
-      },
-    });
+    const raw = this.editForm.getRawValue();
+    this.api
+      .update(id, {
+        fecha_necesidad: raw.fecha_necesidad!.toISOString().slice(0, 10),
+        ...(raw.observaciones ? { observaciones: raw.observaciones } : {}),
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.editDialogVisible.set(false);
+          this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
+          this.load();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
+        },
+      });
   }
 
   confirmDelete(requerimiento: Requerimiento): void {
@@ -179,6 +261,21 @@ export class RequerimientosList implements OnInit {
       },
     });
   }
+
+  // ---- Insumos de un requerimiento ya cargado: acá cada alta/baja se
+  // guarda al toque (a diferencia de la lista en memoria del alta nueva),
+  // porque el requerimiento ya existe.
+  protected readonly detalleDialogVisible = signal(false);
+  protected readonly detalleLoading = signal(false);
+  protected readonly detalleSaving = signal(false);
+  protected readonly detalle = signal<RequerimientoDetalle[]>([]);
+  protected readonly editingDetalleId = signal<number | null>(null);
+  private requerimientoActivo: Requerimiento | null = null;
+
+  protected readonly detalleForm = this.fb.nonNullable.group({
+    id_insumo: [null as number | null, Validators.required],
+    cantidad: [null as number | null, [Validators.required, Validators.min(0.01)]],
+  });
 
   openDetalle(requerimiento: Requerimiento): void {
     this.requerimientoActivo = requerimiento;

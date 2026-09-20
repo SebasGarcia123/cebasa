@@ -2190,10 +2190,8 @@ export interface components {
         UpdateArchivoAdjuntoDto: Record<string, never>;
         CreateRequerimientoDto: {
             id_usuario: number;
-            fecha_carga: string;
             fecha_necesidad: string;
             observaciones?: string;
-            id_estado: number;
         };
         UpdateRequerimientoDto: Record<string, never>;
         CreateRequerimientoDetalleDto: {

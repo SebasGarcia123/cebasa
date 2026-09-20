@@ -3,3 +3,38 @@
   padding-top: 1rem;
   border-top: 1px solid var(--color-border);
 }
+
+.requerimientos__create-form {
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .page__field {
+    flex: 1 1 240px;
+  }
+}
+
+.requerimientos__seccion-title {
+  font-size: 1rem;
+  margin: 1.25rem 0 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.requerimientos__item-form {
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.requerimientos__item-field {
+  flex: 1 1 280px;
+}
+
+.requerimientos__cantidad-field {
+  flex: 0 1 140px;
+}
+
+.requerimientos__items-table {
+  margin-bottom: 1.25rem;
+}

@@ -1,18 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateRequerimientoDto } from './dto/create-requerimiento.dto.js';
 import { UpdateRequerimientoDto } from './dto/update-requerimiento.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+
 @Injectable()
 export class RequerimientoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
-  create(dto: CreateRequerimientoDto) {
+  async create(dto: CreateRequerimientoDto) {
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.requerimiento.create({
       data: {
         ...dto,
-        fecha_carga: new Date(dto.fecha_carga),
+        fecha_carga: new Date(),
         fecha_necesidad: new Date(dto.fecha_necesidad),
+        id_estado: idEstadoActivo,
       },
     });
   }
@@ -44,7 +52,6 @@ export class RequerimientoService {
       where: { id_requerimiento: id },
       data: {
         ...dto,
-        fecha_carga: dto.fecha_carga ? new Date(dto.fecha_carga) : undefined,
         fecha_necesidad: dto.fecha_necesidad
           ? new Date(dto.fecha_necesidad)
           : undefined,

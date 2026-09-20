@@ -4,6 +4,7 @@ import { APP_GUARD, DiscoveryModule } from '@nestjs/core';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { PermissionsCatalogService } from './permissions-catalog.service.js';
+import { TokenCleanupService } from './token-cleanup.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { CsrfGuard } from './guards/csrf.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
@@ -22,6 +23,7 @@ import { ACCESS_TOKEN_TTL_SECONDS } from './constants/auth.constants.js';
   providers: [
     AuthService,
     PermissionsCatalogService,
+    TokenCleanupService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: CsrfGuard },
     { provide: APP_GUARD, useClass: RolesGuard },

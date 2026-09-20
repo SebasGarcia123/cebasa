@@ -12,27 +12,32 @@ import { AutoelevadoresService } from './autoelevadores.service.js';
 import { CreateAutoelevadorDto } from './dto/create-autoelevador.dto.js';
 import { UpdateAutoelevadorDto } from './dto/update-autoelevador.dto.js';
 import { ApiTags } from '@nestjs/swagger';
+import { RequirePermissions } from '../../../auth/decorators/permissions.decorator.js';
 
 @ApiTags('Autoelevadores')
 @Controller('autoelevadores')
 export class AutoelevadoresController {
   constructor(private readonly autoelevadoresService: AutoelevadoresService) {}
 
+  @RequirePermissions('logistica.editar')
   @Post()
   create(@Body() dto: CreateAutoelevadorDto) {
     return this.autoelevadoresService.create(dto);
   }
 
+  @RequirePermissions('logistica.ver')
   @Get()
   findAll() {
     return this.autoelevadoresService.findAll();
   }
 
+  @RequirePermissions('logistica.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.autoelevadoresService.findOne(id);
   }
 
+  @RequirePermissions('logistica.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -41,6 +46,7 @@ export class AutoelevadoresController {
     return this.autoelevadoresService.update(id, dto);
   }
 
+  @RequirePermissions('logistica.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.autoelevadoresService.remove(id);

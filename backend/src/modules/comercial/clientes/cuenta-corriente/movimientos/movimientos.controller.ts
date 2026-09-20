@@ -12,6 +12,7 @@ import { MovimientosCuentaCorrienteService } from './movimientos.service.js';
 import { CreateMovimientoCuentaCorrienteDto } from './dto/create-movimiento.dto.js';
 import { UpdateMovimientoCuentaCorrienteDto } from './dto/update-movimiento.dto.js';
 import { ApiTags } from '@nestjs/swagger';
+import { RequirePermissions } from '../../../../../auth/decorators/permissions.decorator.js';
 
 @ApiTags('Clientes - Cuenta Corriente - Movimientos')
 @Controller('clientes/:idCliente/cuenta-corriente/movimientos')
@@ -20,11 +21,13 @@ export class MovimientosCuentaCorrienteController {
     private readonly movimientosService: MovimientosCuentaCorrienteService,
   ) {}
 
+  @RequirePermissions('comercial.ver')
   @Get()
   findAll(@Param('idCliente', ParseIntPipe) idCliente: number) {
     return this.movimientosService.findAll(idCliente);
   }
 
+  @RequirePermissions('comercial.editar')
   @Post()
   create(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -33,6 +36,7 @@ export class MovimientosCuentaCorrienteController {
     return this.movimientosService.create(idCliente, dto);
   }
 
+  @RequirePermissions('comercial.ver')
   @Get(':idMovimiento')
   findOne(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -41,6 +45,7 @@ export class MovimientosCuentaCorrienteController {
     return this.movimientosService.findOne(idCliente, idMovimiento);
   }
 
+  @RequirePermissions('comercial.editar')
   @Patch(':idMovimiento')
   update(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -50,6 +55,7 @@ export class MovimientosCuentaCorrienteController {
     return this.movimientosService.update(idCliente, idMovimiento, dto);
   }
 
+  @RequirePermissions('comercial.editar')
   @Delete(':idMovimiento')
   remove(
     @Param('idCliente', ParseIntPipe) idCliente: number,

@@ -1524,6 +1524,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/archivos-adjuntos/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ArchivoAdjuntoController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/archivos-adjuntos/{id}": {
         parameters: {
             query?: never;
@@ -1538,6 +1554,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["ArchivoAdjuntoController_update"];
+        trace?: never;
+    };
+    "/archivos-adjuntos/{id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ArchivoAdjuntoController_getFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/requerimientos": {
@@ -1916,9 +1948,10 @@ export interface components {
             telefono_cli?: string;
             /** Format: email */
             email_cli?: string;
-            id_estado: number;
         };
-        UpdateClienteDto: Record<string, never>;
+        UpdateClienteDto: {
+            id_estado?: number;
+        };
         CreateCuentaCorrienteDto: {
             limite_credito?: number;
         };
@@ -6769,6 +6802,23 @@ export interface operations {
             };
         };
     };
+    ArchivoAdjuntoController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ArchivoAdjuntoController_findOne: {
         parameters: {
             query?: never;
@@ -6821,6 +6871,25 @@ export interface operations {
                 "application/json": components["schemas"]["UpdateArchivoAdjuntoDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArchivoAdjuntoController_getFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

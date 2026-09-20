@@ -7,6 +7,8 @@ import {
   MaxLength,
 } from 'class-validator';
 
+// No incluye id_estado: un cliente nuevo siempre arranca "Activo", lo
+// asigna el sistema (ver ClientesService.create).
 export class CreateClienteDto {
   @IsString()
   @IsNotEmpty()
@@ -25,7 +27,4 @@ export class CreateClienteDto {
   @IsEmail()
   @MaxLength(150)
   email_cli?: string;
-
-  @IsInt()
-  id_estado: number;
 }

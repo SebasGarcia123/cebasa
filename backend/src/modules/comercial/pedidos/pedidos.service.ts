@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CreatePedidoDto } from './dto/create-pedido.dto.js';
 import { UpdatePedidoDto } from './dto/update-pedido.dto.js';
@@ -7,7 +7,19 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto.js';
 export class PedidosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: CreatePedidoDto) {
+  // Un cliente cancelado no puede recibir pedidos nuevos.
+  private async assertClienteActivo(idCliente: number): Promise<void> {
+    const cliente = await this.prisma.clientes.findUnique({
+      where: { id_cliente: idCliente },
+      include: { estados: true },
+    });
+    if (cliente?.estados.nombreEstado === 'Cancelado') {
+      throw new BadRequestException('No se pueden cargar pedidos a un cliente cancelado');
+    }
+  }
+
+  async create(dto: CreatePedidoDto) {
+    await this.assertClienteActivo(dto.id_cliente);
     return this.prisma.pedidos.create({
       data: {
         ...dto,
@@ -43,6 +55,9 @@ export class PedidosService {
 
   async update(id: number, dto: UpdatePedidoDto) {
     await this.findOne(id);
+    if (dto.id_cliente !== undefined) {
+      await this.assertClienteActivo(dto.id_cliente);
+    }
     return this.prisma.pedidos.update({
       where: { id_pedido: id },
       data: {

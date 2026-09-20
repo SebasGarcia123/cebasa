@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -52,6 +52,12 @@ export class PedidosList implements OnInit {
   protected readonly estados = signal<Estado[]>([]);
   protected readonly productos = signal<Producto[]>([]);
   protected readonly loading = signal(false);
+
+  // Un cliente cancelado no puede recibir pedidos nuevos (el backend lo
+  // rechaza igual, pero ni se lo ofrecemos en el selector).
+  protected readonly clientesActivos = computed(() =>
+    this.clientes().filter((c) => c.estados?.nombreEstado !== 'Cancelado'),
+  );
   protected readonly saving = signal(false);
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);

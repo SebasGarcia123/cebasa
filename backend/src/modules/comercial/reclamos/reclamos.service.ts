@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateReclamoDto } from './dto/create-reclamo.dto.js';
 import { ResolverReclamoDto } from './dto/resolver-reclamo.dto.js';
 import { RechazarReclamoDto } from './dto/rechazar-reclamo.dto.js';
@@ -10,24 +11,13 @@ const ESTADO_RECHAZADO = 'Rechazado';
 
 @Injectable()
 export class ReclamosService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  // Los estados "Activo"/"Resuelto"/"Rechazado" viven en el catálogo
-  // genérico `estados` (compartido por las 54 tablas). El sistema resuelve
-  // su id por nombre en vez de tenerlo hardcodeado, porque el id concreto
-  // depende de qué se sembró en cada base.
-  private async getEstadoId(nombre: string): Promise<number> {
-    const estado = await this.prisma.estados.findFirst({
-      where: { nombreEstado: nombre },
-    });
-    if (!estado) {
-      throw new BadRequestException(`No existe el estado "${nombre}" en el catálogo`);
-    }
-    return estado.id_estado;
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
   async create(dto: CreateReclamoDto) {
-    const idEstadoActivo = await this.getEstadoId(ESTADO_ACTIVO);
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.reclamos.create({
       data: { ...dto, id_estado: idEstadoActivo, fecha: new Date(dto.fecha) },
     });
@@ -59,7 +49,7 @@ export class ReclamosService {
   // Un reclamo no se edita ni se elimina: solo se resuelve o se rechaza.
   async resolver(id: number, dto: ResolverReclamoDto) {
     await this.findOne(id);
-    const idEstadoResuelto = await this.getEstadoId(ESTADO_RESUELTO);
+    const idEstadoResuelto = await this.estadosLookup.getId(ESTADO_RESUELTO);
     return this.prisma.reclamos.update({
       where: { id_reclamo: id },
       data: {
@@ -77,7 +67,7 @@ export class ReclamosService {
       if (!dto.id_sector_nuevo) {
         throw new BadRequestException('Debe indicar el sector al que se reasigna el reclamo');
       }
-      const idEstadoActivo = await this.getEstadoId(ESTADO_ACTIVO);
+      const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
       return this.prisma.reclamos.update({
         where: { id_reclamo: id },
         data: {
@@ -89,7 +79,7 @@ export class ReclamosService {
       });
     }
 
-    const idEstadoRechazado = await this.getEstadoId(ESTADO_RECHAZADO);
+    const idEstadoRechazado = await this.estadosLookup.getId(ESTADO_RECHAZADO);
     return this.prisma.reclamos.update({
       where: { id_reclamo: id },
       data: {

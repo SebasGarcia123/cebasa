@@ -3,7 +3,7 @@
     <div class="shell__brand">Cebasa</div>
 
     <nav class="shell__nav">
-      @for (group of navGroups; track group.label) {
+      @for (group of navGroups(); track group.label) {
         <div class="shell__nav-group">
           <span class="shell__nav-group-label">{{ group.label }}</span>
           @for (item of group.items; track item.route) {

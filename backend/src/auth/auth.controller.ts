@@ -109,6 +109,7 @@ export class AuthController {
         nombre_usuario: user.nombre_usuario,
         roles: user.roles,
         permisos: user.permisos,
+        es_administrador: user.es_administrador,
       },
     };
   }

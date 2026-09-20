@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../core/auth/auth.service';
@@ -18,7 +18,22 @@ export class Shell implements OnInit {
   private readonly router = inject(Router);
   private readonly reclamosApi = inject(ReclamosApiService);
 
-  protected readonly navGroups = NAV_GROUPS;
+  protected readonly navGroups = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user) {
+      return [];
+    }
+    if (user.es_administrador) {
+      return NAV_GROUPS;
+    }
+
+    const permisos = new Set(user.permisos);
+    return NAV_GROUPS.map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.permission || permisos.has(item.permission)),
+    })).filter((group) => group.items.length > 0);
+  });
+
   protected readonly reclamosRoute = RECLAMOS_ROUTE;
   protected readonly reclamosPendientes = this.reclamosApi.pendientesCount;
   protected readonly user = this.authService.currentUser;

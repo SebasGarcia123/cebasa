@@ -15,6 +15,7 @@ export interface AuthResult {
     nombre_usuario: string;
     roles: string[];
     permisos: string[];
+    es_administrador: boolean;
   };
 }
 
@@ -67,7 +68,10 @@ export class AuthService {
         ),
       ),
     ];
-    return { roles, permisos };
+    const esAdministrador = usuario.usuario_roles.some(
+      (ur) => ur.roles.es_administrador,
+    );
+    return { roles, permisos, esAdministrador };
   }
 
   private async issueTokens(
@@ -96,6 +100,7 @@ export class AuthService {
         nombre_usuario: payload.nombre_usuario,
         roles: payload.roles,
         permisos: payload.permisos,
+        es_administrador: payload.es_administrador,
       },
     };
   }
@@ -115,12 +120,13 @@ export class AuthService {
       throw new UnauthorizedException('El usuario no está activo');
     }
 
-    const { roles, permisos } = this.buildPayload(usuario);
+    const { roles, permisos, esAdministrador } = this.buildPayload(usuario);
     const payload: JwtPayload = {
       sub: usuario.id_usuario,
       nombre_usuario: usuario.nombre_usuario,
       roles,
       permisos,
+      es_administrador: esAdministrador,
     };
 
     return this.issueTokens(usuario.id_usuario, payload);
@@ -152,12 +158,13 @@ export class AuthService {
       throw new UnauthorizedException('El usuario no está activo');
     }
 
-    const { roles, permisos } = this.buildPayload(usuario);
+    const { roles, permisos, esAdministrador } = this.buildPayload(usuario);
     const payload: JwtPayload = {
       sub: usuario.id_usuario,
       nombre_usuario: usuario.nombre_usuario,
       roles,
       permisos,
+      es_administrador: esAdministrador,
     };
 
     return this.issueTokens(usuario.id_usuario, payload);

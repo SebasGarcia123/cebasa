@@ -5,6 +5,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { RolesApiService } from '../../../core/api/roles-api.service';
@@ -21,6 +22,7 @@ import { AssignmentDialog, AssignableItem } from '../../../shared/assignment-dia
     ButtonModule,
     DialogModule,
     InputTextModule,
+    CheckboxModule,
     TooltipModule,
     AssignmentDialog,
   ],
@@ -43,6 +45,7 @@ export class RolesList implements OnInit {
 
   protected readonly form = this.fb.nonNullable.group({
     nombre_rol: ['', Validators.required],
+    es_administrador: [false],
   });
 
   protected readonly permisosDialogVisible = signal(false);
@@ -81,7 +84,7 @@ export class RolesList implements OnInit {
 
   openEdit(rol: Rol): void {
     this.editingId.set(rol.id_rol);
-    this.form.setValue({ nombre_rol: rol.nombre_rol });
+    this.form.setValue({ nombre_rol: rol.nombre_rol, es_administrador: rol.es_administrador });
     this.dialogVisible.set(true);
   }
 

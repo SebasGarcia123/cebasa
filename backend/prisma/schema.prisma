@@ -620,10 +620,11 @@ model rol_permisos {
 }
 
 model roles {
-  id_rol        Int             @id @default(autoincrement())
-  nombre_rol    String          @db.VarChar(100)
-  rol_permisos  rol_permisos[]
-  usuario_roles usuario_roles[]
+  id_rol           Int             @id @default(autoincrement())
+  nombre_rol       String          @db.VarChar(100)
+  es_administrador Boolean         @default(false)
+  rol_permisos     rol_permisos[]
+  usuario_roles    usuario_roles[]
 }
 
 model sectores {

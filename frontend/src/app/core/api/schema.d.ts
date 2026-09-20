@@ -1984,6 +1984,7 @@ export interface components {
         UpdateDireccionDto: Record<string, never>;
         CreateRolDto: {
             nombre_rol: string;
+            es_administrador?: boolean;
         };
         UpdateRolDto: Record<string, never>;
         CreatePermisoDto: {

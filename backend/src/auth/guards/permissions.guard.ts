@@ -24,6 +24,10 @@ export class PermissionsGuard implements CanActivate {
     const user: JwtPayload | undefined = context
       .switchToHttp()
       .getRequest().user;
+    if (user?.es_administrador) {
+      return true;
+    }
+
     const hasPermission = requiredPermissions.every((permission) =>
       user?.permisos?.includes(permission),
     );

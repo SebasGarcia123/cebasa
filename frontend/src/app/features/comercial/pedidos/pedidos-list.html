@@ -1,0 +1,170 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Pedidos</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="pedidos()" [loading]="loading()" dataKey="id_pedido" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Cliente</th>
+        <th scope="col">Fecha de carga</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-pedido>
+      <tr>
+        <td>{{ pedido.id_pedido }}</td>
+        <td>{{ pedido.clientes?.nombre_cli || '—' }}</td>
+        <td>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ pedido.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(pedido)" pTooltip="Ítems" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(pedido)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay pedidos cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar pedido' : 'Nuevo pedido'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="id_cliente">Cliente</label>
+        <p-select
+          inputId="id_cliente"
+          formControlName="id_cliente"
+          [options]="clientes()"
+          optionLabel="nombre_cli"
+          optionValue="id_cliente"
+          [filter]="true"
+          filterBy="nombre_cli"
+          placeholder="Seleccionar cliente"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="fecha_carga">Fecha de carga</label>
+        <p-datepicker inputId="fecha_carga" formControlName="fecha_carga" dateFormat="dd/mm/yy" [showIcon]="true" />
+      </div>
+
+      <div class="page__field">
+        <label for="fecha_prometido">Fecha prometida (opcional)</label>
+        <p-datepicker
+          inputId="fecha_prometido"
+          formControlName="fecha_prometido"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="itemsDialogVisible()"
+    (visibleChange)="itemsDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    header="Ítems del pedido"
+  >
+    <p-table [value]="items()" [loading]="itemsLoading()" dataKey="id_item_pedido">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Producto</th>
+          <th scope="col">Cantidad</th>
+          <th scope="col" style="width: 6rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item>
+        <tr>
+          <td>{{ item.productos?.descripcion_producto || '—' }}</td>
+          <td>{{ item.cantidad_bolsones }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3">Todavía no hay ítems cargados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="page__form pedidos__item-form">
+      <div class="page__field">
+        <label for="item_producto">Producto</label>
+        <p-select
+          inputId="item_producto"
+          formControlName="id_producto"
+          [options]="productos()"
+          optionLabel="descripcion_producto"
+          optionValue="id_producto"
+          [filter]="true"
+          filterBy="descripcion_producto"
+          placeholder="Seleccionar producto"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="item_cantidad">Cantidad de bolsones</label>
+        <p-inputNumber inputId="item_cantidad" formControlName="cantidad_bolsones" [min]="1" />
+      </div>
+
+      <div class="page__form-actions">
+        @if (editingItemId()) {
+          <p-button
+            type="button"
+            label="Cancelar edición"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelItemEdit()"
+          />
+        }
+        <p-button
+          type="submit"
+          [label]="editingItemId() ? 'Guardar ítem' : 'Agregar ítem'"
+          [loading]="itemsSaving()"
+          [disabled]="itemForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

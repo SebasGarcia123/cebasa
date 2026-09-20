@@ -21,7 +21,14 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: 'Comercial',
-    items: [{ label: 'Clientes', icon: 'pi pi-users', route: '/comercial/clientes' }],
+    items: [
+      { label: 'Clientes', icon: 'pi pi-users', route: '/comercial/clientes' },
+      { label: 'Productos', icon: 'pi pi-box', route: '/comercial/productos' },
+      { label: 'Pedidos', icon: 'pi pi-shopping-cart', route: '/comercial/pedidos' },
+      { label: 'Reclamos', icon: 'pi pi-exclamation-circle', route: '/comercial/reclamos' },
+      { label: 'Tipo de Impacto', icon: 'pi pi-bolt', route: '/comercial/tipo-impacto' },
+      { label: 'Tipo de Documento', icon: 'pi pi-file', route: '/comercial/tipo-documento' },
+    ],
   },
   {
     label: 'Usuarios',

@@ -21,6 +21,12 @@
         <td>{{ cliente.email_cli || '—' }}</td>
         <td>{{ cliente.telefono_cli || '—' }}</td>
         <td class="page__actions">
+          <p-button
+            icon="pi pi-wallet"
+            [text]="true"
+            (onClick)="openCuentaCorriente(cliente)"
+            pTooltip="Cuenta corriente"
+          />
           <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(cliente)" />
           <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(cliente)" />
         </td>
@@ -100,5 +106,101 @@
         <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
       </div>
     </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="ctaCteDialogVisible()"
+    (visibleChange)="ctaCteDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    header="Cuenta corriente"
+  >
+    @if (ctaCteLoading()) {
+      <p>Cargando...</p>
+    } @else if (!cuentaCorriente()) {
+      <p>Este cliente todavía no tiene cuenta corriente.</p>
+      <p-button label="Crear cuenta corriente" (onClick)="crearCuentaCorriente()" [loading]="ctaCteSaving()" />
+    } @else {
+      <form [formGroup]="limiteForm" (ngSubmit)="guardarLimite()" class="page__form clientes__limite-form">
+        <div class="page__field">
+          <label for="limite_credito">Límite de crédito</label>
+          <p-inputNumber inputId="limite_credito" formControlName="limite_credito" mode="currency" currency="ARS" locale="es-AR" />
+        </div>
+        <p-button type="submit" label="Guardar límite" [loading]="ctaCteSaving()" [disabled]="limiteForm.invalid" />
+      </form>
+
+      <h3 class="clientes__movimientos-title">Movimientos</h3>
+      <p-table [value]="movimientos()" dataKey="id_movimiento_cta_cte">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Fecha</th>
+            <th scope="col">Tipo doc.</th>
+            <th scope="col">Monto</th>
+            <th scope="col">Saldo</th>
+            <th scope="col" style="width: 4rem"></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-mov>
+          <tr>
+            <td>{{ mov.fecha | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ mov.tipo_documento?.descripcion || '—' }}</td>
+            <td>{{ mov.monto | number: '1.2-2' }}</td>
+            <td>{{ mov.saldo_resultante | number: '1.2-2' }}</td>
+            <td class="page__actions">
+              <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="eliminarMovimiento(mov)" />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5">Todavía no hay movimientos.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <form
+        [formGroup]="movimientoForm"
+        (ngSubmit)="agregarMovimiento()"
+        class="page__form clientes__movimiento-form"
+      >
+        <div class="page__field">
+          <label for="mov_fecha">Fecha</label>
+          <p-datepicker inputId="mov_fecha" formControlName="fecha" dateFormat="dd/mm/yy" [showIcon]="true" />
+        </div>
+        <div class="page__field">
+          <label for="mov_tipo_documento">Tipo de documento</label>
+          <p-select
+            inputId="mov_tipo_documento"
+            formControlName="id_tipo_documento"
+            [options]="tiposDocumento()"
+            optionLabel="descripcion"
+            optionValue="id_tipo_documento"
+            placeholder="Seleccionar"
+          />
+        </div>
+        <div class="page__field">
+          <label for="mov_monto">Monto</label>
+          <p-inputNumber inputId="mov_monto" formControlName="monto" mode="currency" currency="ARS" locale="es-AR" />
+        </div>
+        <div class="page__field">
+          <label for="mov_saldo">Saldo resultante</label>
+          <p-inputNumber
+            inputId="mov_saldo"
+            formControlName="saldo_resultante"
+            mode="currency"
+            currency="ARS"
+            locale="es-AR"
+          />
+        </div>
+        <div class="page__form-actions">
+          <p-button
+            type="submit"
+            label="Agregar movimiento"
+            [loading]="ctaCteSaving()"
+            [disabled]="movimientoForm.invalid"
+          />
+        </div>
+      </form>
+    }
   </p-dialog>
 </div>

@@ -1,0 +1,16 @@
+.clientes__limite-form {
+  flex-direction: row;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.clientes__movimientos-title {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.clientes__movimiento-form {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}

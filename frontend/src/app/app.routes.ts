@@ -28,6 +28,33 @@ export const routes: Routes = [
           import('./features/comercial/clientes/clientes-list').then((m) => m.ClientesList),
       },
       {
+        path: 'comercial/productos',
+        loadComponent: () =>
+          import('./features/comercial/productos/productos-list').then((m) => m.ProductosList),
+      },
+      {
+        path: 'comercial/pedidos',
+        loadComponent: () =>
+          import('./features/comercial/pedidos/pedidos-list').then((m) => m.PedidosList),
+      },
+      {
+        path: 'comercial/reclamos',
+        loadComponent: () =>
+          import('./features/comercial/reclamos/reclamos-list').then((m) => m.ReclamosList),
+      },
+      {
+        path: 'comercial/tipo-impacto',
+        loadComponent: () =>
+          import('./features/comercial/tipo-impacto/tipo-impacto-list').then((m) => m.TipoImpactoList),
+      },
+      {
+        path: 'comercial/tipo-documento',
+        loadComponent: () =>
+          import('./features/comercial/tipo-documento/tipo-documento-list').then(
+            (m) => m.TipoDocumentoList,
+          ),
+      },
+      {
         path: 'usuarios/usuarios',
         loadComponent: () =>
           import('./features/usuarios/usuarios/usuarios-list').then((m) => m.UsuariosList),

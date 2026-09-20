@@ -23,6 +23,11 @@ export const routes: Routes = [
           import('./features/catalogos/estados/estados-list').then((m) => m.EstadosList),
       },
       {
+        path: 'catalogos/sectores',
+        loadComponent: () =>
+          import('./features/catalogos/sectores/sectores-list').then((m) => m.SectoresList),
+      },
+      {
         path: 'comercial/clientes',
         loadComponent: () =>
           import('./features/comercial/clientes/clientes-list').then((m) => m.ClientesList),

@@ -17,7 +17,10 @@ export interface NavGroup {
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Catálogos',
-    items: [{ label: 'Estados', icon: 'pi pi-flag', route: '/catalogos/estados' }],
+    items: [
+      { label: 'Estados', icon: 'pi pi-flag', route: '/catalogos/estados' },
+      { label: 'Sectores', icon: 'pi pi-sitemap', route: '/catalogos/sectores' },
+    ],
   },
   {
     label: 'Comercial',

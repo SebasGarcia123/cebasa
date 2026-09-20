@@ -1,0 +1,214 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Lotes</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="lotes()" [loading]="loading()" dataKey="id_lote" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Chofer</th>
+        <th scope="col">Camión</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-lote>
+      <tr>
+        <td>{{ lote.id_lote }}</td>
+        <td>{{ lote.fecha_lote | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ lote.chofer?.nombre_chofer || '—' }}</td>
+        <td>{{ lote.camion?.dominio_chasis || '—' }}</td>
+        <td>{{ lote.tipo_lote?.descripcion_lote || '—' }}</td>
+        <td>{{ lote.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(lote)" pTooltip="Ítems" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(lote)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">No hay lotes cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    [header]="editingId() ? 'Editar lote' : 'Nuevo lote'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="fecha_lote">Fecha</label>
+        <p-datepicker inputId="fecha_lote" formControlName="fecha_lote" dateFormat="dd/mm/yy" [showIcon]="true" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_chofer">Chofer</label>
+        <p-select
+          inputId="id_chofer"
+          formControlName="id_chofer"
+          [options]="choferes()"
+          optionLabel="nombre_chofer"
+          optionValue="id_chofer"
+          [filter]="true"
+          filterBy="nombre_chofer"
+          placeholder="Seleccionar chofer"
+          [appendTo]="'body'"
+        >
+          <ng-template #selectedItem let-chofer>{{ chofer.nombre_chofer }}</ng-template>
+          <ng-template #item let-chofer>{{ chofer.nombre_chofer }} — {{ chofer.transporteNombre }}</ng-template>
+        </p-select>
+      </div>
+
+      <div class="page__field">
+        <label for="id_camion">Camión</label>
+        <p-select
+          inputId="id_camion"
+          formControlName="id_camion"
+          [options]="camiones()"
+          optionLabel="dominio_chasis"
+          optionValue="id_camion"
+          [filter]="true"
+          filterBy="dominio_chasis"
+          placeholder="Seleccionar camión"
+          [appendTo]="'body'"
+        >
+          <ng-template #selectedItem let-camion>{{ camion.dominio_chasis }}</ng-template>
+          <ng-template #item let-camion>{{ camion.dominio_chasis }} — {{ camion.transporteNombre }}</ng-template>
+        </p-select>
+      </div>
+
+      <div class="page__field">
+        <label for="id_tipo_lote">Tipo de lote</label>
+        <p-select
+          inputId="id_tipo_lote"
+          formControlName="id_tipo_lote"
+          [options]="tiposLote()"
+          optionLabel="descripcion_lote"
+          optionValue="id_tipo_lote"
+          placeholder="Seleccionar tipo"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="observaciones">Observaciones</label>
+        <input id="observaciones" type="text" pInputText formControlName="observaciones" />
+      </div>
+
+      <div class="page__field">
+        <label for="motivo">Motivo</label>
+        <input id="motivo" type="text" pInputText formControlName="motivo" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="itemsDialogVisible()"
+    (visibleChange)="itemsDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    header="Ítems del lote"
+  >
+    <p-table [value]="items()" [loading]="itemsLoading()" dataKey="id_item_lote">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Descripción</th>
+          <th scope="col">Unidad</th>
+          <th scope="col">Cantidad</th>
+          <th scope="col" style="width: 6rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item>
+        <tr>
+          <td>{{ item.descripcion_item }}</td>
+          <td>{{ item.unidad_medida?.nombre_unidad_medida || '—' }}</td>
+          <td>{{ item.cantidad_item_lote }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">Todavía no hay ítems cargados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="page__form lotes__item-form">
+      <div class="page__field">
+        <label for="descripcion_item">Descripción</label>
+        <input id="descripcion_item" type="text" pInputText formControlName="descripcion_item" />
+      </div>
+      <div class="page__field">
+        <label for="item_unidad_medida">Unidad de medida</label>
+        <p-select
+          inputId="item_unidad_medida"
+          formControlName="id_unidad_medida"
+          [options]="unidadesMedida()"
+          optionLabel="nombre_unidad_medida"
+          optionValue="id_unidad_medida"
+          placeholder="Seleccionar unidad"
+          [appendTo]="'body'"
+        />
+      </div>
+      <div class="page__field">
+        <label for="cantidad_item_lote">Cantidad</label>
+        <p-inputNumber inputId="cantidad_item_lote" formControlName="cantidad_item_lote" [min]="0.01" [minFractionDigits]="2" />
+      </div>
+
+      <div class="page__form-actions">
+        @if (editingItemId()) {
+          <p-button
+            type="button"
+            label="Cancelar edición"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelItemEdit()"
+          />
+        }
+        <p-button
+          type="submit"
+          [label]="editingItemId() ? 'Guardar ítem' : 'Agregar ítem'"
+          [loading]="itemsSaving()"
+          [disabled]="itemForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

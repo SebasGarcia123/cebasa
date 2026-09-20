@@ -1,0 +1,140 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Autoelevadores</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="autoelevadores()" [loading]="loading()" dataKey="id_autoelevadores" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Fecha de alta</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-autoelevador>
+      <tr>
+        <td>{{ autoelevador.nombre }}</td>
+        <td>{{ autoelevador.fecha_alta | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ autoelevador.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-wrench" [text]="true" (onClick)="openServicios(autoelevador)" pTooltip="Servicios" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(autoelevador)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(autoelevador)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">No hay autoelevadores cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar autoelevador' : 'Nuevo autoelevador'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" pInputText formControlName="nombre" />
+      </div>
+
+      <div class="page__field">
+        <label for="fecha_alta">Fecha de alta</label>
+        <p-datepicker inputId="fecha_alta" formControlName="fecha_alta" dateFormat="dd/mm/yy" [showIcon]="true" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="serviciosDialogVisible()"
+    (visibleChange)="serviciosDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    header="Servicios del autoelevador"
+  >
+    <p-table [value]="servicios()" [loading]="serviciosLoading()" dataKey="id_service_autoelevador">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Horas</th>
+          <th scope="col">Detalle</th>
+          <th scope="col" style="width: 6rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-servicio>
+        <tr>
+          <td>{{ servicio.horas }}</td>
+          <td>{{ servicio.detalle || '—' }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editServicio(servicio)" />
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeServicio(servicio)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3">Todavía no hay servicios cargados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <form [formGroup]="servicioForm" (ngSubmit)="saveServicio()" class="page__form autoelevadores__servicio-form">
+      <div class="page__field">
+        <label for="servicio_horas">Horas</label>
+        <p-inputNumber inputId="servicio_horas" formControlName="horas" [min]="0" [minFractionDigits]="2" />
+      </div>
+      <div class="page__field">
+        <label for="servicio_detalle">Detalle</label>
+        <input id="servicio_detalle" type="text" pInputText formControlName="detalle" />
+      </div>
+
+      <div class="page__form-actions">
+        @if (editingServicioId()) {
+          <p-button
+            type="button"
+            label="Cancelar edición"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelServicioEdit()"
+          />
+        }
+        <p-button
+          type="submit"
+          [label]="editingServicioId() ? 'Guardar servicio' : 'Agregar servicio'"
+          [loading]="serviciosSaving()"
+          [disabled]="servicioForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

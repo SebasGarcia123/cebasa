@@ -130,6 +130,35 @@ export const routes: Routes = [
           import('./features/produccion/lotes-prod/lotes-prod-list').then((m) => m.LotesProdList),
       },
       {
+        path: 'logistica/fletero',
+        loadComponent: () => import('./features/logistica/fletero/fletero-list').then((m) => m.FleteroList),
+      },
+      {
+        path: 'logistica/tipo-lote',
+        loadComponent: () => import('./features/logistica/tipo-lote/tipo-lote-list').then((m) => m.TipoLoteList),
+      },
+      {
+        path: 'logistica/autoelevadores',
+        loadComponent: () =>
+          import('./features/logistica/autoelevadores/autoelevadores-list').then((m) => m.AutoelevadoresList),
+      },
+      {
+        path: 'logistica/control-autoelevador',
+        loadComponent: () =>
+          import('./features/logistica/control-autoelevador/control-autoelevador-list').then(
+            (m) => m.ControlAutoelevadorList,
+          ),
+      },
+      {
+        path: 'logistica/transporte',
+        loadComponent: () =>
+          import('./features/logistica/transporte/transporte-list').then((m) => m.TransporteList),
+      },
+      {
+        path: 'logistica/lotes',
+        loadComponent: () => import('./features/logistica/lotes/lotes-list').then((m) => m.LotesList),
+      },
+      {
         path: 'usuarios/usuarios',
         loadComponent: () =>
           import('./features/usuarios/usuarios/usuarios-list').then((m) => m.UsuariosList),

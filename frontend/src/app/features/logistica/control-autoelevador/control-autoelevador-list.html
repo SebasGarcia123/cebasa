@@ -1,0 +1,146 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Control de Autoelevador</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="controles()" [loading]="loading()" dataKey="id_control_autoelevador" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Autoelevador</th>
+        <th scope="col">Realizó</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-control>
+      <tr>
+        <td>{{ control.id_control_autoelevador }}</td>
+        <td>{{ control.fecha | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ control.autoelevadores?.nombre || '—' }}</td>
+        <td>{{ control.usuarios?.nombre_usuario || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(control)" pTooltip="Ítems" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(control)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(control)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay controles cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar control' : 'Nuevo control'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="fecha">Fecha</label>
+        <p-datepicker inputId="fecha" formControlName="fecha" dateFormat="dd/mm/yy" [showIcon]="true" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_autoelevador">Autoelevador</label>
+        <p-select
+          inputId="id_autoelevador"
+          formControlName="id_autoelevador"
+          [options]="autoelevadores()"
+          optionLabel="nombre"
+          optionValue="id_autoelevadores"
+          placeholder="Seleccionar autoelevador"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="itemsDialogVisible()"
+    (visibleChange)="itemsDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    header="Ítems del control"
+  >
+    <p-table [value]="items()" [loading]="itemsLoading()" dataKey="id_item_control">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Ítem</th>
+          <th scope="col">OK</th>
+          <th scope="col">Observación</th>
+          <th scope="col" style="width: 6rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item>
+        <tr>
+          <td>{{ item.item_nombre }}</td>
+          <td>
+            <i class="pi" [class.pi-check]="item.estado_ok" [class.pi-times]="!item.estado_ok"
+               [class.control__ok]="item.estado_ok" [class.control__no-ok]="!item.estado_ok"></i>
+          </td>
+          <td>{{ item.observacion || '—' }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">Todavía no hay ítems cargados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="page__form control__item-form">
+      <div class="page__field">
+        <label for="item_nombre">Ítem</label>
+        <input id="item_nombre" type="text" pInputText formControlName="item_nombre" />
+      </div>
+      <div class="page__field control__checkbox-field">
+        <p-checkbox inputId="estado_ok" formControlName="estado_ok" [binary]="true" />
+        <label for="estado_ok">Está OK</label>
+      </div>
+      <div class="page__field">
+        <label for="observacion">Observación</label>
+        <input id="observacion" type="text" pInputText formControlName="observacion" />
+      </div>
+
+      <div class="page__form-actions">
+        @if (editingItemId()) {
+          <p-button
+            type="button"
+            label="Cancelar edición"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelItemEdit()"
+          />
+        }
+        <p-button
+          type="submit"
+          [label]="editingItemId() ? 'Guardar ítem' : 'Agregar ítem'"
+          [loading]="itemsSaving()"
+          [disabled]="itemForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

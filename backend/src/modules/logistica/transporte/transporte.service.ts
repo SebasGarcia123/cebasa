@@ -13,7 +13,7 @@ export class TransporteService {
 
   findAll() {
     return this.prisma.transporte.findMany({
-      include: { direcciones: true, estados: true },
+      include: { direcciones: true, estados: true, camion: true, chofer: true },
     });
   }
 

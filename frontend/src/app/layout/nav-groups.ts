@@ -58,6 +58,17 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: 'Logística',
+    items: [
+      { label: 'Fleteros', icon: 'pi pi-user', route: '/logistica/fletero' },
+      { label: 'Tipo de Lote', icon: 'pi pi-tag', route: '/logistica/tipo-lote' },
+      { label: 'Autoelevadores', icon: 'pi pi-cog', route: '/logistica/autoelevadores' },
+      { label: 'Control de Autoelevador', icon: 'pi pi-check-square', route: '/logistica/control-autoelevador' },
+      { label: 'Transportes', icon: 'pi pi-car', route: '/logistica/transporte' },
+      { label: 'Lotes', icon: 'pi pi-box', route: '/logistica/lotes' },
+    ],
+  },
+  {
     label: 'Usuarios',
     items: [
       { label: 'Usuarios', icon: 'pi pi-user', route: '/usuarios/usuarios' },

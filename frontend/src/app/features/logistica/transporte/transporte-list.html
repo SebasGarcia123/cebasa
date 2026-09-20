@@ -1,0 +1,311 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Transportes</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="transportes()" [loading]="loading()" dataKey="id_transporte" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">CUIT</th>
+        <th scope="col">Dirección</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 12rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-transporte>
+      <tr>
+        <td>{{ transporte.nombre_transporte }}</td>
+        <td>{{ transporte.cuit }}</td>
+        <td>{{ transporte.direcciones ? direccionLabel(transporte.direcciones) : '—' }}</td>
+        <td>{{ transporte.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-truck" [text]="true" (onClick)="openCamiones(transporte)" pTooltip="Camiones" />
+          <p-button icon="pi pi-id-card" [text]="true" (onClick)="openChoferes(transporte)" pTooltip="Choferes" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(transporte)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(transporte)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay transportes cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '460px' }"
+    [header]="editingId() ? 'Editar transporte' : 'Nuevo transporte'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_transporte">Nombre</label>
+        <input id="nombre_transporte" type="text" pInputText formControlName="nombre_transporte" />
+      </div>
+
+      <div class="page__field">
+        <label for="cuit">CUIT</label>
+        <input id="cuit" type="text" pInputText formControlName="cuit" />
+      </div>
+
+      <div class="page__field">
+        <label for="nombre_contacto">Nombre de contacto</label>
+        <input id="nombre_contacto" type="text" pInputText formControlName="nombre_contacto" />
+      </div>
+
+      <div class="page__field">
+        <label for="telefono">Teléfono</label>
+        <input id="telefono" type="text" pInputText formControlName="telefono" />
+      </div>
+
+      <div class="page__field">
+        <label for="cbu_cuenta_bancaria">CBU</label>
+        <input id="cbu_cuenta_bancaria" type="text" pInputText formControlName="cbu_cuenta_bancaria" />
+      </div>
+
+      <div class="page__field">
+        <label for="alias_cuenta_bancaria">Alias</label>
+        <input id="alias_cuenta_bancaria" type="text" pInputText formControlName="alias_cuenta_bancaria" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <fieldset class="transporte__direccion-field" formGroupName="direccion">
+        <legend>Dirección</legend>
+
+        <div class="page__field">
+          <label for="direccion_calle">Calle</label>
+          <input id="direccion_calle" type="text" pInputText formControlName="calle" />
+        </div>
+        <div class="page__field">
+          <label for="direccion_numero">Número</label>
+          <input id="direccion_numero" type="text" pInputText formControlName="numero" />
+        </div>
+        <div class="page__field">
+          <label for="direccion_localidad">Localidad</label>
+          <input id="direccion_localidad" type="text" pInputText formControlName="localidad" />
+        </div>
+        <div class="page__field">
+          <label for="direccion_provincia">Provincia</label>
+          <input id="direccion_provincia" type="text" pInputText formControlName="provincia" />
+        </div>
+        <div class="page__field">
+          <label for="direccion_entrecalle1">Entre calle 1 (opcional)</label>
+          <input id="direccion_entrecalle1" type="text" pInputText formControlName="entrecalle1" />
+        </div>
+        <div class="page__field">
+          <label for="direccion_entrecalle2">Entre calle 2 (opcional)</label>
+          <input id="direccion_entrecalle2" type="text" pInputText formControlName="entrecalle2" />
+        </div>
+      </fieldset>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Camiones -->
+  <p-dialog
+    [visible]="camionesDialogVisible()"
+    (visibleChange)="camionesDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    header="Camiones"
+  >
+    <p-table [value]="camiones()" [loading]="camionesLoading()" dataKey="id_camion">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Dominio chasis</th>
+          <th scope="col">Dominio semi</th>
+          <th scope="col">Marca</th>
+          <th scope="col">Modelo</th>
+          <th scope="col" style="width: 6rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-camion>
+        <tr>
+          <td>{{ camion.dominio_chasis }}</td>
+          <td>{{ camion.dominio_semi || '—' }}</td>
+          <td>{{ camion.marca || '—' }}</td>
+          <td>{{ camion.modelo || '—' }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editCamion(camion)" />
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeCamion(camion)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">Todavía no hay camiones cargados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <form [formGroup]="camionForm" (ngSubmit)="saveCamion()" class="page__form transporte__sub-form">
+      <div class="page__field">
+        <label for="dominio_chasis">Dominio chasis</label>
+        <input id="dominio_chasis" type="text" pInputText formControlName="dominio_chasis" />
+      </div>
+      <div class="page__field">
+        <label for="dominio_semi">Dominio semi</label>
+        <input id="dominio_semi" type="text" pInputText formControlName="dominio_semi" />
+      </div>
+      <div class="page__field">
+        <label for="marca">Marca</label>
+        <input id="marca" type="text" pInputText formControlName="marca" />
+      </div>
+      <div class="page__field">
+        <label for="modelo">Modelo</label>
+        <input id="modelo" type="text" pInputText formControlName="modelo" />
+      </div>
+
+      <div class="page__form-actions">
+        @if (editingCamionId()) {
+          <p-button
+            type="button"
+            label="Cancelar edición"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelCamionEdit()"
+          />
+        }
+        <p-button
+          type="submit"
+          [label]="editingCamionId() ? 'Guardar camión' : 'Agregar camión'"
+          [loading]="camionesSaving()"
+          [disabled]="camionForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Choferes -->
+  <p-dialog
+    [visible]="choferesDialogVisible()"
+    (visibleChange)="choferesDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    header="Choferes"
+  >
+    <p-table [value]="choferes()" [loading]="choferesLoading()" dataKey="id_chofer">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Nombre</th>
+          <th scope="col">DNI</th>
+          <th scope="col">Estado</th>
+          <th scope="col" style="width: 6rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-chofer>
+        <tr>
+          <td>{{ chofer.nombre_chofer }}</td>
+          <td>{{ chofer.dni }}</td>
+          <td>{{ chofer.estados?.nombreEstado || '—' }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editChofer(chofer)" />
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeChofer(chofer)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">Todavía no hay choferes cargados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <form [formGroup]="choferForm" (ngSubmit)="saveChofer()" class="page__form transporte__sub-form">
+      <div class="page__field">
+        <label for="nombre_chofer">Nombre</label>
+        <input id="nombre_chofer" type="text" pInputText formControlName="nombre_chofer" />
+      </div>
+      <div class="page__field">
+        <label for="dni">DNI</label>
+        <input id="dni" type="text" pInputText formControlName="dni" />
+      </div>
+      <div class="page__field">
+        <label for="chofer_id_estado">Estado</label>
+        <p-select
+          inputId="chofer_id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <fieldset class="transporte__direccion-field" formGroupName="direccion">
+        <legend>Dirección del chofer</legend>
+
+        <div class="page__field">
+          <label for="chofer_calle">Calle</label>
+          <input id="chofer_calle" type="text" pInputText formControlName="calle" />
+        </div>
+        <div class="page__field">
+          <label for="chofer_numero">Número</label>
+          <input id="chofer_numero" type="text" pInputText formControlName="numero" />
+        </div>
+        <div class="page__field">
+          <label for="chofer_localidad">Localidad</label>
+          <input id="chofer_localidad" type="text" pInputText formControlName="localidad" />
+        </div>
+        <div class="page__field">
+          <label for="chofer_provincia">Provincia</label>
+          <input id="chofer_provincia" type="text" pInputText formControlName="provincia" />
+        </div>
+        <div class="page__field">
+          <label for="chofer_entrecalle1">Entre calle 1 (opcional)</label>
+          <input id="chofer_entrecalle1" type="text" pInputText formControlName="entrecalle1" />
+        </div>
+        <div class="page__field">
+          <label for="chofer_entrecalle2">Entre calle 2 (opcional)</label>
+          <input id="chofer_entrecalle2" type="text" pInputText formControlName="entrecalle2" />
+        </div>
+      </fieldset>
+
+      <div class="page__form-actions">
+        @if (editingChoferId()) {
+          <p-button
+            type="button"
+            label="Cancelar edición"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelChoferEdit()"
+          />
+        }
+        <p-button
+          type="submit"
+          [label]="editingChoferId() ? 'Guardar chofer' : 'Agregar chofer'"
+          [loading]="choferesSaving()"
+          [disabled]="choferForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

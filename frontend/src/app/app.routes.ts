@@ -84,6 +84,52 @@ export const routes: Routes = [
           import('./features/compras/gestion/gestion-compras').then((m) => m.GestionCompras),
       },
       {
+        path: 'produccion/depositos',
+        loadComponent: () =>
+          import('./features/produccion/depositos/depositos-list').then((m) => m.DepositosList),
+      },
+      {
+        path: 'produccion/naturaleza',
+        loadComponent: () =>
+          import('./features/produccion/naturaleza/naturaleza-list').then((m) => m.NaturalezaList),
+      },
+      {
+        path: 'produccion/lineas',
+        loadComponent: () => import('./features/produccion/lineas/lineas-list').then((m) => m.LineasList),
+      },
+      {
+        path: 'produccion/turnos',
+        loadComponent: () => import('./features/produccion/turnos/turnos-list').then((m) => m.TurnosList),
+      },
+      {
+        path: 'produccion/tipo-movimiento',
+        loadComponent: () =>
+          import('./features/produccion/tipo-movimiento/tipo-movimiento-list').then((m) => m.TipoMovimientoList),
+      },
+      {
+        path: 'produccion/movimientos-insumo',
+        loadComponent: () =>
+          import('./features/produccion/movimiento-insumo/movimiento-insumo-list').then(
+            (m) => m.MovimientoInsumoList,
+          ),
+      },
+      {
+        path: 'produccion/movimientos-producto',
+        loadComponent: () =>
+          import('./features/produccion/movimiento-producto/movimiento-producto-list').then(
+            (m) => m.MovimientoProductoList,
+          ),
+      },
+      {
+        path: 'produccion/recetas',
+        loadComponent: () => import('./features/produccion/recetas/recetas-list').then((m) => m.RecetasList),
+      },
+      {
+        path: 'produccion/lotes',
+        loadComponent: () =>
+          import('./features/produccion/lotes-prod/lotes-prod-list').then((m) => m.LotesProdList),
+      },
+      {
         path: 'usuarios/usuarios',
         loadComponent: () =>
           import('./features/usuarios/usuarios/usuarios-list').then((m) => m.UsuariosList),

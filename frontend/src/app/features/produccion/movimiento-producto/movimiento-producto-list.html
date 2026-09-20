@@ -1,0 +1,156 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Movimientos de Producto</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="items()" [loading]="loading()" dataKey="id_movimiento_producto" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Fecha</th>
+        <th scope="col">Producto</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Cantidad</th>
+        <th scope="col">Origen</th>
+        <th scope="col">Destino</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-item>
+      <tr>
+        <td>{{ item.fecha_movimiento | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ item.productos?.descripcion_producto || '—' }}</td>
+        <td>{{ item.tipo_movimiento?.nombre_movimiento || '—' }}</td>
+        <td>{{ item.cantidad }}</td>
+        <td>{{ item.deposito_origen?.nombre_deposito || '—' }}</td>
+        <td>{{ item.deposito_destino?.nombre_deposito || '—' }}</td>
+        <td>{{ item.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(item)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(item)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8">No hay movimientos cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '460px' }"
+    [header]="editingId() ? 'Editar movimiento' : 'Nuevo movimiento'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="id_producto">Producto</label>
+        <p-select
+          inputId="id_producto"
+          formControlName="id_producto"
+          [options]="productos()"
+          optionLabel="descripcion_producto"
+          optionValue="id_producto"
+          [filter]="true"
+          filterBy="codigo_producto,descripcion_producto"
+          placeholder="Seleccionar producto"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="id_tipo_movimiento">Tipo de movimiento</label>
+        <p-select
+          inputId="id_tipo_movimiento"
+          formControlName="id_tipo_movimiento"
+          [options]="tiposMovimiento()"
+          optionLabel="nombre_movimiento"
+          optionValue="id_tipo_movimiento"
+          placeholder="Seleccionar tipo"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="cantidad">Cantidad</label>
+        <p-inputNumber inputId="cantidad" formControlName="cantidad" [min]="1" />
+      </div>
+
+      <div class="page__field">
+        <label for="fecha_movimiento">Fecha</label>
+        <p-datepicker
+          inputId="fecha_movimiento"
+          formControlName="fecha_movimiento"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="id_deposito_origen">Depósito origen (opcional)</label>
+        <p-select
+          inputId="id_deposito_origen"
+          formControlName="id_deposito_origen"
+          [options]="depositos()"
+          optionLabel="nombre_deposito"
+          optionValue="id_deposito"
+          placeholder="Seleccionar depósito"
+          [showClear]="true"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="id_deposito_destino">Depósito destino (opcional)</label>
+        <p-select
+          inputId="id_deposito_destino"
+          formControlName="id_deposito_destino"
+          [options]="depositos()"
+          optionLabel="nombre_deposito"
+          optionValue="id_deposito"
+          placeholder="Seleccionar depósito"
+          [showClear]="true"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="observaciones">Observaciones</label>
+        <input id="observaciones" type="text" pInputText formControlName="observaciones" />
+      </div>
+
+      <div class="page__field">
+        <label for="motivo">Motivo</label>
+        <input id="motivo" type="text" pInputText formControlName="motivo" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

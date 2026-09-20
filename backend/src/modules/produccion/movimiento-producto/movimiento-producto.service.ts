@@ -20,6 +20,7 @@ export class MovimientoProductoService {
         tipo_movimiento: true,
         deposito_origen: true,
         deposito_destino: true,
+        estados: true,
       },
     });
   }

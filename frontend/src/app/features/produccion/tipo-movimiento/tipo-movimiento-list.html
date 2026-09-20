@@ -1,0 +1,85 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Tipo de Movimiento</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="items()" [loading]="loading()" dataKey="id_tipo_movimiento" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Naturaleza</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-item>
+      <tr>
+        <td>{{ item.nombre_movimiento }}</td>
+        <td>{{ item.naturaleza?.nombre_naturaleza || '—' }}</td>
+        <td>{{ item.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(item)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(item)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">No hay tipos de movimiento cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar tipo de movimiento' : 'Nuevo tipo de movimiento'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_movimiento">Nombre</label>
+        <input id="nombre_movimiento" type="text" pInputText formControlName="nombre_movimiento" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_naturaleza">Naturaleza</label>
+        <p-select
+          inputId="id_naturaleza"
+          formControlName="id_naturaleza"
+          [options]="naturalezas()"
+          optionLabel="nombre_naturaleza"
+          optionValue="id_naturaleza"
+          placeholder="Seleccionar naturaleza"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

@@ -44,6 +44,20 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: 'Producción',
+    items: [
+      { label: 'Depósitos', icon: 'pi pi-building', route: '/produccion/depositos' },
+      { label: 'Naturaleza de Movimiento', icon: 'pi pi-directions', route: '/produccion/naturaleza' },
+      { label: 'Líneas de Producción', icon: 'pi pi-sitemap', route: '/produccion/lineas' },
+      { label: 'Turnos', icon: 'pi pi-clock', route: '/produccion/turnos' },
+      { label: 'Tipo de Movimiento', icon: 'pi pi-sync', route: '/produccion/tipo-movimiento' },
+      { label: 'Movimientos de Insumo', icon: 'pi pi-arrow-right-arrow-left', route: '/produccion/movimientos-insumo' },
+      { label: 'Movimientos de Producto', icon: 'pi pi-arrow-right-arrow-left', route: '/produccion/movimientos-producto' },
+      { label: 'Recetas', icon: 'pi pi-book', route: '/produccion/recetas' },
+      { label: 'Lotes de Producción', icon: 'pi pi-th-large', route: '/produccion/lotes' },
+    ],
+  },
+  {
     label: 'Usuarios',
     items: [
       { label: 'Usuarios', icon: 'pi pi-user', route: '/usuarios/usuarios' },

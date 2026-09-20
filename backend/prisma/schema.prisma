@@ -15,6 +15,7 @@ model archivo_adjunto {
   fecha_carga        DateTime     @db.Date
   compra             compra[]
   cotizacion         cotizacion[]
+  productos          productos[]
 }
 
 model autoelevadores {
@@ -508,14 +509,21 @@ model productos {
   stock_actual         Int                    @default(0)
   stock_minimo         Int                    @default(0)
   id_estado            Int
+  id_archivo_adjunto   Int?
   item_pedido          item_pedido[]
   item_plan_produccion item_plan_produccion[]
   item_prod            item_prod[]
   movimiento_producto  movimiento_producto[]
   estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_productos_estado")
+  // A diferencia de compra/cotizacion (Restrict), acá es SetNull: la foto
+  // de un producto se reemplaza/borra sueltamente desde el formulario
+  // (sube/borra el archivo_adjunto antes de guardar el producto), así que
+  // el borrado del archivo no puede quedar bloqueado por esta FK.
+  archivo_adjunto      archivo_adjunto?       @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_productos_archivo_adjunto")
   receta               receta[]
 
   @@index([id_estado], map: "fk_productos_estado")
+  @@index([id_archivo_adjunto], map: "fk_productos_archivo_adjunto")
 }
 
 model proveedor {

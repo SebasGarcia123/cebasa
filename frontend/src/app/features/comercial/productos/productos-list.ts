@@ -8,7 +8,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
+import { ArchivoAdjuntoApiService } from '../../../core/api/archivo-adjunto-api.service';
 import { Producto } from '../../../core/models/producto.model';
+import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
 
 @Component({
   selector: 'app-productos-list',
@@ -26,6 +28,7 @@ import { Producto } from '../../../core/models/producto.model';
 })
 export class ProductosList implements OnInit {
   private readonly api = inject(ProductosApiService);
+  protected readonly archivoAdjuntoApi = inject(ArchivoAdjuntoApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
@@ -35,6 +38,9 @@ export class ProductosList implements OnInit {
   protected readonly saving = signal(false);
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
+
+  protected readonly fotoActual = signal<ArchivoAdjunto | null>(null);
+  protected readonly fotoUploading = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
     codigo_producto: ['', Validators.required],
@@ -67,12 +73,14 @@ export class ProductosList implements OnInit {
 
   openCreate(): void {
     this.editingId.set(null);
+    this.fotoActual.set(null);
     this.form.reset({ stock_actual: 0, stock_minimo: 0, id_estado: 1 });
     this.dialogVisible.set(true);
   }
 
   openEdit(producto: Producto): void {
     this.editingId.set(producto.id_producto);
+    this.fotoActual.set(producto.archivo_adjunto);
     this.form.setValue({
       codigo_producto: producto.codigo_producto,
       descripcion_producto: producto.descripcion_producto,
@@ -90,6 +98,44 @@ export class ProductosList implements OnInit {
     this.dialogVisible.set(false);
   }
 
+  onFotoSeleccionada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    const anterior = this.fotoActual();
+    this.fotoUploading.set(true);
+    this.archivoAdjuntoApi.upload(file).subscribe({
+      next: (archivo) => {
+        this.fotoUploading.set(false);
+        this.fotoActual.set(archivo);
+        if (anterior) {
+          this.archivoAdjuntoApi.remove(anterior.id_archivo_adjunto).subscribe();
+        }
+      },
+      error: () => {
+        this.fotoUploading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la foto' });
+      },
+    });
+  }
+
+  quitarFoto(): void {
+    const actual = this.fotoActual();
+    this.fotoActual.set(null);
+    if (actual) {
+      this.archivoAdjuntoApi.remove(actual.id_archivo_adjunto).subscribe();
+    }
+  }
+
+  fotoUrl(): string | null {
+    const archivo = this.fotoActual();
+    return archivo ? this.archivoAdjuntoApi.fileUrl(archivo.id_archivo_adjunto) : null;
+  }
+
   save(): void {
     if (this.form.invalid || this.saving()) {
       return;
@@ -97,11 +143,13 @@ export class ProductosList implements OnInit {
 
     this.saving.set(true);
     const raw = this.form.getRawValue();
+    const foto = this.fotoActual();
     const dto = {
       codigo_producto: raw.codigo_producto,
       descripcion_producto: raw.descripcion_producto,
       precio_venta: raw.precio_venta!,
       id_estado: raw.id_estado,
+      id_archivo_adjunto: foto?.id_archivo_adjunto ?? null,
       ...(raw.bolsones_por_pallet != null ? { bolsones_por_pallet: raw.bolsones_por_pallet } : {}),
       ...(raw.peso_por_bolson != null ? { peso_por_bolson: raw.peso_por_bolson } : {}),
       ...(raw.stock_actual != null ? { stock_actual: raw.stock_actual } : {}),

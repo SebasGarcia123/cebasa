@@ -12,13 +12,13 @@ export class ProductosService {
   }
 
   findAll() {
-    return this.prisma.productos.findMany({ include: { estados: true } });
+    return this.prisma.productos.findMany({ include: { estados: true, archivo_adjunto: true } });
   }
 
   async findOne(id: number) {
     const producto = await this.prisma.productos.findUnique({
       where: { id_producto: id },
-      include: { estados: true },
+      include: { estados: true, archivo_adjunto: true },
     });
     if (!producto) {
       throw new NotFoundException(`Producto ${id} no encontrado`);

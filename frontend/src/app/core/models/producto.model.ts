@@ -1,3 +1,5 @@
+import { ArchivoAdjunto } from './archivo-adjunto.model';
+
 export interface Producto {
   id_producto: number;
   codigo_producto: string;
@@ -8,4 +10,6 @@ export interface Producto {
   stock_actual: number;
   stock_minimo: number;
   id_estado: number;
+  id_archivo_adjunto: number | null;
+  archivo_adjunto: ArchivoAdjunto | null;
 }

@@ -7,6 +7,7 @@
   <p-table [value]="productos()" [loading]="loading()" dataKey="id_producto" [paginator]="true" [rows]="10">
     <ng-template #header>
       <tr>
+        <th scope="col" style="width: 4rem"></th>
         <th scope="col">Código</th>
         <th scope="col">Descripción</th>
         <th scope="col">Precio</th>
@@ -16,6 +17,11 @@
     </ng-template>
     <ng-template #body let-producto>
       <tr>
+        <td>
+          @if (producto.archivo_adjunto) {
+            <img class="productos__thumb" [src]="archivoAdjuntoApi.fileUrl(producto.id_archivo_adjunto)" alt="" />
+          }
+        </td>
         <td>{{ producto.codigo_producto }}</td>
         <td>{{ producto.descripcion_producto }}</td>
         <td>{{ producto.precio_venta | number: '1.2-2' }}</td>
@@ -28,7 +34,7 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="5">No hay productos cargados todavía.</td>
+        <td colspan="6">No hay productos cargados todavía.</td>
       </tr>
     </ng-template>
   </p-table>
@@ -85,6 +91,34 @@
       <div class="page__field">
         <label for="stock_minimo">Stock mínimo</label>
         <p-inputNumber inputId="stock_minimo" formControlName="stock_minimo" [min]="0" />
+      </div>
+
+      <div class="page__field">
+        <label for="producto_foto">Foto del producto</label>
+        <input
+          #fotoInput
+          id="producto_foto"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          (change)="onFotoSeleccionada($event)"
+          hidden
+        />
+        @if (fotoActual(); as foto) {
+          <div class="productos__foto">
+            <a [href]="fotoUrl()" target="_blank" rel="noopener">{{ foto.nombre_archivo }}</a>
+            <p-button icon="pi pi-times" [text]="true" severity="danger" (onClick)="quitarFoto()" />
+          </div>
+        } @else {
+          <p-button
+            type="button"
+            label="Subir foto"
+            icon="pi pi-upload"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="fotoUploading()"
+            (onClick)="fotoInput.click()"
+          />
+        }
       </div>
 
       <div class="page__form-actions">

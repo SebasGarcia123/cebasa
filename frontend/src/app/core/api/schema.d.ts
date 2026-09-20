@@ -2053,6 +2053,7 @@ export interface components {
             stock_actual?: number;
             stock_minimo?: number;
             id_estado: number;
+            id_archivo_adjunto?: number;
         };
         UpdateProductoDto: Record<string, never>;
         CreateReclamoDto: {

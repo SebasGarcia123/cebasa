@@ -19,14 +19,18 @@ import { CreateArchivoAdjuntoDto } from './dto/create-archivo-adjunto.dto.js';
 import { UpdateArchivoAdjuntoDto } from './dto/update-archivo-adjunto.dto.js';
 import { archivoAdjuntoMulterOptions, UPLOADS_DIR } from './archivo-adjunto.storage.js';
 import { ApiTags } from '@nestjs/swagger';
-import { RequirePermissions } from '../../../auth/decorators/permissions.decorator.js';
 
+// Sin @RequirePermissions: archivo_adjunto es infraestructura genérica
+// compartida entre módulos (comprobantes de OC en Compras, fotos de
+// producto en Comercial, la que siga), no pertenece a un único módulo.
+// Basta con estar autenticado (JwtAuthGuard global); el permiso real se
+// exige en el endpoint del dueño (PATCH /productos/:id, /compras, etc.)
+// al asociar el id_archivo_adjunto resultante.
 @ApiTags('Archivo Adjunto')
 @Controller('archivos-adjuntos')
 export class ArchivoAdjuntoController {
   constructor(private readonly archivoAdjuntoService: ArchivoAdjuntoService) {}
 
-  @RequirePermissions('compras.editar')
   @Post()
   create(@Body() dto: CreateArchivoAdjuntoDto) {
     return this.archivoAdjuntoService.create(dto);
@@ -35,20 +39,17 @@ export class ArchivoAdjuntoController {
   // Recibe el archivo real (imagen o PDF), lo guarda en uploads/ y crea el
   // registro con la ruta generada. Separado de POST / (que solo guarda
   // metadatos) porque este espera multipart/form-data, no JSON.
-  @RequirePermissions('compras.editar')
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', archivoAdjuntoMulterOptions))
   upload(@UploadedFile() file: Express.Multer.File) {
     return this.archivoAdjuntoService.createFromUpload(file);
   }
 
-  @RequirePermissions('compras.ver')
   @Get()
   findAll() {
     return this.archivoAdjuntoService.findAll();
   }
 
-  @RequirePermissions('compras.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.archivoAdjuntoService.findOne(id);
@@ -56,7 +57,6 @@ export class ArchivoAdjuntoController {
 
   // Sirve el archivo físico detrás del mismo login de siempre (JwtAuthGuard
   // global), en vez de exponer uploads/ como estático sin autenticación.
-  @RequirePermissions('compras.ver')
   @Get(':id/file')
   async getFile(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const archivo = await this.archivoAdjuntoService.findOne(id);
@@ -65,7 +65,6 @@ export class ArchivoAdjuntoController {
     });
   }
 
-  @RequirePermissions('compras.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -74,7 +73,6 @@ export class ArchivoAdjuntoController {
     return this.archivoAdjuntoService.update(id, dto);
   }
 
-  @RequirePermissions('compras.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.archivoAdjuntoService.remove(id);

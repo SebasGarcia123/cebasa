@@ -1,0 +1,65 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Roles</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="roles()" [loading]="loading()" dataKey="id_rol" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-rol>
+      <tr>
+        <td>{{ rol.nombre_rol }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-key" [text]="true" (onClick)="openPermisos(rol)" pTooltip="Permisos" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(rol)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(rol)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="2">No hay roles cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '380px' }"
+    [header]="editingId() ? 'Editar rol' : 'Nuevo rol'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_rol">Nombre</label>
+        <input id="nombre_rol" type="text" pInputText formControlName="nombre_rol" />
+      </div>
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <app-assignment-dialog
+    [visible]="permisosDialogVisible()"
+    (visibleChange)="permisosDialogVisible.set($event)"
+    header="Permisos del rol"
+    [items]="permisosItems()"
+    [assignedIds]="permisosAsignados()"
+    [busyIds]="permisosBusy()"
+    (toggle)="togglePermiso($event)"
+  />
+</div>

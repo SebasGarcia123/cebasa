@@ -1,0 +1,23 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [style]="{ width: '380px' }"
+  [header]="header()"
+>
+  <div class="assignment-list">
+    @for (item of items(); track item.id) {
+      <label class="assignment-list__item">
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="assignedIds().has(item.id)"
+          [disabled]="busyIds().has(item.id)"
+          (onChange)="onToggle(item.id, $event)"
+        />
+        <span>{{ item.label }}</span>
+      </label>
+    } @empty {
+      <p class="assignment-list__empty">No hay elementos disponibles.</p>
+    }
+  </div>
+</p-dialog>

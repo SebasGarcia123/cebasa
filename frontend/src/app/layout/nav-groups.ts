@@ -23,4 +23,12 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Comercial',
     items: [{ label: 'Clientes', icon: 'pi pi-users', route: '/comercial/clientes' }],
   },
+  {
+    label: 'Usuarios',
+    items: [
+      { label: 'Usuarios', icon: 'pi pi-user', route: '/usuarios/usuarios' },
+      { label: 'Roles', icon: 'pi pi-id-card', route: '/usuarios/roles' },
+      { label: 'Permisos', icon: 'pi pi-key', route: '/usuarios/permisos' },
+    ],
+  },
 ];

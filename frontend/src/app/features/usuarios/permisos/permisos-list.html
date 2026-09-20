@@ -1,0 +1,63 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Permisos</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  @if (faltantes().length > 0) {
+    <p-message severity="warn">
+      El código exige {{ faltantes().length }} permiso(s) que todavía no existen como registro:
+      @for (nombre of faltantes(); track nombre) {
+        <a class="page__missing-permission" (click)="openCreate(nombre)">{{ nombre }}</a>
+      }
+    </p-message>
+  }
+
+  <p-table [value]="permisos()" [loading]="loading()" dataKey="id_permiso" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-permiso>
+      <tr>
+        <td>{{ permiso.nombre_permiso }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(permiso)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(permiso)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="2">No hay permisos cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '380px' }"
+    [header]="editingId() ? 'Editar permiso' : 'Nuevo permiso'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_permiso">Nombre</label>
+        <input id="nombre_permiso" type="text" pInputText formControlName="nombre_permiso" />
+      </div>
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

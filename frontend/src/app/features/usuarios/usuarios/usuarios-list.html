@@ -1,0 +1,99 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Usuarios</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="usuarios()" [loading]="loading()" dataKey="id_usuario" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Usuario</th>
+        <th scope="col">Sector</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-usuario>
+      <tr>
+        <td>{{ usuario.nombre_usuario }}</td>
+        <td>{{ usuario.sectores?.nombreSector || '—' }}</td>
+        <td>{{ usuario.estados?.nombreEstado || '—' }}</td>
+        <td class="page__actions">
+          <p-button icon="pi pi-shield" [text]="true" (onClick)="openRoles(usuario)" pTooltip="Roles" />
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(usuario)" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(usuario)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">No hay usuarios cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar usuario' : 'Nuevo usuario'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="nombre_usuario">Usuario</label>
+        <input id="nombre_usuario" type="text" pInputText formControlName="nombre_usuario" />
+      </div>
+
+      <div class="page__field">
+        <label for="password">{{ editingId() ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
+        <p-password inputId="password" formControlName="password" [feedback]="false" [toggleMask]="true" />
+      </div>
+
+      <div class="page__field">
+        <label for="id_sector">Sector</label>
+        <p-select
+          inputId="id_sector"
+          formControlName="id_sector"
+          [options]="sectores()"
+          optionLabel="nombreSector"
+          optionValue="id_sector"
+          placeholder="Seleccionar sector"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="id_estado">Estado</label>
+        <p-select
+          inputId="id_estado"
+          formControlName="id_estado"
+          [options]="estados()"
+          optionLabel="nombreEstado"
+          optionValue="id_estado"
+          placeholder="Seleccionar estado"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <app-assignment-dialog
+    [visible]="rolesDialogVisible()"
+    (visibleChange)="rolesDialogVisible.set($event)"
+    header="Roles del usuario"
+    [items]="rolesItems()"
+    [assignedIds]="rolesAsignados()"
+    [busyIds]="rolesBusy()"
+    (toggle)="toggleRol($event)"
+  />
+</div>

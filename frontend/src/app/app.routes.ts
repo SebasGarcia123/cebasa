@@ -27,6 +27,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/comercial/clientes/clientes-list').then((m) => m.ClientesList),
       },
+      {
+        path: 'usuarios/usuarios',
+        loadComponent: () =>
+          import('./features/usuarios/usuarios/usuarios-list').then((m) => m.UsuariosList),
+      },
+      {
+        path: 'usuarios/roles',
+        loadComponent: () => import('./features/usuarios/roles/roles-list').then((m) => m.RolesList),
+      },
+      {
+        path: 'usuarios/permisos',
+        loadComponent: () =>
+          import('./features/usuarios/permisos/permisos-list').then((m) => m.PermisosList),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

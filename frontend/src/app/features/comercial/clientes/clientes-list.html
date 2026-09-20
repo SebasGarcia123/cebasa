@@ -63,6 +63,7 @@
           [filter]="true"
           filterBy="calle,localidad"
           placeholder="Seleccionar dirección"
+          [appendTo]="'body'"
         >
           <ng-template #selectedItem let-direccion>
             {{ direccionLabel(direccion) }}
@@ -92,6 +93,7 @@
           optionLabel="nombreEstado"
           optionValue="id_estado"
           placeholder="Seleccionar estado"
+          [appendTo]="'body'"
         />
       </div>
 
@@ -176,6 +178,7 @@
             optionLabel="descripcion"
             optionValue="id_tipo_documento"
             placeholder="Seleccionar"
+            [appendTo]="'body'"
           />
         </div>
         <div class="page__field">

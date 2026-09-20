@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { EmailModule } from './email/email.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CatalogosModule } from './modules/catalogos/catalogos.module.js';
 import { UsuariosModule } from './modules/usuarios/usuarios.module.js';
@@ -18,6 +19,7 @@ import { PedidoInsumosModule } from './modules/pedido-insumos/pedido-insumos.mod
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     ScheduleModule.forRoot(),
     PrismaModule,
+    EmailModule,
     AuthModule,
     CatalogosModule,
     UsuariosModule,

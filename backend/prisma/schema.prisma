@@ -742,6 +742,7 @@ model usuarios {
   id_usuario           Int                    @id @default(autoincrement())
   nombre_usuario       String                 @unique(map: "uq_usuarios_nombre_usuario") @db.VarChar(100)
   password             String                 @db.VarChar(255)
+  email                String?                @db.VarChar(150)
   id_sector            Int
   id_estado            Int
   control_autoelevador control_autoelevador[]

@@ -1,0 +1,300 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Gestión de Compras</h1>
+  </div>
+
+  <div class="gestion__toolbar">
+    <div class="gestion__vista-toggle">
+      <p-button
+        label="Requerimientos"
+        [outlined]="vista() !== 'requerimientos'"
+        (onClick)="vista.set('requerimientos')"
+      />
+      <p-button label="Órdenes de Compra" [outlined]="vista() !== 'oc'" (onClick)="vista.set('oc')" />
+    </div>
+
+    <div class="gestion__filtros">
+      <div class="gestion__filtro-fecha">
+        <label for="fecha_desde">Desde</label>
+        <p-datepicker
+          inputId="fecha_desde"
+          [formControl]="fechaDesdeControl"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [showButtonBar]="true"
+        />
+      </div>
+      <div class="gestion__filtro-fecha">
+        <label for="fecha_hasta">Hasta</label>
+        <p-datepicker
+          inputId="fecha_hasta"
+          [formControl]="fechaHastaControl"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [showButtonBar]="true"
+        />
+      </div>
+      <div class="gestion__filtro-check">
+        <p-checkbox inputId="ver_todas" [formControl]="verTodasControl" [binary]="true" />
+        <label for="ver_todas">Ver todas (incluye Recibido / Anulado)</label>
+      </div>
+    </div>
+  </div>
+
+  @if (vista() === 'requerimientos') {
+    <p-table [value]="requerimientosFiltrados()" [loading]="loading()" dataKey="id_requerimiento" [paginator]="true" [rows]="10">
+      <ng-template #header>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Fecha de carga</th>
+          <th scope="col">Fecha necesidad</th>
+          <th scope="col">Solicitó</th>
+          <th scope="col">Observaciones</th>
+          <th scope="col">Estado</th>
+          <th scope="col" style="width: 10rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-requerimiento>
+        <tr>
+          <td>{{ requerimiento.id_requerimiento }}</td>
+          <td>{{ requerimiento.fecha_carga | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ requerimiento.fecha_necesidad | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ requerimiento.usuarios?.nombre_usuario || '—' }}</td>
+          <td>{{ requerimiento.observaciones || '—' }}</td>
+          <td>{{ requerimiento.estados?.nombreEstado || '—' }}</td>
+          <td class="page__actions">
+            @if (requerimiento.estados?.nombreEstado === 'Activo') {
+              <p-button label="Generar OC" icon="pi pi-file-export" size="small" (onClick)="openGenerarOc(requerimiento)" />
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7">No hay requerimientos para mostrar con estos filtros.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  } @else {
+    <p-table [value]="ocFiltradas()" [loading]="loading()" dataKey="id_compra" [paginator]="true" [rows]="10">
+      <ng-template #header>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Fecha</th>
+          <th scope="col">Proveedor</th>
+          <th scope="col">Estado</th>
+          <th scope="col" style="width: 8rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-compra>
+        <tr>
+          <td>{{ compra.id_compra }}</td>
+          <td>{{ compra.fecha_compra | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ compra.proveedor?.nombre_proveedor || '—' }}</td>
+          <td>{{ compra.estados?.nombreEstado || '—' }}</td>
+          <td class="page__actions">
+            <p-button icon="pi pi-eye" [text]="true" (onClick)="verOc(compra)" pTooltip="Ver" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">No hay órdenes de compra para mostrar con estos filtros.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+
+  <!-- Generar OC a partir de un requerimiento -->
+  <p-dialog
+    [visible]="generarOcDialogVisible()"
+    (visibleChange)="generarOcDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '680px' }"
+    [header]="'Generar OC — Requerimiento #' + (requerimientoParaOc()?.id_requerimiento ?? '')"
+  >
+    @if (generarOcLoading()) {
+      <p>Cargando...</p>
+    } @else {
+      <form [formGroup]="ocForm" class="page__form">
+        <div class="page__field">
+          <label for="oc_proveedor">Proveedor</label>
+          <p-select
+            inputId="oc_proveedor"
+            formControlName="id_proveedor"
+            [options]="proveedores()"
+            optionLabel="nombre_proveedor"
+            optionValue="id_proveedor"
+            [filter]="true"
+            filterBy="nombre_proveedor"
+            placeholder="Seleccionar proveedor"
+            [appendTo]="'body'"
+          />
+        </div>
+      </form>
+
+      <h3 class="gestion__seccion-title">Insumos — precio cotizado por el proveedor</h3>
+
+      <p-table [value]="itemsOc()" dataKey="id_requerimiento_detalle">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Detalle</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Precio</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item let-i="rowIndex">
+          <tr>
+            <td>{{ item.codigo_insumo }}</td>
+            <td>{{ item.nombre_insumo }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>
+              <p-inputNumber
+                [ngModel]="item.precio_compra"
+                (ngModelChange)="actualizarPrecioItem(i, $event)"
+                [ngModelOptions]="{ standalone: true }"
+                mode="currency"
+                currency="ARS"
+                locale="es-AR"
+                [min]="0"
+              />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="page__field">
+        <label for="oc_archivo">Comprobante de la cotización (foto o PDF)</label>
+        <input
+          #archivoInput
+          id="oc_archivo"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          (change)="onArchivoSeleccionado($event)"
+          hidden
+        />
+        @if (archivoActual()) {
+          <div class="gestion__adjunto">
+            <a [href]="verArchivoUrl()" target="_blank" rel="noopener">{{ archivoActual()?.nombre_archivo }}</a>
+            <p-button icon="pi pi-times" [text]="true" severity="danger" (onClick)="quitarArchivo()" />
+          </div>
+        } @else {
+          <p-button
+            type="button"
+            label="Adjuntar comprobante"
+            icon="pi pi-upload"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="archivoUploading()"
+            (onClick)="archivoInput.click()"
+          />
+        }
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeGenerarOcDialog()"
+        />
+        <p-button
+          label="Guardar (autorizar)"
+          severity="secondary"
+          [loading]="generarOcSaving()"
+          [disabled]="ocForm.invalid || !itemsOcCompletos()"
+          (onClick)="guardarOc(false)"
+        />
+        <p-button
+          label="Guardar y enviar al proveedor"
+          icon="pi pi-send"
+          [loading]="generarOcSaving()"
+          [disabled]="ocForm.invalid || !itemsOcCompletos()"
+          (onClick)="guardarOc(true)"
+        />
+      </div>
+    }
+  </p-dialog>
+
+  <!-- Detalle y acciones de una OC -->
+  <p-dialog
+    [visible]="ocDetalleDialogVisible()"
+    (visibleChange)="ocDetalleDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '600px' }"
+    [header]="'Orden de compra #' + (ocDetalle()?.id_compra ?? '')"
+  >
+    @if (ocDetalleLoading() || !ocDetalle()) {
+      <p>Cargando...</p>
+    } @else {
+      <p class="gestion__oc-info">
+        <strong>Proveedor:</strong> {{ ocDetalle()?.proveedor?.nombre_proveedor || '—' }}<br />
+        <strong>Fecha:</strong> {{ ocDetalle()?.fecha_compra | date: 'dd/MM/yyyy' }}<br />
+        <strong>Estado:</strong> {{ ocDetalle()?.estados?.nombreEstado || '—' }}
+      </p>
+
+      <p-table [value]="ocDetalle()?.compra_detalle || []" dataKey="id_compra_detalle">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Detalle</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Precio</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-linea>
+          <tr>
+            <td>{{ linea.insumo?.codigo_insumo || '—' }}</td>
+            <td>{{ linea.insumo?.nombre_insumo || '—' }}</td>
+            <td>{{ linea.cantidad }}</td>
+            <td>{{ linea.precio_compra | number: '1.2-2' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      @if (ocDetalle()?.id_archivo_adjunto) {
+        <p class="gestion__oc-adjunto">
+          <a [href]="ocArchivoUrl()" target="_blank" rel="noopener">
+            <i class="pi pi-paperclip"></i> Ver comprobante de la cotización
+          </a>
+        </p>
+      }
+
+      <div class="page__form-actions">
+        @if (ocDetalle()?.estados?.nombreEstado === 'Autorizado') {
+          <p-button
+            label="Anular"
+            severity="danger"
+            [outlined]="true"
+            [loading]="ocDetalleActionBusy()"
+            (onClick)="confirmAnular()"
+          />
+          <p-button
+            label="Enviar al proveedor"
+            icon="pi pi-send"
+            [loading]="ocDetalleActionBusy()"
+            (onClick)="enviarProveedor()"
+          />
+        }
+        @if (ocDetalle()?.estados?.nombreEstado === 'Enviado a Proveedor') {
+          <p-button
+            label="Anular"
+            severity="danger"
+            [outlined]="true"
+            [loading]="ocDetalleActionBusy()"
+            (onClick)="confirmAnular()"
+          />
+          <p-button
+            label="Recibir mercadería"
+            icon="pi pi-check"
+            severity="success"
+            [loading]="ocDetalleActionBusy()"
+            (onClick)="recibir()"
+          />
+        }
+      </div>
+    }
+  </p-dialog>
+</div>

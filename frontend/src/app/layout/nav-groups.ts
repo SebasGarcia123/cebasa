@@ -40,8 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Proveedores', icon: 'pi pi-truck', route: '/compras/proveedores' },
       { label: 'Insumos', icon: 'pi pi-inbox', route: '/compras/insumos' },
       { label: 'Requerimientos', icon: 'pi pi-file-edit', route: '/compras/requerimientos' },
-      { label: 'Cotizaciones', icon: 'pi pi-percentage', route: '/compras/cotizaciones' },
-      { label: 'Compras', icon: 'pi pi-shopping-bag', route: '/compras/compras' },
+      { label: 'Gestión de Compras', icon: 'pi pi-shopping-bag', route: '/compras/gestion' },
     ],
   },
   {

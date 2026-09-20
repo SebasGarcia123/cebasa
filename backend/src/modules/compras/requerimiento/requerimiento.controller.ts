@@ -11,6 +11,7 @@ import {
 import { RequerimientoService } from './requerimiento.service.js';
 import { CreateRequerimientoDto } from './dto/create-requerimiento.dto.js';
 import { UpdateRequerimientoDto } from './dto/update-requerimiento.dto.js';
+import { GenerarOcDto } from './dto/generar-oc.dto.js';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Requerimiento')
@@ -44,5 +45,10 @@ export class RequerimientoController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.requerimientoService.remove(id);
+  }
+
+  @Post(':id/generar-oc')
+  generarOc(@Param('id', ParseIntPipe) id: number, @Body() dto: GenerarOcDto) {
+    return this.requerimientoService.generarOc(id, dto);
   }
 }

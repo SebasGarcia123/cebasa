@@ -1,6 +1,8 @@
 import {
+  IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -16,6 +18,14 @@ export class CreateUsuarioDto {
   @MinLength(8)
   @MaxLength(72)
   password: string;
+
+  // Para avisar por mail cuando se procesa un requerimiento que cargó
+  // (ver RequerimientoService.generarOc). Opcional: si no está cargado,
+  // simplemente no se envía el aviso.
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(150)
+  email?: string;
 
   @IsInt()
   id_sector: number;

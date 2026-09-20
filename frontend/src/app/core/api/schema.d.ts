@@ -1604,6 +1604,22 @@ export interface paths {
         patch: operations["RequerimientoController_update"];
         trace?: never;
     };
+    "/requerimientos/{id}/generar-oc": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RequerimientoController_generarOc"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/requerimientos/{idRequerimiento}/detalle": {
         parameters: {
             query?: never;
@@ -1730,6 +1746,54 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["CompraController_update"];
+        trace?: never;
+    };
+    "/compras/{id}/enviar-proveedor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CompraController_enviarProveedor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/compras/{id}/recibir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CompraController_recibir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/compras/{id}/anular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CompraController_anular"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/compras/{idCompra}/detalle": {
@@ -1929,6 +1993,8 @@ export interface components {
         CreateUsuarioDto: {
             nombre_usuario: string;
             password: string;
+            /** Format: email */
+            email?: string;
             id_sector: number;
             id_estado: number;
         };
@@ -2194,6 +2260,16 @@ export interface components {
             observaciones?: string;
         };
         UpdateRequerimientoDto: Record<string, never>;
+        GenerarOcItemDto: {
+            id_requerimiento_detalle: number;
+            precio_compra: number;
+        };
+        GenerarOcDto: {
+            id_proveedor: number;
+            id_archivo_adjunto?: number;
+            enviar_a_proveedor: boolean;
+            items: components["schemas"]["GenerarOcItemDto"][];
+        };
         CreateRequerimientoDetalleDto: {
             id_insumo: number;
             cantidad: number;
@@ -7000,6 +7076,31 @@ export interface operations {
             };
         };
     };
+    RequerimientoController_generarOc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerarOcDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
     RequerimientoDetalleController_findAll: {
         parameters: {
             query?: never;
@@ -7423,6 +7524,69 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    CompraController_enviarProveedor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    CompraController_recibir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    CompraController_anular: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };

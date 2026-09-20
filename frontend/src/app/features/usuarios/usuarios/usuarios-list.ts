@@ -56,6 +56,7 @@ export class UsuariosList implements OnInit {
   protected readonly form = this.fb.nonNullable.group({
     nombre_usuario: ['', Validators.required],
     password: [''],
+    email: ['', Validators.email],
     id_sector: [null as number | null, Validators.required],
     id_estado: [null as number | null, Validators.required],
   });
@@ -107,6 +108,7 @@ export class UsuariosList implements OnInit {
     this.form.setValue({
       nombre_usuario: usuario.nombre_usuario,
       password: '',
+      email: usuario.email ?? '',
       id_sector: usuario.id_sector,
       id_estado: usuario.id_estado,
     });
@@ -133,6 +135,7 @@ export class UsuariosList implements OnInit {
           nombre_usuario: raw.nombre_usuario,
           id_sector: raw.id_sector!,
           id_estado: raw.id_estado!,
+          email: raw.email || null,
           ...(raw.password ? { password: raw.password } : {}),
         })
       : this.api.create({
@@ -140,6 +143,7 @@ export class UsuariosList implements OnInit {
           password: raw.password,
           id_sector: raw.id_sector!,
           id_estado: raw.id_estado!,
+          ...(raw.email ? { email: raw.email } : {}),
         });
 
     request$.subscribe({

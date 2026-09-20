@@ -79,13 +79,9 @@ export const routes: Routes = [
           import('./features/compras/requerimientos/requerimientos-list').then((m) => m.RequerimientosList),
       },
       {
-        path: 'compras/cotizaciones',
+        path: 'compras/gestion',
         loadComponent: () =>
-          import('./features/compras/cotizaciones/cotizaciones-list').then((m) => m.CotizacionesList),
-      },
-      {
-        path: 'compras/compras',
-        loadComponent: () => import('./features/compras/compras/compras-list').then((m) => m.ComprasList),
+          import('./features/compras/gestion/gestion-compras').then((m) => m.GestionCompras),
       },
       {
         path: 'usuarios/usuarios',

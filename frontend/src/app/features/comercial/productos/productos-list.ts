@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -116,9 +117,10 @@ export class ProductosList implements OnInit {
           this.archivoAdjuntoApi.remove(anterior.id_archivo_adjunto).subscribe();
         }
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         this.fotoUploading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la foto' });
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo subir la foto';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
       },
     });
   }

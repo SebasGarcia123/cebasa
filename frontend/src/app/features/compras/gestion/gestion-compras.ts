@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -210,9 +211,10 @@ export class GestionCompras implements OnInit {
           this.archivoAdjuntoApi.remove(anterior.id_archivo_adjunto).subscribe();
         }
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         this.archivoUploading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir el archivo' });
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo subir el archivo';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
       },
     });
   }

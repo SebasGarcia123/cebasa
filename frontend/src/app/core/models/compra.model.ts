@@ -1,6 +1,7 @@
 import { Estado } from './estado.model';
 import { Proveedor } from './proveedor.model';
 import { CompraDetalle } from './compra-detalle.model';
+import { ArchivoAdjunto } from './archivo-adjunto.model';
 
 export interface Compra {
   id_compra: number;
@@ -11,4 +12,5 @@ export interface Compra {
   proveedor?: Proveedor;
   estados?: Estado;
   compra_detalle?: CompraDetalle[];
+  archivo_adjunto?: ArchivoAdjunto | null;
 }

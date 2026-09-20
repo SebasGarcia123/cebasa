@@ -80,6 +80,34 @@
         />
       </div>
 
+      <div class="page__field">
+        <label for="cotizacion_archivo">Archivo adjunto (foto o PDF)</label>
+        <input
+          #archivoInput
+          id="cotizacion_archivo"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          (change)="onArchivoSeleccionado($event)"
+          hidden
+        />
+        @if (archivoActual()) {
+          <div class="cotizaciones__adjunto">
+            <a [href]="verArchivoUrl()" target="_blank" rel="noopener">{{ archivoActual()?.nombre_archivo }}</a>
+            <p-button icon="pi pi-times" [text]="true" severity="danger" (onClick)="quitarArchivo()" />
+          </div>
+        } @else {
+          <p-button
+            type="button"
+            label="Adjuntar archivo"
+            icon="pi pi-upload"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="archivoUploading()"
+            (onClick)="archivoInput.click()"
+          />
+        }
+      </div>
+
       <div class="page__form-actions">
         <p-button
           type="button"

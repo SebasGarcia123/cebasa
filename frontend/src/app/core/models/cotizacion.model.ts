@@ -1,6 +1,7 @@
 import { Estado } from './estado.model';
 import { Proveedor } from './proveedor.model';
 import { CotizacionDetalle } from './cotizacion-detalle.model';
+import { ArchivoAdjunto } from './archivo-adjunto.model';
 
 export interface Cotizacion {
   id_cotizacion: number;
@@ -11,4 +12,5 @@ export interface Cotizacion {
   proveedor?: Proveedor;
   estados?: Estado;
   cotizacion_detalle?: CotizacionDetalle[];
+  archivo_adjunto?: ArchivoAdjunto | null;
 }

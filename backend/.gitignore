@@ -7,3 +7,6 @@ node_modules
 # Build output
 dist
 *.tsbuildinfo
+
+# Archivos subidos por usuarios (facturas, cotizaciones, etc.) - no van al repo
+/uploads

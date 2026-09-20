@@ -16,12 +16,14 @@ import { RequerimientoDetalleApiService } from '../../../core/api/requerimiento-
 import { ProveedoresApiService } from '../../../core/api/proveedores-api.service';
 import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { RequerimientosApiService } from '../../../core/api/requerimientos-api.service';
+import { ArchivoAdjuntoApiService } from '../../../core/api/archivo-adjunto-api.service';
 import { Compra } from '../../../core/models/compra.model';
 import { CompraDetalle } from '../../../core/models/compra-detalle.model';
 import { RequerimientoDetalle } from '../../../core/models/requerimiento-detalle.model';
 import { Proveedor } from '../../../core/models/proveedor.model';
 import { Estado } from '../../../core/models/estado.model';
 import { Requerimiento } from '../../../core/models/requerimiento.model';
+import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
 
 @Component({
   selector: 'app-compras-list',
@@ -47,6 +49,7 @@ export class ComprasList implements OnInit {
   private readonly proveedoresApi = inject(ProveedoresApiService);
   private readonly estadosApi = inject(EstadosApiService);
   private readonly requerimientosApi = inject(RequerimientosApiService);
+  private readonly archivoAdjuntoApi = inject(ArchivoAdjuntoApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
@@ -64,7 +67,14 @@ export class ComprasList implements OnInit {
     id_proveedor: [null as number | null, Validators.required],
     fecha_compra: [null as Date | null, Validators.required],
     id_estado: [null as number | null, Validators.required],
+    id_archivo_adjunto: [null as number | null],
   });
+
+  // Adjunto (foto o PDF) que documenta la cotización que dio origen a la
+  // compra. Se sube apenas se elige el archivo (no se espera a "Guardar"),
+  // así el id ya está disponible para mandarlo junto con el resto del form.
+  protected readonly archivoActual = signal<ArchivoAdjunto | null>(null);
+  protected readonly archivoUploading = signal(false);
 
   // Diálogo de detalle (líneas compradas). id_requerimiento es un campo
   // auxiliar solo para filtrar el segundo select (no se manda al backend);
@@ -135,6 +145,7 @@ export class ComprasList implements OnInit {
   openCreate(): void {
     this.editingId.set(null);
     this.form.reset();
+    this.archivoActual.set(null);
     this.dialogVisible.set(true);
   }
 
@@ -144,12 +155,54 @@ export class ComprasList implements OnInit {
       id_proveedor: compra.id_proveedor,
       fecha_compra: new Date(compra.fecha_compra),
       id_estado: compra.id_estado,
+      id_archivo_adjunto: compra.id_archivo_adjunto,
     });
+    this.archivoActual.set(compra.archivo_adjunto ?? null);
     this.dialogVisible.set(true);
   }
 
   closeDialog(): void {
     this.dialogVisible.set(false);
+  }
+
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    const anterior = this.archivoActual();
+    this.archivoUploading.set(true);
+    this.archivoAdjuntoApi.upload(file).subscribe({
+      next: (archivo) => {
+        this.archivoUploading.set(false);
+        this.archivoActual.set(archivo);
+        this.form.controls.id_archivo_adjunto.setValue(archivo.id_archivo_adjunto);
+        if (anterior) {
+          this.archivoAdjuntoApi.remove(anterior.id_archivo_adjunto).subscribe();
+        }
+      },
+      error: () => {
+        this.archivoUploading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir el archivo' });
+      },
+    });
+  }
+
+  quitarArchivo(): void {
+    const actual = this.archivoActual();
+    this.archivoActual.set(null);
+    this.form.controls.id_archivo_adjunto.setValue(null);
+    if (actual) {
+      this.archivoAdjuntoApi.remove(actual.id_archivo_adjunto).subscribe();
+    }
+  }
+
+  verArchivoUrl(): string | null {
+    const archivo = this.archivoActual();
+    return archivo ? this.archivoAdjuntoApi.fileUrl(archivo.id_archivo_adjunto) : null;
   }
 
   save(): void {
@@ -163,6 +216,7 @@ export class ComprasList implements OnInit {
       id_proveedor: raw.id_proveedor!,
       fecha_compra: raw.fecha_compra!.toISOString().slice(0, 10),
       id_estado: raw.id_estado!,
+      ...(raw.id_archivo_adjunto ? { id_archivo_adjunto: raw.id_archivo_adjunto } : {}),
     };
     const id = this.editingId();
     const request$ = id ? this.api.update(id, dto) : this.api.create(dto);

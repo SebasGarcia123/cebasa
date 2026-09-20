@@ -8,7 +8,17 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    super({ adapter: new PrismaMariaDb(process.env.DATABASE_URL!) });
+    super({
+      adapter: new PrismaMariaDb(process.env.DATABASE_URL!),
+      // Nunca devolver el hash de la contraseña, ni siquiera cuando se
+      // incluye la relación `usuarios` desde otra entidad (pedidos,
+      // reclamos, etc.) — se filtró una vez por un include sin omit.
+      omit: {
+        usuarios: {
+          password: true,
+        },
+      },
+    });
   }
 
   async onModuleInit() {

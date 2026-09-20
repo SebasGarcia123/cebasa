@@ -1,6 +1,5 @@
 import {
   IsEmail,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -42,7 +41,4 @@ export class CreateProveedorDto {
   @IsString()
   @MaxLength(50)
   alias?: string;
-
-  @IsInt()
-  id_estado: number;
 }

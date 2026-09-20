@@ -1,14 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateDepositoDto } from './dto/create-deposito.dto.js';
 import { UpdateDepositoDto } from './dto/update-deposito.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+
 @Injectable()
 export class DepositoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
-  create(dto: CreateDepositoDto) {
-    return this.prisma.deposito.create({ data: dto });
+  async create(dto: CreateDepositoDto) {
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
+    return this.prisma.deposito.create({
+      data: { ...dto, id_estado: idEstadoActivo },
+    });
   }
 
   findAll() {
@@ -28,6 +38,16 @@ export class DepositoService {
 
   async update(id: number, dto: UpdateDepositoDto) {
     await this.findOne(id);
+
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un depósito solo puede estar Activo o Anulado');
+      }
+    }
+
     return this.prisma.deposito.update({
       where: { id_deposito: id },
       data: dto,

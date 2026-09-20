@@ -25,12 +25,4 @@ export class CreateInsumoDto {
   @IsInt()
   @Min(0)
   stock_minimo?: number;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  stock_actual?: number;
-
-  @IsInt()
-  id_estado: number;
 }

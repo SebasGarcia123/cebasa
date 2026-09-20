@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -11,6 +11,8 @@ import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { Proveedor } from '../../../core/models/proveedor.model';
 import { Estado } from '../../../core/models/estado.model';
 import { forkJoin } from 'rxjs';
+
+const ESTADOS_PROVEEDOR = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-proveedores-list',
@@ -32,6 +34,11 @@ export class ProveedoresList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado (no el resto del catálogo genérico).
+  protected readonly estadosProveedor = computed(() => this.estados().filter((e) => ESTADOS_PROVEEDOR.has(e.nombreEstado)));
+
   protected readonly form = this.fb.nonNullable.group({
     nombre_proveedor: ['', Validators.required],
     direccion: [''],
@@ -40,7 +47,7 @@ export class ProveedoresList implements OnInit {
     telefono: [''],
     cbu: [''],
     alias: [''],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -99,7 +106,6 @@ export class ProveedoresList implements OnInit {
     const raw = this.form.getRawValue();
     const dto = {
       nombre_proveedor: raw.nombre_proveedor,
-      id_estado: raw.id_estado!,
       ...(raw.direccion ? { direccion: raw.direccion } : {}),
       ...(raw.email ? { email: raw.email } : {}),
       ...(raw.nombre_contacto ? { nombre_contacto: raw.nombre_contacto } : {}),
@@ -108,7 +114,7 @@ export class ProveedoresList implements OnInit {
       ...(raw.alias ? { alias: raw.alias } : {}),
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

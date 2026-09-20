@@ -42,18 +42,20 @@
         <input id="nombre_deposito" type="text" pInputText formControlName="nombre_deposito" />
       </div>
 
-      <div class="page__field">
-        <label for="id_estado">Estado</label>
-        <p-select
-          inputId="id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
-          [appendTo]="'body'"
-        />
-      </div>
+      @if (editingId()) {
+        <div class="page__field">
+          <label for="id_estado">Estado</label>
+          <p-select
+            inputId="id_estado"
+            formControlName="id_estado"
+            [options]="estadosDeposito()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
 
       <div class="page__form-actions">
         <p-button

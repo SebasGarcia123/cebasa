@@ -2077,9 +2077,10 @@ export interface components {
         UpdateUnidadMedidaDto: Record<string, never>;
         CreateDepositoDto: {
             nombre_deposito: string;
-            id_estado: number;
         };
-        UpdateDepositoDto: Record<string, never>;
+        UpdateDepositoDto: {
+            id_estado?: number;
+        };
         CreateNaturalezaDto: {
             nombre_naturaleza: string;
         };
@@ -2104,10 +2105,10 @@ export interface components {
             nombre_insumo: string;
             id_unidad_medida: number;
             stock_minimo?: number;
-            stock_actual?: number;
-            id_estado: number;
         };
-        UpdateInsumoDto: Record<string, never>;
+        UpdateInsumoDto: {
+            id_estado?: number;
+        };
         CreateStockInsumoDepositoDto: {
             id_deposito: number;
             cantidad?: number;
@@ -2246,9 +2247,10 @@ export interface components {
             telefono?: string;
             cbu?: string;
             alias?: string;
-            id_estado: number;
         };
-        UpdateProveedorDto: Record<string, never>;
+        UpdateProveedorDto: {
+            id_estado?: number;
+        };
         CreateArchivoAdjuntoDto: {
             nombre_archivo: string;
             ruta_archivo: string;

@@ -1,14 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateProveedorDto } from './dto/create-proveedor.dto.js';
 import { UpdateProveedorDto } from './dto/update-proveedor.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+
 @Injectable()
 export class ProveedorService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
-  create(dto: CreateProveedorDto) {
-    return this.prisma.proveedor.create({ data: dto });
+  async create(dto: CreateProveedorDto) {
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
+    return this.prisma.proveedor.create({
+      data: { ...dto, id_estado: idEstadoActivo },
+    });
   }
 
   findAll() {
@@ -28,6 +38,16 @@ export class ProveedorService {
 
   async update(id: number, dto: UpdateProveedorDto) {
     await this.findOne(id);
+
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un proveedor solo puede estar Activo o Anulado');
+      }
+    }
+
     return this.prisma.proveedor.update({
       where: { id_proveedor: id },
       data: dto,

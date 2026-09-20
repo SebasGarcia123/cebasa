@@ -71,27 +71,28 @@
       </div>
 
       <div class="page__field">
-        <label for="stock_actual">Stock actual</label>
-        <p-inputNumber inputId="stock_actual" formControlName="stock_actual" [min]="0" />
-      </div>
-
-      <div class="page__field">
         <label for="stock_minimo">Stock mínimo</label>
         <p-inputNumber inputId="stock_minimo" formControlName="stock_minimo" [min]="0" />
       </div>
 
-      <div class="page__field">
-        <label for="id_estado">Estado</label>
-        <p-select
-          inputId="id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
-          [appendTo]="'body'"
-        />
-      </div>
+      @if (!editingId()) {
+        <small class="insumos__hint">El stock actual arranca en 0 y solo se modifica con movimientos de insumo.</small>
+      }
+
+      @if (editingId()) {
+        <div class="page__field">
+          <label for="id_estado">Estado</label>
+          <p-select
+            inputId="id_estado"
+            formControlName="id_estado"
+            [options]="estadosInsumo()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
 
       <div class="page__form-actions">
         <p-button

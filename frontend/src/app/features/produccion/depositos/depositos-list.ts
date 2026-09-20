@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -11,6 +11,8 @@ import { DepositosApiService } from '../../../core/api/depositos-api.service';
 import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { Deposito } from '../../../core/models/deposito.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_DEPOSITO = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-depositos-list',
@@ -32,9 +34,14 @@ export class DepositosList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado (no el resto del catálogo genérico).
+  protected readonly estadosDeposito = computed(() => this.estados().filter((e) => ESTADOS_DEPOSITO.has(e.nombreEstado)));
+
   protected readonly form = this.fb.nonNullable.group({
     nombre_deposito: ['', Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -82,9 +89,10 @@ export class DepositosList implements OnInit {
 
     this.saving.set(true);
     const raw = this.form.getRawValue();
-    const dto = { nombre_deposito: raw.nombre_deposito, id_estado: raw.id_estado! };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id
+      ? this.api.update(id, { nombre_deposito: raw.nombre_deposito, id_estado: raw.id_estado! })
+      : this.api.create({ nombre_deposito: raw.nombre_deposito });
 
     request$.subscribe({
       next: () => {

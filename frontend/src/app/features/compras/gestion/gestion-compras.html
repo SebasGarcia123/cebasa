@@ -135,7 +135,7 @@
 
       <h3 class="gestion__seccion-title">Insumos — precio cotizado por el proveedor</h3>
 
-      <p-table [value]="itemsOc()" dataKey="id_requerimiento_detalle">
+      <p-table [value]="itemsFormArray.controls" dataKey="id_requerimiento_detalle">
         <ng-template #header>
           <tr>
             <th scope="col">Código</th>
@@ -144,21 +144,13 @@
             <th scope="col">Precio</th>
           </tr>
         </ng-template>
-        <ng-template #body let-item let-i="rowIndex">
-          <tr>
-            <td>{{ item.codigo_insumo }}</td>
-            <td>{{ item.nombre_insumo }}</td>
-            <td>{{ item.cantidad }}</td>
+        <ng-template #body let-item>
+          <tr [formGroup]="item">
+            <td>{{ item.value.codigo_insumo }}</td>
+            <td>{{ item.value.nombre_insumo }}</td>
+            <td>{{ item.value.cantidad }}</td>
             <td>
-              <p-inputNumber
-                [ngModel]="item.precio_compra"
-                (ngModelChange)="actualizarPrecioItem(i, $event)"
-                [ngModelOptions]="{ standalone: true }"
-                mode="currency"
-                currency="ARS"
-                locale="es-AR"
-                [min]="0"
-              />
+              <p-inputNumber formControlName="precio_compra" mode="currency" currency="ARS" locale="es-AR" [min]="0" />
             </td>
           </tr>
         </ng-template>

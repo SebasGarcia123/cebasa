@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -23,13 +23,13 @@ import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
 
 type Vista = 'requerimientos' | 'oc';
 
-interface ItemOc {
-  id_requerimiento_detalle: number;
-  codigo_insumo: string;
-  nombre_insumo: string;
-  cantidad: number;
-  precio_compra: number | null;
-}
+type ItemOcForm = FormGroup<{
+  id_requerimiento_detalle: FormControl<number>;
+  codigo_insumo: FormControl<string>;
+  nombre_insumo: FormControl<string>;
+  cantidad: FormControl<number>;
+  precio_compra: FormControl<number | null>;
+}>;
 
 const ESTADOS_OC_DEFINITIVOS = new Set(['Recibido', 'Anulado']);
 
@@ -38,7 +38,6 @@ const ESTADOS_OC_DEFINITIVOS = new Set(['Recibido', 'Anulado']);
   imports: [
     DatePipe,
     DecimalPipe,
-    FormsModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -141,7 +140,11 @@ export class GestionCompras implements OnInit {
   protected readonly generarOcLoading = signal(false);
   protected readonly generarOcSaving = signal(false);
   protected readonly requerimientoParaOc = signal<Requerimiento | null>(null);
-  protected readonly itemsOc = signal<ItemOc[]>([]);
+  // FormArray (no un signal con array inmutable): cada fila necesita un
+  // control estable para que escribir un precio no fuerce a PrimeNG a
+  // recrear la fila en cada tecla (eso hacía perder el foco al escribir
+  // más de un dígito).
+  protected readonly itemsFormArray = new FormArray<ItemOcForm>([]);
   protected readonly archivoActual = signal<ArchivoAdjunto | null>(null);
   protected readonly archivoUploading = signal(false);
 
@@ -149,14 +152,14 @@ export class GestionCompras implements OnInit {
     id_proveedor: [null as number | null, Validators.required],
   });
 
-  protected readonly itemsOcCompletos = computed(() =>
-    this.itemsOc().length > 0 && this.itemsOc().every((i) => i.precio_compra !== null && i.precio_compra >= 0),
-  );
+  protected itemsOcCompletos(): boolean {
+    return this.itemsFormArray.length > 0 && this.itemsFormArray.valid;
+  }
 
   openGenerarOc(requerimiento: Requerimiento): void {
     this.ocForm.reset();
     this.archivoActual.set(null);
-    this.itemsOc.set([]);
+    this.itemsFormArray.clear();
     this.requerimientoParaOc.set(requerimiento);
     this.generarOcDialogVisible.set(true);
     this.generarOcLoading.set(true);
@@ -164,15 +167,17 @@ export class GestionCompras implements OnInit {
     this.requerimientosApi.getOne(requerimiento.id_requerimiento).subscribe({
       next: (completo) => {
         this.requerimientoParaOc.set(completo);
-        this.itemsOc.set(
-          (completo.requerimiento_detalle ?? []).map((linea) => ({
-            id_requerimiento_detalle: linea.id_requerimiento_detalle,
-            codigo_insumo: linea.insumo?.codigo_insumo ?? '—',
-            nombre_insumo: linea.insumo?.nombre_insumo ?? '—',
-            cantidad: linea.cantidad,
-            precio_compra: null,
-          })),
-        );
+        for (const linea of completo.requerimiento_detalle ?? []) {
+          this.itemsFormArray.push(
+            this.fb.nonNullable.group({
+              id_requerimiento_detalle: [linea.id_requerimiento_detalle],
+              codigo_insumo: [linea.insumo?.codigo_insumo ?? '—'],
+              nombre_insumo: [linea.insumo?.nombre_insumo ?? '—'],
+              cantidad: [linea.cantidad],
+              precio_compra: [null as number | null, [Validators.required, Validators.min(0)]],
+            }),
+          );
+        }
         this.generarOcLoading.set(false);
       },
       error: () => {
@@ -185,10 +190,6 @@ export class GestionCompras implements OnInit {
 
   closeGenerarOcDialog(): void {
     this.generarOcDialogVisible.set(false);
-  }
-
-  actualizarPrecioItem(index: number, precio: number | null): void {
-    this.itemsOc.update((items) => items.map((item, i) => (i === index ? { ...item, precio_compra: precio } : item)));
   }
 
   onArchivoSeleccionado(event: Event): void {
@@ -241,9 +242,9 @@ export class GestionCompras implements OnInit {
       .generarOc(requerimiento.id_requerimiento, {
         id_proveedor: this.ocForm.getRawValue().id_proveedor!,
         enviar_a_proveedor: enviarAProveedor,
-        items: this.itemsOc().map((item) => ({
-          id_requerimiento_detalle: item.id_requerimiento_detalle,
-          precio_compra: item.precio_compra!,
+        items: this.itemsFormArray.controls.map((control) => ({
+          id_requerimiento_detalle: control.getRawValue().id_requerimiento_detalle,
+          precio_compra: control.getRawValue().precio_compra!,
         })),
         ...(archivo ? { id_archivo_adjunto: archivo.id_archivo_adjunto } : {}),
       })

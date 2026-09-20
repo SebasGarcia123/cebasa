@@ -1,16 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { ReclamosService } from './reclamos.service.js';
 import { CreateReclamoDto } from './dto/create-reclamo.dto.js';
-import { UpdateReclamoDto } from './dto/update-reclamo.dto.js';
+import { ResolverReclamoDto } from './dto/resolver-reclamo.dto.js';
+import { RechazarReclamoDto } from './dto/rechazar-reclamo.dto.js';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Reclamos')
@@ -28,18 +20,24 @@ export class ReclamosController {
     return this.reclamosService.findAll();
   }
 
+  @Get('pendientes/count')
+  async countPendientes() {
+    return { count: await this.reclamosService.countPendientes() };
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.reclamosService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateReclamoDto) {
-    return this.reclamosService.update(id, dto);
+  // Un reclamo no se edita ni se elimina: solo se resuelve o se rechaza.
+  @Post(':id/resolver')
+  resolver(@Param('id', ParseIntPipe) id: number, @Body() dto: ResolverReclamoDto) {
+    return this.reclamosService.resolver(id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.reclamosService.remove(id);
+  @Post(':id/rechazar')
+  rechazar(@Param('id', ParseIntPipe) id: number, @Body() dto: RechazarReclamoDto) {
+    return this.reclamosService.rechazar(id, dto);
   }
 }

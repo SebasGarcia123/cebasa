@@ -10,8 +10,10 @@
         <th scope="col">Fecha</th>
         <th scope="col">Cliente</th>
         <th scope="col">Descripción</th>
+        <th scope="col">Sector</th>
         <th scope="col">Estado</th>
-        <th scope="col" style="width: 8rem"></th>
+        <th scope="col">Resolución</th>
+        <th scope="col" style="width: 10rem"></th>
       </tr>
     </ng-template>
     <ng-template #body let-reclamo>
@@ -19,26 +21,56 @@
         <td>{{ reclamo.fecha | date: 'dd/MM/yyyy' }}</td>
         <td>{{ reclamo.clientes?.nombre_cli || '—' }}</td>
         <td>{{ reclamo.descripcion || '—' }}</td>
+        <td>{{ reclamo.sectores?.nombreSector || '—' }}</td>
         <td>{{ reclamo.estados?.nombreEstado || '—' }}</td>
+        <td>
+          @if (reclamo.solucion) {
+            <span class="reclamos__resolucion reclamos__resolucion--ok" [pTooltip]="reclamo.solucion">
+              Solución: {{ reclamo.solucion }}
+            </span>
+          } @else if (reclamo.motivo_rechazo && reclamo.estados?.nombreEstado === 'Rechazado') {
+            <span class="reclamos__resolucion reclamos__resolucion--rechazado" [pTooltip]="reclamo.motivo_rechazo">
+              Rechazado: {{ reclamo.motivo_rechazo }}
+            </span>
+          } @else if (reclamo.motivo_rechazo) {
+            <span class="reclamos__resolucion reclamos__resolucion--reasignado" [pTooltip]="reclamo.motivo_rechazo">
+              Reasignado: {{ reclamo.motivo_rechazo }}
+            </span>
+          } @else {
+            <span>—</span>
+          }
+        </td>
         <td class="page__actions">
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(reclamo)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(reclamo)" />
+          <p-button
+            icon="pi pi-check"
+            [text]="true"
+            severity="success"
+            pTooltip="Resolver"
+            (onClick)="openResolver(reclamo)"
+          />
+          <p-button
+            icon="pi pi-times"
+            [text]="true"
+            severity="danger"
+            pTooltip="Rechazar"
+            (onClick)="openRechazar(reclamo)"
+          />
         </td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="5">No hay reclamos cargados todavía.</td>
+        <td colspan="7">No hay reclamos cargados todavía.</td>
       </tr>
     </ng-template>
   </p-table>
 
   <p-dialog
-    [visible]="dialogVisible()"
-    (visibleChange)="dialogVisible.set($event)"
+    [visible]="createDialogVisible()"
+    (visibleChange)="createDialogVisible.set($event)"
     [modal]="true"
     [style]="{ width: '400px' }"
-    [header]="editingId() ? 'Editar reclamo' : 'Nuevo reclamo'"
+    header="Nuevo reclamo"
   >
     <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
       <div class="page__field">
@@ -66,14 +98,14 @@
       </div>
 
       <div class="page__field">
-        <label for="id_estado">Estado</label>
+        <label for="id_sector">Sector</label>
         <p-select
-          inputId="id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
+          inputId="id_sector"
+          formControlName="id_sector"
+          [options]="sectores()"
+          optionLabel="nombreSector"
+          optionValue="id_sector"
+          placeholder="Seleccionar sector"
         />
       </div>
 
@@ -83,9 +115,107 @@
           label="Cancelar"
           severity="secondary"
           [outlined]="true"
-          (onClick)="closeDialog()"
+          (onClick)="closeCreateDialog()"
         />
         <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="resolverDialogVisible()"
+    (visibleChange)="resolverDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Resolver reclamo"
+  >
+    <form [formGroup]="resolverForm" (ngSubmit)="resolver()" class="page__form">
+      <div class="page__field">
+        <label for="solucion">Solución</label>
+        <textarea id="solucion" rows="4" pTextarea formControlName="solucion"></textarea>
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeResolverDialog()"
+        />
+        <p-button
+          type="submit"
+          label="Confirmar solución"
+          severity="success"
+          [loading]="saving()"
+          [disabled]="resolverForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="rechazarDialogVisible()"
+    (visibleChange)="rechazarDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Rechazar reclamo"
+  >
+    <form [formGroup]="rechazarForm" (ngSubmit)="rechazar()" class="page__form">
+      <fieldset class="page__field reclamos__motivo-field">
+        <legend>Motivo</legend>
+        <div class="reclamos__motivo-toggle">
+          <p-button
+            type="button"
+            label="No corresponde el reclamo"
+            size="small"
+            [outlined]="tipoRechazo() !== 'no_corresponde'"
+            (onClick)="tipoRechazo.set('no_corresponde')"
+          />
+          <p-button
+            type="button"
+            label="Mal direccionamiento"
+            size="small"
+            [outlined]="tipoRechazo() !== 'redireccion'"
+            (onClick)="tipoRechazo.set('redireccion')"
+          />
+        </div>
+      </fieldset>
+
+      <div class="page__field">
+        <label for="motivo_rechazo">Detalle</label>
+        <textarea id="motivo_rechazo" rows="4" pTextarea formControlName="motivo_rechazo"></textarea>
+      </div>
+
+      @if (tipoRechazo() === 'redireccion') {
+        <div class="page__field">
+          <label for="id_sector_nuevo">Reasignar a sector</label>
+          <p-select
+            inputId="id_sector_nuevo"
+            formControlName="id_sector_nuevo"
+            [options]="sectores()"
+            optionLabel="nombreSector"
+            optionValue="id_sector"
+            placeholder="Seleccionar sector"
+          />
+        </div>
+      }
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeRechazarDialog()"
+        />
+        <p-button
+          type="submit"
+          [label]="tipoRechazo() === 'redireccion' ? 'Reasignar' : 'Confirmar rechazo'"
+          severity="danger"
+          [loading]="saving()"
+          [disabled]="rechazarInvalido()"
+        />
       </div>
     </form>
   </p-dialog>

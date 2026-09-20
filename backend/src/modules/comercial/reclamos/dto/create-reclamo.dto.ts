@@ -6,6 +6,8 @@ import {
   MaxLength,
 } from 'class-validator';
 
+// No incluye id_estado: un reclamo nuevo siempre arranca "Activo", lo
+// asigna el sistema (ver ReclamosService.create).
 export class CreateReclamoDto {
   @IsDateString()
   fecha: string;
@@ -19,7 +21,7 @@ export class CreateReclamoDto {
   id_cliente: number;
 
   @IsInt()
-  id_estado: number;
+  id_sector: number;
 
   @IsInt()
   id_usuario: number;

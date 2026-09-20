@@ -560,19 +560,24 @@ model receta_item {
 }
 
 model reclamos {
-  id_reclamo  Int      @id @default(autoincrement())
-  fecha       DateTime @db.Date
-  descripcion String?  @db.VarChar(500)
-  id_cliente  Int
-  id_estado   Int
-  id_usuario  Int
-  clientes    clientes @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_reclamos_cliente")
-  estados     estados  @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_reclamos_estado")
-  usuarios    usuarios @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_reclamos_usuario")
+  id_reclamo     Int      @id @default(autoincrement())
+  fecha          DateTime @db.Date
+  descripcion    String?  @db.VarChar(500)
+  solucion       String?  @db.VarChar(500)
+  motivo_rechazo String?  @db.VarChar(500)
+  id_cliente     Int
+  id_estado      Int
+  id_usuario     Int
+  id_sector      Int
+  clientes       clientes @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_reclamos_cliente")
+  estados        estados  @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_reclamos_estado")
+  usuarios       usuarios @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_reclamos_usuario")
+  sectores       sectores @relation(fields: [id_sector], references: [id_sector], onUpdate: Restrict, map: "fk_reclamos_sector")
 
   @@index([id_cliente], map: "fk_reclamos_cliente")
   @@index([id_estado], map: "fk_reclamos_estado")
   @@index([id_usuario], map: "fk_reclamos_usuario")
+  @@index([id_sector], map: "fk_reclamos_sector")
 }
 
 model requerimiento {
@@ -625,6 +630,7 @@ model sectores {
   id_sector    Int        @id @default(autoincrement())
   nombreSector String     @db.VarChar(100)
   usuarios     usuarios[]
+  reclamos     reclamos[]
 }
 
 model service_autoelevador {

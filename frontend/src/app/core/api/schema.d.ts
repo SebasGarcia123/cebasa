@@ -612,6 +612,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reclamos/pendientes/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReclamosController_countPendientes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reclamos/{id}": {
         parameters: {
             query?: never;
@@ -622,10 +638,42 @@ export interface paths {
         get: operations["ReclamosController_findOne"];
         put?: never;
         post?: never;
-        delete: operations["ReclamosController_remove"];
+        delete?: never;
         options?: never;
         head?: never;
-        patch: operations["ReclamosController_update"];
+        patch?: never;
+        trace?: never;
+    };
+    "/reclamos/{id}/resolver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReclamosController_resolver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reclamos/{id}/rechazar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReclamosController_rechazar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/unidad-medida": {
@@ -1910,10 +1958,18 @@ export interface components {
             fecha: string;
             descripcion?: string;
             id_cliente: number;
-            id_estado: number;
+            id_sector: number;
             id_usuario: number;
         };
-        UpdateReclamoDto: Record<string, never>;
+        ResolverReclamoDto: {
+            solucion: string;
+        };
+        RechazarReclamoDto: {
+            motivo_rechazo: string;
+            /** @enum {string} */
+            tipo_rechazo: "redireccion" | "no_corresponde";
+            id_sector_nuevo?: number;
+        };
         CreateUnidadMedidaDto: {
             nombre_unidad_medida: string;
         };
@@ -3873,6 +3929,23 @@ export interface operations {
             };
         };
     };
+    ReclamosController_countPendientes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ReclamosController_findOne: {
         parameters: {
             query?: never;
@@ -3894,26 +3967,7 @@ export interface operations {
             };
         };
     };
-    ReclamosController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ReclamosController_update: {
+    ReclamosController_resolver: {
         parameters: {
             query?: never;
             header?: never;
@@ -3924,11 +3978,34 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateReclamoDto"];
+                "application/json": components["schemas"]["ResolverReclamoDto"];
             };
         };
         responses: {
-            200: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReclamosController_rechazar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RechazarReclamoDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

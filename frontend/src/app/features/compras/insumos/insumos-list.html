@@ -12,6 +12,7 @@
         <th scope="col">Unidad</th>
         <th scope="col">Stock actual</th>
         <th scope="col">Stock mínimo</th>
+        <th scope="col">Stockeable</th>
         <th scope="col">Estado</th>
         <th scope="col" style="width: 8rem"></th>
       </tr>
@@ -25,6 +26,7 @@
           {{ insumo.stock_actual }}
         </td>
         <td>{{ insumo.stock_minimo }}</td>
+        <td>{{ insumo.stockeable ? 'Sí' : 'No' }}</td>
         <td>{{ insumo.estados?.nombreEstado || '—' }}</td>
         <td class="page__actions">
           <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(insumo)" />
@@ -34,7 +36,7 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7">No hay insumos cargados todavía.</td>
+        <td colspan="8">No hay insumos cargados todavía.</td>
       </tr>
     </ng-template>
   </p-table>
@@ -75,8 +77,13 @@
         <p-inputNumber inputId="stock_minimo" formControlName="stock_minimo" [min]="0" />
       </div>
 
+      <div class="page__field insumos__checkbox-field">
+        <p-checkbox inputId="stockeable" formControlName="stockeable" [binary]="true" />
+        <label for="stockeable">Es stockeable (se controla en la pantalla de Stock)</label>
+      </div>
+
       @if (!editingId()) {
-        <small class="insumos__hint">El stock actual arranca en 0 y solo se modifica con movimientos de insumo.</small>
+        <small class="insumos__hint">El stock actual arranca en 0 y solo se modifica desde la pantalla de Stock.</small>
       }
 
       @if (editingId()) {

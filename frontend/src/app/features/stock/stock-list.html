@@ -1,0 +1,81 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Stock</h1>
+    <p-selectButton
+      [options]="vistaOpciones"
+      [ngModel]="vista()"
+      (ngModelChange)="cambiarVista($event)"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+    />
+  </div>
+
+  <p-table [value]="filas()" [loading]="loading()" dataKey="id" [paginator]="true" [rows]="15">
+    <ng-template #header>
+      <tr>
+        <th scope="col">Código</th>
+        <th scope="col">Descripción</th>
+        <th scope="col">Cantidad</th>
+        <th scope="col" style="width: 6rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-fila>
+      <tr>
+        <td>{{ fila.codigo }}</td>
+        <td>{{ fila.descripcion }}</td>
+        <td [class.stock__cantidad--bajo]="fila.stock_actual < fila.stock_minimo">
+          {{ fila.stock_actual }}
+        </td>
+        <td class="page__actions">
+          @if (puedeAjustar()) {
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="abrirAjuste(fila)" pTooltip="Ajustar stock" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">No hay {{ vista() === 'productos' ? 'productos' : 'insumos' }} para mostrar.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="ajusteDialogVisible()"
+    (visibleChange)="ajusteDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Ajustar stock"
+  >
+    @if (filaActiva(); as fila) {
+      <form [formGroup]="ajusteForm" (ngSubmit)="guardarAjuste()" class="page__form">
+        <p class="stock__item-info">
+          <strong>{{ fila.codigo }}</strong> — {{ fila.descripcion }}
+        </p>
+        <p class="stock__item-info">Cantidad actual: <strong>{{ fila.stock_actual }}</strong></p>
+
+        <div class="page__field">
+          <label for="cantidad_nueva">Cantidad nueva</label>
+          <p-inputNumber inputId="cantidad_nueva" formControlName="cantidad_nueva" [min]="0" />
+        </div>
+
+        <div class="page__field">
+          <label for="motivo">Motivo del ajuste</label>
+          <textarea id="motivo" rows="3" pTextarea formControlName="motivo"></textarea>
+        </div>
+
+        <div class="page__form-actions">
+          <p-button
+            type="button"
+            label="Cancelar"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cerrarAjuste()"
+          />
+          <p-button type="submit" label="Guardar" [loading]="ajusteSaving()" [disabled]="ajusteForm.invalid" />
+        </div>
+      </form>
+    }
+  </p-dialog>
+</div>

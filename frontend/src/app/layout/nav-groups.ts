@@ -25,6 +25,15 @@ export interface NavGroup {
  */
 export const NAV_GROUPS: NavGroup[] = [
   {
+    label: 'Stock',
+    items: [
+      // Sin permission: el stock es de consulta libre para toda la
+      // organización (el ajuste en sí queda protegido por stock.ajustar
+      // en el backend, y el lápiz se oculta client-side sin ese permiso).
+      { label: 'Stock', icon: 'pi pi-warehouse', route: '/stock' },
+    ],
+  },
+  {
     label: 'Catálogos',
     items: [
       { label: 'Estados', icon: 'pi pi-flag', route: '/catalogos/estados' },

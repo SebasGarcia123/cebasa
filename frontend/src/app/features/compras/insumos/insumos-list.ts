@@ -7,6 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { InsumosApiService } from '../../../core/api/insumos-api.service';
 import { UnidadMedidaApiService } from '../../../core/api/unidad-medida-api.service';
@@ -27,6 +28,7 @@ const ESTADOS_INSUMO = new Set(['Activo', 'Anulado']);
     InputTextModule,
     InputNumberModule,
     SelectModule,
+    CheckboxModule,
   ],
   templateUrl: './insumos-list.html',
   styleUrl: './insumos-list.scss',
@@ -58,6 +60,7 @@ export class InsumosList implements OnInit {
     nombre_insumo: ['', Validators.required],
     id_unidad_medida: [null as number | null, Validators.required],
     stock_minimo: [0 as number | null],
+    stockeable: [true],
     id_estado: [null as number | null],
   });
 
@@ -87,7 +90,7 @@ export class InsumosList implements OnInit {
 
   openCreate(): void {
     this.editingId.set(null);
-    this.form.reset({ stock_minimo: 0 });
+    this.form.reset({ stock_minimo: 0, stockeable: true });
     this.dialogVisible.set(true);
   }
 
@@ -98,6 +101,7 @@ export class InsumosList implements OnInit {
       nombre_insumo: insumo.nombre_insumo,
       id_unidad_medida: insumo.id_unidad_medida,
       stock_minimo: insumo.stock_minimo,
+      stockeable: insumo.stockeable,
       id_estado: insumo.id_estado,
     });
     this.dialogVisible.set(true);
@@ -119,6 +123,7 @@ export class InsumosList implements OnInit {
       nombre_insumo: raw.nombre_insumo,
       id_unidad_medida: raw.id_unidad_medida!,
       stock_minimo: raw.stock_minimo ?? 0,
+      stockeable: raw.stockeable,
     };
     const id = this.editingId();
     const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);

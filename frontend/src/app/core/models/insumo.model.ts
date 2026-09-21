@@ -8,6 +8,7 @@ export interface Insumo {
   id_unidad_medida: number;
   stock_minimo: number;
   stock_actual: number;
+  stockeable: boolean;
   id_estado: number;
   unidad_medida?: UnidadMedida;
   estados?: Estado;

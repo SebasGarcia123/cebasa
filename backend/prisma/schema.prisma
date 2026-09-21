@@ -18,6 +18,30 @@ model archivo_adjunto {
   productos          productos[]
 }
 
+// Ajuste manual de stock (insumo o producto terminado), hecho desde la
+// pantalla de Stock. Exactamente uno de id_insumo/id_producto va
+// completo (se valida en el service, no hay constraint de base para
+// "exactamente uno de dos" en MySQL). Guarda cantidad_anterior y
+// cantidad_nueva (no solo la diferencia) para que el historial sea
+// legible sin tener que reconstruirlo sumando registros previos.
+model ajuste_stock {
+  id_ajuste_stock   Int        @id @default(autoincrement())
+  id_insumo         Int?
+  id_producto       Int?
+  id_usuario        Int
+  cantidad_anterior Int
+  cantidad_nueva    Int
+  motivo            String     @db.VarChar(255)
+  fecha_ajuste      DateTime   @default(now())
+  insumo            insumo?    @relation(fields: [id_insumo], references: [id_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_insumo")
+  productos         productos? @relation(fields: [id_producto], references: [id_producto], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_producto")
+  usuarios          usuarios   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_usuario")
+
+  @@index([id_insumo], map: "fk_ajuste_stock_insumo")
+  @@index([id_producto], map: "fk_ajuste_stock_producto")
+  @@index([id_usuario], map: "fk_ajuste_stock_usuario")
+}
+
 model autoelevadores {
   id_autoelevadores    Int                    @id @default(autoincrement())
   nombre               String                 @db.VarChar(100)
@@ -238,6 +262,9 @@ model insumo {
   id_unidad_medida      Int
   stock_minimo          Int                     @default(0)
   stock_actual          Int                     @default(0)
+  // Algunos insumos no se llevan por stock (ej. servicios, intangibles):
+  // no aparecen en la pantalla de Stock ni se les puede cargar un ajuste.
+  stockeable            Boolean                 @default(true)
   id_estado             Int
   compra_detalle        compra_detalle[]
   estados               estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_insumo_estado")
@@ -247,6 +274,7 @@ model insumo {
   receta_item           receta_item[]
   requerimiento_detalle requerimiento_detalle[]
   stock_insumo_deposito stock_insumo_deposito[]
+  ajuste_stock          ajuste_stock[]
 
   @@index([id_estado], map: "fk_insumo_estado")
   @@index([id_unidad_medida], map: "fk_insumo_unidad_medida")
@@ -521,6 +549,7 @@ model productos {
   // el borrado del archivo no puede quedar bloqueado por esta FK.
   archivo_adjunto      archivo_adjunto?       @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_productos_archivo_adjunto")
   receta               receta[]
+  ajuste_stock         ajuste_stock[]
 
   @@index([id_estado], map: "fk_productos_estado")
   @@index([id_archivo_adjunto], map: "fk_productos_archivo_adjunto")
@@ -762,6 +791,7 @@ model usuarios {
   refresh_tokens       refresh_tokens[]
   requerimiento        requerimiento[]
   usuario_roles        usuario_roles[]
+  ajuste_stock         ajuste_stock[]
   estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_usuarios_estado")
   sectores             sectores               @relation(fields: [id_sector], references: [id_sector], onUpdate: Restrict, map: "fk_usuarios_sector")
 

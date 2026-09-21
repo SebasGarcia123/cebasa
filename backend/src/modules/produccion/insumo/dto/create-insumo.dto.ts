@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -25,4 +26,8 @@ export class CreateInsumoDto {
   @IsInt()
   @Min(0)
   stock_minimo?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  stockeable?: boolean;
 }

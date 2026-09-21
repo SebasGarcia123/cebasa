@@ -13,6 +13,7 @@ import { ProduccionModule } from './modules/produccion/produccion.module.js';
 import { LogisticaModule } from './modules/logistica/logistica.module.js';
 import { ComprasModule } from './modules/compras/compras.module.js';
 import { PedidoInsumosModule } from './modules/pedido-insumos/pedido-insumos.module.js';
+import { StockModule } from './modules/stock/stock.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PedidoInsumosModule } from './modules/pedido-insumos/pedido-insumos.mod
     LogisticaModule,
     ComprasModule,
     PedidoInsumosModule,
+    StockModule,
   ],
   controllers: [AppController],
   providers: [AppService],

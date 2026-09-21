@@ -54,19 +54,27 @@ export const BrandPreset = definePreset(Aura, {
           hoverColor: '{primary.300}',
           activeColor: '{primary.200}',
         },
+        // La rampa tiene que ir de claro (50) a oscuro (950) en los DOS
+        // esquemas: los componentes de Aura arman su propio contraste con
+        // "light-dark({surface.0}, {surface.900})" (blanco en claro, el
+        // escalón 900 en oscuro) — necesitan que 900/950 sea oscuro. Una
+        // versión anterior invertía esta rampa para que "se leyera" como
+        // dark theme a simple vista, pero eso hacía que surface.900
+        // resolviera a un tono CLARO en modo oscuro: tablas y overlays
+        // terminaban con fondo Y texto claros (ambos ilegibles).
         surface: {
           0: '#ffffff',
-          50: '#232326',
-          100: '#2a2a2e',
-          200: '#33353a',
-          300: '#45474d',
-          400: '#5a5a63',
+          50: '#f2f2f4',
+          100: '#eeeef0',
+          200: '#dcdde0',
+          300: '#c4c6ca',
+          400: '#a0a4ab',
           500: '#8c8c97',
-          600: '#a0a4ab',
-          700: '#c4c6ca',
-          800: '#dcdde0',
-          900: '#eeeef0',
-          950: '#f2f2f4',
+          600: '#5a5a63',
+          700: '#45474d',
+          800: '#33353a',
+          900: '#2a2a2e',
+          950: '#232326',
         },
       },
     },

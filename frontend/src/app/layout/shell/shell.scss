@@ -13,11 +13,13 @@
   }
 
   &__brand {
-    font-family: var(--font-family-display);
-    font-weight: 600;
-    font-size: 1.125rem;
     padding: 1.25rem 1.5rem;
-    color: var(--color-primary);
+  }
+
+  &__brand-logo {
+    display: block;
+    max-width: 100%;
+    height: auto;
   }
 
   &__nav {

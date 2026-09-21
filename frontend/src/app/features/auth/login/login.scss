@@ -16,6 +16,11 @@
     max-width: 220px;
     height: auto;
     margin: 0 auto;
+    content: url('/images/logo-celulosa-baradero.png');
+  }
+
+  :host-context([data-theme='dark']) &__logo {
+    content: url('/images/logo-celulosa-baradero-dark.png');
   }
 
   &__form {

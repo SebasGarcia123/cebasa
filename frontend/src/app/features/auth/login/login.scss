@@ -11,16 +11,22 @@
     max-width: 380px;
   }
 
+  // El PNG del logo tiene fondo blanco opaco de verdad (no transparente),
+  // así que en vez de manipular la imagen se lo deja intacto sobre su
+  // propia tarjetita blanca, en los dos temas.
+  &__logo-card {
+    display: block;
+    width: fit-content;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0 auto;
+  }
+
   &__logo {
     display: block;
     max-width: 220px;
     height: auto;
-    margin: 0 auto;
-    content: url('/images/logo-celulosa-baradero.png');
-  }
-
-  :host-context([data-theme='dark']) &__logo {
-    content: url('/images/logo-celulosa-baradero-dark.png');
   }
 
   &__form {

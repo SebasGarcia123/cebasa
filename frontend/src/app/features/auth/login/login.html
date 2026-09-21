@@ -1,7 +1,9 @@
 <div class="login">
   <p-card class="login__card">
     <ng-template #title>
-      <img src="/images/logo-celulosa-baradero.png" alt="Celulosa Baradero S.A." class="login__logo" />
+      <div class="login__logo-card">
+        <img src="/images/logo-celulosa-baradero.png" alt="Celulosa Baradero S.A." class="login__logo" />
+      </div>
     </ng-template>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="login__form">

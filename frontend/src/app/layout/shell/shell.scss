@@ -16,15 +16,21 @@
     padding: 1.25rem 1.5rem;
   }
 
+  // El PNG del logo tiene fondo blanco opaco de verdad (no transparente),
+  // así que en vez de manipular la imagen (eso terminó pixelando el
+  // antialiasing de las letras) se lo deja intacto sobre su propia
+  // tarjetita blanca, en los dos temas.
+  &__brand-card {
+    display: inline-block;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+  }
+
   &__brand-logo {
     display: block;
     max-width: 100%;
     height: auto;
-    content: url('/images/logo-celulosa-baradero.png');
-  }
-
-  :host-context([data-theme='dark']) &__brand-logo {
-    content: url('/images/logo-celulosa-baradero-dark.png');
   }
 
   &__nav {

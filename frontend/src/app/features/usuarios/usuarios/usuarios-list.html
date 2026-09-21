@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="usuarios()" [loading]="loading()" dataKey="id_usuario" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="usuarios()"
+    [loading]="loading()"
+    dataKey="id_usuario"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Usuario</th>
@@ -20,10 +26,22 @@
         <td>{{ usuario.email || '—' }}</td>
         <td>{{ usuario.sectores?.nombreSector || '—' }}</td>
         <td>{{ usuario.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-shield" [text]="true" (onClick)="openRoles(usuario)" pTooltip="Roles" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(usuario)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(usuario)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-shield"
+              [text]="true"
+              (onClick)="openRoles(usuario)"
+              pTooltip="Roles"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(usuario)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(usuario)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -48,8 +66,15 @@
       </div>
 
       <div class="page__field">
-        <label for="password">{{ editingId() ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
-        <p-password inputId="password" formControlName="password" [feedback]="false" [toggleMask]="true" />
+        <label for="password">{{
+          editingId() ? 'Nueva contraseña (opcional)' : 'Contraseña'
+        }}</label>
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+        />
         <small class="usuarios__hint">Mínimo 8 caracteres.</small>
       </div>
 

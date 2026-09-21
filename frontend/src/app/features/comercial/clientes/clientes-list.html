@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="clientes()" [loading]="loading()" dataKey="id_cliente" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="clientes()"
+    [loading]="loading()"
+    dataKey="id_cliente"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Nombre</th>
@@ -24,15 +30,22 @@
         <td [class.clientes__estado--cancelado]="cliente.estados?.nombreEstado === 'Cancelado'">
           {{ cliente.estados?.nombreEstado || '—' }}
         </td>
-        <td class="page__actions">
-          <p-button
-            icon="pi pi-wallet"
-            [text]="true"
-            (onClick)="openCuentaCorriente(cliente)"
-            pTooltip="Cuenta corriente"
-          />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(cliente)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(cliente)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-wallet"
+              [text]="true"
+              (onClick)="openCuentaCorriente(cliente)"
+              pTooltip="Cuenta corriente"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(cliente)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(cliente)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -139,14 +152,33 @@
       <p>Cargando...</p>
     } @else if (!cuentaCorriente()) {
       <p>Este cliente todavía no tiene cuenta corriente.</p>
-      <p-button label="Crear cuenta corriente" (onClick)="crearCuentaCorriente()" [loading]="ctaCteSaving()" />
+      <p-button
+        label="Crear cuenta corriente"
+        (onClick)="crearCuentaCorriente()"
+        [loading]="ctaCteSaving()"
+      />
     } @else {
-      <form [formGroup]="limiteForm" (ngSubmit)="guardarLimite()" class="page__form clientes__limite-form">
+      <form
+        [formGroup]="limiteForm"
+        (ngSubmit)="guardarLimite()"
+        class="page__form clientes__limite-form"
+      >
         <div class="page__field">
           <label for="limite_credito">Límite de crédito</label>
-          <p-inputNumber inputId="limite_credito" formControlName="limite_credito" mode="currency" currency="ARS" locale="es-AR" />
+          <p-inputNumber
+            inputId="limite_credito"
+            formControlName="limite_credito"
+            mode="currency"
+            currency="ARS"
+            locale="es-AR"
+          />
         </div>
-        <p-button type="submit" label="Guardar límite" [loading]="ctaCteSaving()" [disabled]="limiteForm.invalid" />
+        <p-button
+          type="submit"
+          label="Guardar límite"
+          [loading]="ctaCteSaving()"
+          [disabled]="limiteForm.invalid"
+        />
       </form>
 
       <h3 class="clientes__movimientos-title">Movimientos</h3>
@@ -166,8 +198,15 @@
             <td>{{ mov.tipo_documento?.descripcion || '—' }}</td>
             <td>{{ mov.monto | number: '1.2-2' }}</td>
             <td>{{ mov.saldo_resultante | number: '1.2-2' }}</td>
-            <td class="page__actions">
-              <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="eliminarMovimiento(mov)" />
+            <td>
+              <div class="page__actions">
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="eliminarMovimiento(mov)"
+                />
+              </div>
             </td>
           </tr>
         </ng-template>
@@ -185,7 +224,12 @@
       >
         <div class="page__field">
           <label for="mov_fecha">Fecha</label>
-          <p-datepicker inputId="mov_fecha" formControlName="fecha" dateFormat="dd/mm/yy" [showIcon]="true" />
+          <p-datepicker
+            inputId="mov_fecha"
+            formControlName="fecha"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+          />
         </div>
         <div class="page__field">
           <label for="mov_tipo_documento">Tipo de documento</label>
@@ -201,7 +245,13 @@
         </div>
         <div class="page__field">
           <label for="mov_monto">Monto</label>
-          <p-inputNumber inputId="mov_monto" formControlName="monto" mode="currency" currency="ARS" locale="es-AR" />
+          <p-inputNumber
+            inputId="mov_monto"
+            formControlName="monto"
+            mode="currency"
+            currency="ARS"
+            locale="es-AR"
+          />
         </div>
         <div class="page__field">
           <label for="mov_saldo">Saldo resultante</label>

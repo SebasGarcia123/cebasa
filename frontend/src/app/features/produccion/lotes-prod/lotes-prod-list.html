@@ -20,10 +20,22 @@
         <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy' }}</td>
         <td>{{ lote.turnos?.descripcion_turnos || '—' }}</td>
         <td>{{ lote.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(lote)" pTooltip="Ítems" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(lote)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-list"
+              [text]="true"
+              (onClick)="openItems(lote)"
+              pTooltip="Ítems"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(lote)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -112,9 +124,16 @@
           <td>{{ item.productos?.descripcion_producto || '—' }}</td>
           <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
           <td>{{ item.cantidad }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeItem(item)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>

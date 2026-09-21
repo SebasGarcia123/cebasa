@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="requerimientos()" [loading]="loading()" dataKey="id_requerimiento" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="requerimientos()"
+    [loading]="loading()"
+    dataKey="id_requerimiento"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">#</th>
@@ -22,10 +28,22 @@
         <td>{{ requerimiento.fecha_necesidad | date: 'dd/MM/yyyy' }}</td>
         <td>{{ requerimiento.observaciones || '—' }}</td>
         <td>{{ requerimiento.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-list" [text]="true" (onClick)="openDetalle(requerimiento)" pTooltip="Insumos" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(requerimiento)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(requerimiento)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-list"
+              [text]="true"
+              (onClick)="openDetalle(requerimiento)"
+              pTooltip="Insumos"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(requerimiento)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(requerimiento)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -62,7 +80,11 @@
 
     <h3 class="requerimientos__seccion-title">Insumos</h3>
 
-    <form [formGroup]="itemForm" (ngSubmit)="agregarItemNuevo()" class="page__form requerimientos__item-form">
+    <form
+      [formGroup]="itemForm"
+      (ngSubmit)="agregarItemNuevo()"
+      class="page__form requerimientos__item-form"
+    >
       <div class="page__field requerimientos__item-field">
         <label for="item_insumo">Insumo</label>
         <p-select
@@ -76,13 +98,22 @@
           placeholder="Buscar por código o nombre"
           [appendTo]="'body'"
         >
-          <ng-template #selectedItem let-insumo>{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template>
-          <ng-template #item let-insumo>{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template>
+          <ng-template #selectedItem let-insumo
+            >{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template
+          >
+          <ng-template #item let-insumo
+            >{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template
+          >
         </p-select>
       </div>
       <div class="page__field requerimientos__cantidad-field">
         <label for="item_cantidad">Cantidad</label>
-        <p-inputNumber inputId="item_cantidad" formControlName="cantidad" [min]="0.01" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="item_cantidad"
+          formControlName="cantidad"
+          [min]="0.01"
+          [minFractionDigits]="2"
+        />
       </div>
       <p-button type="submit" label="Agregar" icon="pi pi-plus" [disabled]="itemForm.invalid" />
     </form>
@@ -101,8 +132,15 @@
           <td>{{ item.codigo_insumo }}</td>
           <td>{{ item.nombre_insumo }}</td>
           <td>{{ item.cantidad }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="quitarItemNuevo(i)" />
+          <td>
+            <div class="page__actions">
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="quitarItemNuevo(i)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -114,7 +152,13 @@
     </p-table>
 
     <div class="page__form-actions">
-      <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeCreateDialog()" />
+      <p-button
+        type="button"
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="closeCreateDialog()"
+      />
       <p-button
         label="Guardar"
         icon="pi pi-send"
@@ -157,7 +201,12 @@
           [outlined]="true"
           (onClick)="closeEditDialog()"
         />
-        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="editForm.invalid" />
+        <p-button
+          type="submit"
+          label="Guardar"
+          [loading]="saving()"
+          [disabled]="editForm.invalid"
+        />
       </div>
     </form>
   </p-dialog>
@@ -183,9 +232,16 @@
           <td>{{ linea.insumo?.codigo_insumo || '—' }}</td>
           <td>{{ linea.insumo?.nombre_insumo || '—' }}</td>
           <td>{{ linea.cantidad }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editDetalle(linea)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeDetalle(linea)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editDetalle(linea)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeDetalle(linea)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -196,7 +252,11 @@
       </ng-template>
     </p-table>
 
-    <form [formGroup]="detalleForm" (ngSubmit)="saveDetalle()" class="page__form requerimientos__detalle-form">
+    <form
+      [formGroup]="detalleForm"
+      (ngSubmit)="saveDetalle()"
+      class="page__form requerimientos__detalle-form"
+    >
       <div class="page__field">
         <label for="detalle_insumo">Insumo</label>
         <p-select
@@ -210,13 +270,22 @@
           placeholder="Buscar por código o nombre"
           [appendTo]="'body'"
         >
-          <ng-template #selectedItem let-insumo>{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template>
-          <ng-template #item let-insumo>{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template>
+          <ng-template #selectedItem let-insumo
+            >{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template
+          >
+          <ng-template #item let-insumo
+            >{{ insumo.codigo_insumo }} — {{ insumo.nombre_insumo }}</ng-template
+          >
         </p-select>
       </div>
       <div class="page__field">
         <label for="detalle_cantidad">Cantidad</label>
-        <p-inputNumber inputId="detalle_cantidad" formControlName="cantidad" [min]="0.01" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="detalle_cantidad"
+          formControlName="cantidad"
+          [min]="0.01"
+          [minFractionDigits]="2"
+        />
       </div>
 
       <div class="page__form-actions">

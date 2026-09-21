@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="fleteros()" [loading]="loading()" dataKey="id_fletero" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="fleteros()"
+    [loading]="loading()"
+    dataKey="id_fletero"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Nombre</th>
@@ -20,9 +26,16 @@
         <td>{{ fletero.cuit || '—' }}</td>
         <td>{{ fletero.telefono || '—' }}</td>
         <td>{{ fletero.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(fletero)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(fletero)" />
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(fletero)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(fletero)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>

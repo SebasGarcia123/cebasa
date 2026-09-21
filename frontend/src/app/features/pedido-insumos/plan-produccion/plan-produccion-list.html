@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="planes()" [loading]="loading()" dataKey="id_plan_produccion" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="planes()"
+    [loading]="loading()"
+    dataKey="id_plan_produccion"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">#</th>
@@ -20,10 +26,22 @@
         <td>{{ plan.fecha_inicio_semana | date: 'dd/MM/yyyy' }}</td>
         <td>{{ plan.usuarios?.nombre_usuario || '—' }}</td>
         <td>{{ plan.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(plan)" pTooltip="Ítems" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(plan)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(plan)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-list"
+              [text]="true"
+              (onClick)="openItems(plan)"
+              pTooltip="Ítems"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(plan)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(plan)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -103,9 +121,16 @@
           <td>{{ item.turnos?.descripcion_turnos || '—' }}</td>
           <td>{{ item.productos?.descripcion_producto || '—' }}</td>
           <td>{{ item.cantidad }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeItem(item)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -116,10 +141,19 @@
       </ng-template>
     </p-table>
 
-    <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="page__form plan-produccion__item-form">
+    <form
+      [formGroup]="itemForm"
+      (ngSubmit)="saveItem()"
+      class="page__form plan-produccion__item-form"
+    >
       <div class="page__field">
         <label for="item_fecha">Fecha</label>
-        <p-datepicker inputId="item_fecha" formControlName="fecha" dateFormat="dd/mm/yy" [showIcon]="true" />
+        <p-datepicker
+          inputId="item_fecha"
+          formControlName="fecha"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
       </div>
       <div class="page__field">
         <label for="item_lineas">Línea</label>

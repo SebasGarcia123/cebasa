@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="insumos()" [loading]="loading()" dataKey="id_insumo" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="insumos()"
+    [loading]="loading()"
+    dataKey="id_insumo"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Código</th>
@@ -28,9 +34,16 @@
         <td>{{ insumo.stock_minimo }}</td>
         <td>{{ insumo.stockeable ? 'Sí' : 'No' }}</td>
         <td>{{ insumo.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(insumo)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(insumo)" />
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(insumo)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(insumo)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -83,7 +96,9 @@
       </div>
 
       @if (!editingId()) {
-        <small class="insumos__hint">El stock actual arranca en 0 y solo se modifica desde la pantalla de Stock.</small>
+        <small class="insumos__hint"
+          >El stock actual arranca en 0 y solo se modifica desde la pantalla de Stock.</small
+        >
       }
 
       @if (editingId()) {

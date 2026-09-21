@@ -16,10 +16,22 @@
       <tr>
         <td>{{ rol.nombre_rol }}</td>
         <td>{{ rol.es_administrador ? 'Sí (administrador)' : '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-key" [text]="true" (onClick)="openPermisos(rol)" pTooltip="Permisos" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(rol)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(rol)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-key"
+              [text]="true"
+              (onClick)="openPermisos(rol)"
+              pTooltip="Permisos"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(rol)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(rol)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>

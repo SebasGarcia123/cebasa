@@ -24,10 +24,22 @@
         <td>{{ lote.camion?.dominio_chasis || '—' }}</td>
         <td>{{ lote.tipo_lote?.descripcion_lote || '—' }}</td>
         <td>{{ lote.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(lote)" pTooltip="Ítems" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(lote)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-list"
+              [text]="true"
+              (onClick)="openItems(lote)"
+              pTooltip="Ítems"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(lote)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -48,7 +60,12 @@
     <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
       <div class="page__field">
         <label for="fecha_lote">Fecha</label>
-        <p-datepicker inputId="fecha_lote" formControlName="fecha_lote" dateFormat="dd/mm/yy" [showIcon]="true" />
+        <p-datepicker
+          inputId="fecha_lote"
+          formControlName="fecha_lote"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
       </div>
 
       <div class="page__field">
@@ -65,7 +82,9 @@
           [appendTo]="'body'"
         >
           <ng-template #selectedItem let-chofer>{{ chofer.nombre_chofer }}</ng-template>
-          <ng-template #item let-chofer>{{ chofer.nombre_chofer }} — {{ chofer.transporteNombre }}</ng-template>
+          <ng-template #item let-chofer
+            >{{ chofer.nombre_chofer }} — {{ chofer.transporteNombre }}</ng-template
+          >
         </p-select>
       </div>
 
@@ -83,7 +102,9 @@
           [appendTo]="'body'"
         >
           <ng-template #selectedItem let-camion>{{ camion.dominio_chasis }}</ng-template>
-          <ng-template #item let-camion>{{ camion.dominio_chasis }} — {{ camion.transporteNombre }}</ng-template>
+          <ng-template #item let-camion
+            >{{ camion.dominio_chasis }} — {{ camion.transporteNombre }}</ng-template
+          >
         </p-select>
       </div>
 
@@ -157,9 +178,16 @@
           <td>{{ item.descripcion_item }}</td>
           <td>{{ item.unidad_medida?.nombre_unidad_medida || '—' }}</td>
           <td>{{ item.cantidad_item_lote }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeItem(item)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -189,7 +217,12 @@
       </div>
       <div class="page__field">
         <label for="cantidad_item_lote">Cantidad</label>
-        <p-inputNumber inputId="cantidad_item_lote" formControlName="cantidad_item_lote" [min]="0.01" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="cantidad_item_lote"
+          formControlName="cantidad_item_lote"
+          [min]="0.01"
+          [minFractionDigits]="2"
+        />
       </div>
 
       <div class="page__form-actions">

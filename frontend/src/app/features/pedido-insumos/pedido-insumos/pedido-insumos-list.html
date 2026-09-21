@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="pedidos()" [loading]="loading()" dataKey="id_pedido_insumos" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="pedidos()"
+    [loading]="loading()"
+    dataKey="id_pedido_insumos"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">#</th>
@@ -22,10 +28,22 @@
         <td>{{ pedido.fecha_necesidad | date: 'dd/MM/yyyy' }}</td>
         <td>{{ pedido.usuarios?.nombre_usuario || '—' }}</td>
         <td>{{ pedido.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(pedido)" pTooltip="Insumos" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(pedido)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-list"
+              [text]="true"
+              (onClick)="openItems(pedido)"
+              pTooltip="Insumos"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(pedido)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -46,7 +64,12 @@
     <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
       <div class="page__field">
         <label for="fecha_carga">Fecha de carga</label>
-        <p-datepicker inputId="fecha_carga" formControlName="fecha_carga" dateFormat="dd/mm/yy" [showIcon]="true" />
+        <p-datepicker
+          inputId="fecha_carga"
+          formControlName="fecha_carga"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
       </div>
 
       <div class="page__field">
@@ -111,9 +134,16 @@
           <td>{{ item.insumo?.nombre_insumo || '—' }}</td>
           <td>{{ item.cantidad_solicitada }}</td>
           <td>{{ item.cantidad_abastecida }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeItem(item)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -124,7 +154,11 @@
       </ng-template>
     </p-table>
 
-    <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="page__form pedido-insumos__item-form">
+    <form
+      [formGroup]="itemForm"
+      (ngSubmit)="saveItem()"
+      class="page__form pedido-insumos__item-form"
+    >
       <div class="page__field">
         <label for="item_insumo">Insumo</label>
         <p-select
@@ -141,11 +175,21 @@
       </div>
       <div class="page__field">
         <label for="cantidad_solicitada">Cantidad solicitada</label>
-        <p-inputNumber inputId="cantidad_solicitada" formControlName="cantidad_solicitada" [min]="0.01" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="cantidad_solicitada"
+          formControlName="cantidad_solicitada"
+          [min]="0.01"
+          [minFractionDigits]="2"
+        />
       </div>
       <div class="page__field">
         <label for="cantidad_abastecida">Cantidad abastecida</label>
-        <p-inputNumber inputId="cantidad_abastecida" formControlName="cantidad_abastecida" [min]="0" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="cantidad_abastecida"
+          formControlName="cantidad_abastecida"
+          [min]="0"
+          [minFractionDigits]="2"
+        />
       </div>
 
       <div class="page__form-actions">

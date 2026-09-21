@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="recetas()" [loading]="loading()" dataKey="id_receta" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="recetas()"
+    [loading]="loading()"
+    dataKey="id_receta"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">#</th>
@@ -18,10 +24,22 @@
         <td>{{ receta.id_receta }}</td>
         <td>{{ receta.productos?.descripcion_producto || '—' }}</td>
         <td>{{ receta.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-list" [text]="true" (onClick)="openItems(receta)" pTooltip="Insumos" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(receta)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(receta)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-list"
+              [text]="true"
+              (onClick)="openItems(receta)"
+              pTooltip="Insumos"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(receta)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(receta)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -100,9 +118,16 @@
         <tr>
           <td>{{ item.insumo?.nombre_insumo || '—' }}</td>
           <td>{{ item.cantidad_utilizada }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(item)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeItem(item)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -130,7 +155,12 @@
       </div>
       <div class="page__field">
         <label for="item_cantidad">Cantidad utilizada</label>
-        <p-inputNumber inputId="item_cantidad" formControlName="cantidad_utilizada" [min]="0.01" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="item_cantidad"
+          formControlName="cantidad_utilizada"
+          [min]="0.01"
+          [minFractionDigits]="2"
+        />
       </div>
 
       <div class="page__form-actions">

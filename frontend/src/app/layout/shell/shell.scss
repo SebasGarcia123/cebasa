@@ -75,6 +75,16 @@
     &--active {
       background-color: var(--color-primary);
       color: var(--color-primary-text);
+
+      // :hover por sí solo (0,2,0: clase + pseudo-clase) pesa más que
+      // --active solo (0,1,0), así que sin este selector combinado el
+      // hover le ganaba el fondo al ítem activo dejándolo con el fondo
+      // oscuro de --color-background pero el texto oscuro pensado para
+      // el verde de --active: ilegible en modo oscuro.
+      &:hover {
+        background-color: var(--color-primary);
+        color: var(--color-primary-text);
+      }
     }
   }
 

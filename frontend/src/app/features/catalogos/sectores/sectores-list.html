@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="sectores()" [loading]="loading()" dataKey="id_sector" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="sectores()"
+    [loading]="loading()"
+    dataKey="id_sector"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col" style="width: 5rem">ID</th>
@@ -16,9 +22,16 @@
       <tr>
         <td>{{ sector.id_sector }}</td>
         <td>{{ sector.nombreSector }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(sector)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(sector)" />
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(sector)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(sector)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>

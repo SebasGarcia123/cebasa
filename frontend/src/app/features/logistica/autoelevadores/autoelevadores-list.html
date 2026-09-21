@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="autoelevadores()" [loading]="loading()" dataKey="id_autoelevadores" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="autoelevadores()"
+    [loading]="loading()"
+    dataKey="id_autoelevadores"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Nombre</th>
@@ -18,10 +24,22 @@
         <td>{{ autoelevador.nombre }}</td>
         <td>{{ autoelevador.fecha_alta | date: 'dd/MM/yyyy' }}</td>
         <td>{{ autoelevador.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-wrench" [text]="true" (onClick)="openServicios(autoelevador)" pTooltip="Servicios" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(autoelevador)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(autoelevador)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-wrench"
+              [text]="true"
+              (onClick)="openServicios(autoelevador)"
+              pTooltip="Servicios"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(autoelevador)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(autoelevador)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -47,7 +65,12 @@
 
       <div class="page__field">
         <label for="fecha_alta">Fecha de alta</label>
-        <p-datepicker inputId="fecha_alta" formControlName="fecha_alta" dateFormat="dd/mm/yy" [showIcon]="true" />
+        <p-datepicker
+          inputId="fecha_alta"
+          formControlName="fecha_alta"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
       </div>
 
       <div class="page__field">
@@ -95,9 +118,16 @@
         <tr>
           <td>{{ servicio.horas }}</td>
           <td>{{ servicio.detalle || '—' }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editServicio(servicio)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeServicio(servicio)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editServicio(servicio)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeServicio(servicio)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -108,10 +138,19 @@
       </ng-template>
     </p-table>
 
-    <form [formGroup]="servicioForm" (ngSubmit)="saveServicio()" class="page__form autoelevadores__servicio-form">
+    <form
+      [formGroup]="servicioForm"
+      (ngSubmit)="saveServicio()"
+      class="page__form autoelevadores__servicio-form"
+    >
       <div class="page__field">
         <label for="servicio_horas">Horas</label>
-        <p-inputNumber inputId="servicio_horas" formControlName="horas" [min]="0" [minFractionDigits]="2" />
+        <p-inputNumber
+          inputId="servicio_horas"
+          formControlName="horas"
+          [min]="0"
+          [minFractionDigits]="2"
+        />
       </div>
       <div class="page__field">
         <label for="servicio_detalle">Detalle</label>

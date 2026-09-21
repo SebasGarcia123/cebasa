@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="turnos()" [loading]="loading()" dataKey="id_turno" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="turnos()"
+    [loading]="loading()"
+    dataKey="id_turno"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Descripción</th>
@@ -16,9 +22,16 @@
       <tr>
         <td>{{ turno.descripcion_turnos }}</td>
         <td>{{ turno.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(turno)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(turno)" />
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(turno)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(turno)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -39,7 +52,12 @@
     <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
       <div class="page__field">
         <label for="descripcion_turnos">Descripción</label>
-        <input id="descripcion_turnos" type="text" pInputText formControlName="descripcion_turnos" />
+        <input
+          id="descripcion_turnos"
+          type="text"
+          pInputText
+          formControlName="descripcion_turnos"
+        />
       </div>
 
       <div class="page__field">

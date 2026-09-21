@@ -27,16 +27,25 @@
         <td [class.stock__cantidad--bajo]="fila.stock_actual < fila.stock_minimo">
           {{ fila.stock_actual }}
         </td>
-        <td class="page__actions">
-          @if (puedeAjustar()) {
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="abrirAjuste(fila)" pTooltip="Ajustar stock" />
-          }
+        <td>
+          <div class="page__actions">
+            @if (puedeAjustar()) {
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                (onClick)="abrirAjuste(fila)"
+                pTooltip="Ajustar stock"
+              />
+            }
+          </div>
         </td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="4">No hay {{ vista() === 'productos' ? 'productos' : 'insumos' }} para mostrar.</td>
+        <td colspan="4">
+          No hay {{ vista() === 'productos' ? 'productos' : 'insumos' }} para mostrar.
+        </td>
       </tr>
     </ng-template>
   </p-table>
@@ -53,7 +62,9 @@
         <p class="stock__item-info">
           <strong>{{ fila.codigo }}</strong> — {{ fila.descripcion }}
         </p>
-        <p class="stock__item-info">Cantidad actual: <strong>{{ fila.stock_actual }}</strong></p>
+        <p class="stock__item-info">
+          Cantidad actual: <strong>{{ fila.stock_actual }}</strong>
+        </p>
 
         <div class="page__field">
           <label for="cantidad_nueva">Cantidad nueva</label>
@@ -73,7 +84,12 @@
             [outlined]="true"
             (onClick)="cerrarAjuste()"
           />
-          <p-button type="submit" label="Guardar" [loading]="ajusteSaving()" [disabled]="ajusteForm.invalid" />
+          <p-button
+            type="submit"
+            label="Guardar"
+            [loading]="ajusteSaving()"
+            [disabled]="ajusteForm.invalid"
+          />
         </div>
       </form>
     }

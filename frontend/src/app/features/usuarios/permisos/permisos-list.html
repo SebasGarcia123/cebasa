@@ -13,7 +13,13 @@
     </p-message>
   }
 
-  <p-table [value]="permisos()" [loading]="loading()" dataKey="id_permiso" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="permisos()"
+    [loading]="loading()"
+    dataKey="id_permiso"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Nombre</th>
@@ -23,9 +29,16 @@
     <ng-template #body let-permiso>
       <tr>
         <td>{{ permiso.nombre_permiso }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(permiso)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(permiso)" />
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(permiso)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(permiso)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>

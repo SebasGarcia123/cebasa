@@ -10,7 +10,11 @@
         [outlined]="vista() !== 'requerimientos'"
         (onClick)="vista.set('requerimientos')"
       />
-      <p-button label="Órdenes de Compra" [outlined]="vista() !== 'oc'" (onClick)="vista.set('oc')" />
+      <p-button
+        label="Órdenes de Compra"
+        [outlined]="vista() !== 'oc'"
+        (onClick)="vista.set('oc')"
+      />
     </div>
 
     <div class="gestion__filtros">
@@ -42,7 +46,13 @@
   </div>
 
   @if (vista() === 'requerimientos') {
-    <p-table [value]="requerimientosFiltrados()" [loading]="loading()" dataKey="id_requerimiento" [paginator]="true" [rows]="10">
+    <p-table
+      [value]="requerimientosFiltrados()"
+      [loading]="loading()"
+      dataKey="id_requerimiento"
+      [paginator]="true"
+      [rows]="10"
+    >
       <ng-template #header>
         <tr>
           <th scope="col">#</th>
@@ -62,10 +72,17 @@
           <td>{{ requerimiento.usuarios?.nombre_usuario || '—' }}</td>
           <td>{{ requerimiento.observaciones || '—' }}</td>
           <td>{{ requerimiento.estados?.nombreEstado || '—' }}</td>
-          <td class="page__actions">
-            @if (requerimiento.estados?.nombreEstado === 'Activo') {
-              <p-button label="Generar OC" icon="pi pi-file-export" size="small" (onClick)="openGenerarOc(requerimiento)" />
-            }
+          <td>
+            <div class="page__actions">
+              @if (requerimiento.estados?.nombreEstado === 'Activo') {
+                <p-button
+                  label="Generar OC"
+                  icon="pi pi-file-export"
+                  size="small"
+                  (onClick)="openGenerarOc(requerimiento)"
+                />
+              }
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -76,7 +93,13 @@
       </ng-template>
     </p-table>
   } @else {
-    <p-table [value]="ocFiltradas()" [loading]="loading()" dataKey="id_compra" [paginator]="true" [rows]="10">
+    <p-table
+      [value]="ocFiltradas()"
+      [loading]="loading()"
+      dataKey="id_compra"
+      [paginator]="true"
+      [rows]="10"
+    >
       <ng-template #header>
         <tr>
           <th scope="col">#</th>
@@ -92,8 +115,10 @@
           <td>{{ compra.fecha_compra | date: 'dd/MM/yyyy' }}</td>
           <td>{{ compra.proveedor?.nombre_proveedor || '—' }}</td>
           <td>{{ compra.estados?.nombreEstado || '—' }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-eye" [text]="true" (onClick)="verOc(compra)" pTooltip="Ver" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-eye" [text]="true" (onClick)="verOc(compra)" pTooltip="Ver" />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -150,7 +175,13 @@
             <td>{{ item.value.nombre_insumo }}</td>
             <td>{{ item.value.cantidad }}</td>
             <td>
-              <p-inputNumber formControlName="precio_compra" mode="currency" currency="ARS" locale="es-AR" [min]="0" />
+              <p-inputNumber
+                formControlName="precio_compra"
+                mode="currency"
+                currency="ARS"
+                locale="es-AR"
+                [min]="0"
+              />
             </td>
           </tr>
         </ng-template>
@@ -168,8 +199,15 @@
         />
         @if (archivoActual()) {
           <div class="gestion__adjunto">
-            <a [href]="verArchivoUrl()" target="_blank" rel="noopener">{{ archivoActual()?.nombre_archivo }}</a>
-            <p-button icon="pi pi-times" [text]="true" severity="danger" (onClick)="quitarArchivo()" />
+            <a [href]="verArchivoUrl()" target="_blank" rel="noopener">{{
+              archivoActual()?.nombre_archivo
+            }}</a>
+            <p-button
+              icon="pi pi-times"
+              [text]="true"
+              severity="danger"
+              (onClick)="quitarArchivo()"
+            />
           </div>
         } @else {
           <p-button

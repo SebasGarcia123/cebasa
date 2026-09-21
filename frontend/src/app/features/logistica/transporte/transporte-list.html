@@ -4,7 +4,13 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table [value]="transportes()" [loading]="loading()" dataKey="id_transporte" [paginator]="true" [rows]="10">
+  <p-table
+    [value]="transportes()"
+    [loading]="loading()"
+    dataKey="id_transporte"
+    [paginator]="true"
+    [rows]="10"
+  >
     <ng-template #header>
       <tr>
         <th scope="col">Nombre</th>
@@ -20,11 +26,28 @@
         <td>{{ transporte.cuit }}</td>
         <td>{{ transporte.direcciones ? direccionLabel(transporte.direcciones) : '—' }}</td>
         <td>{{ transporte.estados?.nombreEstado || '—' }}</td>
-        <td class="page__actions">
-          <p-button icon="pi pi-truck" [text]="true" (onClick)="openCamiones(transporte)" pTooltip="Camiones" />
-          <p-button icon="pi pi-id-card" [text]="true" (onClick)="openChoferes(transporte)" pTooltip="Choferes" />
-          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(transporte)" />
-          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(transporte)" />
+        <td>
+          <div class="page__actions">
+            <p-button
+              icon="pi pi-truck"
+              [text]="true"
+              (onClick)="openCamiones(transporte)"
+              pTooltip="Camiones"
+            />
+            <p-button
+              icon="pi pi-id-card"
+              [text]="true"
+              (onClick)="openChoferes(transporte)"
+              pTooltip="Choferes"
+            />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(transporte)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(transporte)"
+            />
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -65,12 +88,22 @@
 
       <div class="page__field">
         <label for="cbu_cuenta_bancaria">CBU</label>
-        <input id="cbu_cuenta_bancaria" type="text" pInputText formControlName="cbu_cuenta_bancaria" />
+        <input
+          id="cbu_cuenta_bancaria"
+          type="text"
+          pInputText
+          formControlName="cbu_cuenta_bancaria"
+        />
       </div>
 
       <div class="page__field">
         <label for="alias_cuenta_bancaria">Alias</label>
-        <input id="alias_cuenta_bancaria" type="text" pInputText formControlName="alias_cuenta_bancaria" />
+        <input
+          id="alias_cuenta_bancaria"
+          type="text"
+          pInputText
+          formControlName="alias_cuenta_bancaria"
+        />
       </div>
 
       <div class="page__field">
@@ -152,9 +185,16 @@
           <td>{{ camion.dominio_semi || '—' }}</td>
           <td>{{ camion.marca || '—' }}</td>
           <td>{{ camion.modelo || '—' }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editCamion(camion)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeCamion(camion)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editCamion(camion)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeCamion(camion)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -165,7 +205,11 @@
       </ng-template>
     </p-table>
 
-    <form [formGroup]="camionForm" (ngSubmit)="saveCamion()" class="page__form transporte__sub-form">
+    <form
+      [formGroup]="camionForm"
+      (ngSubmit)="saveCamion()"
+      class="page__form transporte__sub-form"
+    >
       <div class="page__field">
         <label for="dominio_chasis">Dominio chasis</label>
         <input id="dominio_chasis" type="text" pInputText formControlName="dominio_chasis" />
@@ -225,9 +269,16 @@
           <td>{{ chofer.nombre_chofer }}</td>
           <td>{{ chofer.dni }}</td>
           <td>{{ chofer.estados?.nombreEstado || '—' }}</td>
-          <td class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editChofer(chofer)" />
-            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeChofer(chofer)" />
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editChofer(chofer)" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="removeChofer(chofer)"
+              />
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -238,7 +289,11 @@
       </ng-template>
     </p-table>
 
-    <form [formGroup]="choferForm" (ngSubmit)="saveChofer()" class="page__form transporte__sub-form">
+    <form
+      [formGroup]="choferForm"
+      (ngSubmit)="saveChofer()"
+      class="page__form transporte__sub-form"
+    >
       <div class="page__field">
         <label for="nombre_chofer">Nombre</label>
         <input id="nombre_chofer" type="text" pInputText formControlName="nombre_chofer" />

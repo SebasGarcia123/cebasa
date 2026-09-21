@@ -193,7 +193,10 @@ export class AutoelevadoresList implements OnInit {
 
   editServicio(servicio: ServiceAutoelevador): void {
     this.editingServicioId.set(servicio.id_service_autoelevador);
-    this.servicioForm.setValue({ horas: servicio.horas, detalle: servicio.detalle ?? '' });
+    // horas es Decimal en la base: Prisma lo serializa como string, no
+    // number. Sin convertir acá, guardar sin tocar el campo manda el
+    // string de vuelta y el backend lo rechaza.
+    this.servicioForm.setValue({ horas: Number(servicio.horas), detalle: servicio.detalle ?? '' });
   }
 
   cancelServicioEdit(): void {
@@ -208,7 +211,7 @@ export class AutoelevadoresList implements OnInit {
 
     this.serviciosSaving.set(true);
     const raw = this.servicioForm.getRawValue();
-    const dto = { horas: raw.horas!, ...(raw.detalle ? { detalle: raw.detalle } : {}) };
+    const dto = { horas: Number(raw.horas), ...(raw.detalle ? { detalle: raw.detalle } : {}) };
     const idServicio = this.editingServicioId();
     const request$ = idServicio
       ? this.serviciosApi.update(this.autoelevadorActivo.id_autoelevadores, idServicio, dto)

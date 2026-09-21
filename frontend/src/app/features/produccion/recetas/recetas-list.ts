@@ -182,7 +182,10 @@ export class RecetasList implements OnInit {
 
   editItem(item: RecetaItem): void {
     this.editingItemId.set(item.id_receta_item);
-    this.itemForm.setValue({ id_insumo: item.id_insumo, cantidad_utilizada: item.cantidad_utilizada });
+    // cantidad_utilizada es Decimal en la base: Prisma lo serializa como
+    // string, no number. Sin convertir acá, guardar sin tocar el campo
+    // manda el string de vuelta y el backend lo rechaza.
+    this.itemForm.setValue({ id_insumo: item.id_insumo, cantidad_utilizada: Number(item.cantidad_utilizada) });
   }
 
   cancelItemEdit(): void {
@@ -197,7 +200,7 @@ export class RecetasList implements OnInit {
 
     this.itemsSaving.set(true);
     const raw = this.itemForm.getRawValue();
-    const dto = { id_insumo: raw.id_insumo!, cantidad_utilizada: raw.cantidad_utilizada! };
+    const dto = { id_insumo: raw.id_insumo!, cantidad_utilizada: Number(raw.cantidad_utilizada) };
     const idItem = this.editingItemId();
     const request$ = idItem
       ? this.itemsApi.update(this.recetaActiva.id_receta, idItem, dto)

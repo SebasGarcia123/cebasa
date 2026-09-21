@@ -105,10 +105,13 @@ export class MovimientoInsumoList implements OnInit {
 
   openEdit(item: MovimientoInsumo): void {
     this.editingId.set(item.id_movimiento_insumo);
+    // cantidad es Decimal en la base: Prisma lo serializa como string, no
+    // number. Sin convertir acá, guardar sin tocar el campo manda el
+    // string de vuelta y el backend lo rechaza.
     this.form.setValue({
       id_insumo: item.id_insumo,
       id_tipo_movimiento: item.id_tipo_movimiento,
-      cantidad: item.cantidad,
+      cantidad: Number(item.cantidad),
       fecha_movimiento: new Date(item.fecha_movimiento),
       id_deposito_origen: item.id_deposito_origen,
       id_deposito_destino: item.id_deposito_destino,
@@ -133,7 +136,7 @@ export class MovimientoInsumoList implements OnInit {
     const dto = {
       id_insumo: raw.id_insumo!,
       id_tipo_movimiento: raw.id_tipo_movimiento!,
-      cantidad: raw.cantidad!,
+      cantidad: Number(raw.cantidad),
       fecha_movimiento: raw.fecha_movimiento!.toISOString().slice(0, 10),
       id_estado: raw.id_estado!,
       ...(raw.id_deposito_origen ? { id_deposito_origen: raw.id_deposito_origen } : {}),

@@ -304,7 +304,10 @@ export class RequerimientosList implements OnInit {
 
   editDetalle(linea: RequerimientoDetalle): void {
     this.editingDetalleId.set(linea.id_requerimiento_detalle);
-    this.detalleForm.setValue({ id_insumo: linea.id_insumo, cantidad: linea.cantidad });
+    // cantidad es Decimal en la base: Prisma lo serializa como string, no
+    // number. Sin convertir acá, guardar sin tocar el campo manda el
+    // string de vuelta y el backend lo rechaza.
+    this.detalleForm.setValue({ id_insumo: linea.id_insumo, cantidad: Number(linea.cantidad) });
   }
 
   cancelDetalleEdit(): void {
@@ -319,7 +322,7 @@ export class RequerimientosList implements OnInit {
 
     this.detalleSaving.set(true);
     const raw = this.detalleForm.getRawValue();
-    const dto = { id_insumo: raw.id_insumo!, cantidad: raw.cantidad! };
+    const dto = { id_insumo: raw.id_insumo!, cantidad: Number(raw.cantidad) };
     const idDetalle = this.editingDetalleId();
     const request$ = idDetalle
       ? this.detalleApi.update(this.requerimientoActivo.id_requerimiento, idDetalle, dto)

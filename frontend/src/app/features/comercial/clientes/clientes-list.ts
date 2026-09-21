@@ -264,7 +264,11 @@ export class ClientesList implements OnInit {
     this.cuentaCorrienteApi.getByCliente(cliente.id_cliente).subscribe({
       next: (cuenta) => {
         this.cuentaCorriente.set(cuenta);
-        this.limiteForm.setValue({ limite_credito: cuenta.limite_credito });
+        // limite_credito es Decimal en la base: Prisma lo serializa como
+        // string, no number, así que hay que convertirlo antes de cargarlo
+        // en el form (si no, guardar sin tocar el campo manda el string de
+        // vuelta y el backend lo rechaza).
+        this.limiteForm.setValue({ limite_credito: Number(cuenta.limite_credito) });
         this.loadMovimientos(cliente.id_cliente);
         this.ctaCteLoading.set(false);
       },
@@ -299,7 +303,7 @@ export class ClientesList implements OnInit {
       next: (cuenta) => {
         this.ctaCteSaving.set(false);
         this.cuentaCorriente.set(cuenta);
-        this.limiteForm.setValue({ limite_credito: cuenta.limite_credito });
+        this.limiteForm.setValue({ limite_credito: Number(cuenta.limite_credito) });
         this.messageService.add({ severity: 'success', summary: 'Creada', detail: 'Cuenta corriente creada' });
       },
       error: () => {
@@ -315,7 +319,7 @@ export class ClientesList implements OnInit {
     }
     this.ctaCteSaving.set(true);
     this.cuentaCorrienteApi
-      .update(this.clienteActivo.id_cliente, { limite_credito: this.limiteForm.getRawValue().limite_credito })
+      .update(this.clienteActivo.id_cliente, { limite_credito: Number(this.limiteForm.getRawValue().limite_credito) })
       .subscribe({
         next: (cuenta) => {
           this.ctaCteSaving.set(false);

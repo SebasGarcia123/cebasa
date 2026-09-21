@@ -238,10 +238,13 @@ export class LotesList implements OnInit {
 
   editItem(item: ItemLote): void {
     this.editingItemId.set(item.id_item_lote);
+    // cantidad_item_lote es Decimal en la base: Prisma lo serializa como
+    // string, no number. Sin convertir acá, guardar sin tocar el campo
+    // manda el string de vuelta y el backend lo rechaza.
     this.itemForm.setValue({
       descripcion_item: item.descripcion_item,
       id_unidad_medida: item.id_unidad_medida,
-      cantidad_item_lote: item.cantidad_item_lote,
+      cantidad_item_lote: Number(item.cantidad_item_lote),
     });
   }
 
@@ -260,7 +263,7 @@ export class LotesList implements OnInit {
     const dto = {
       descripcion_item: raw.descripcion_item,
       id_unidad_medida: raw.id_unidad_medida!,
-      cantidad_item_lote: raw.cantidad_item_lote!,
+      cantidad_item_lote: Number(raw.cantidad_item_lote),
     };
     const idItem = this.editingItemId();
     const request$ = idItem

@@ -206,10 +206,14 @@ export class PedidoInsumosList implements OnInit {
 
   editItem(item: ItemPedidoInsumo): void {
     this.editingItemId.set(item.id_item_pedido_insumo);
+    // cantidad_solicitada/cantidad_abastecida son Decimal en la base:
+    // Prisma las serializa como string, no number. Sin convertir acá,
+    // guardar sin tocar el campo manda el string de vuelta y el backend
+    // lo rechaza.
     this.itemForm.setValue({
       id_insumo: item.id_insumo,
-      cantidad_solicitada: item.cantidad_solicitada,
-      cantidad_abastecida: item.cantidad_abastecida,
+      cantidad_solicitada: Number(item.cantidad_solicitada),
+      cantidad_abastecida: Number(item.cantidad_abastecida),
     });
   }
 
@@ -227,8 +231,8 @@ export class PedidoInsumosList implements OnInit {
     const raw = this.itemForm.getRawValue();
     const dto = {
       id_insumo: raw.id_insumo!,
-      cantidad_solicitada: raw.cantidad_solicitada!,
-      cantidad_abastecida: raw.cantidad_abastecida ?? 0,
+      cantidad_solicitada: Number(raw.cantidad_solicitada),
+      cantidad_abastecida: Number(raw.cantidad_abastecida ?? 0),
     };
     const idItem = this.editingItemId();
     const request$ = idItem

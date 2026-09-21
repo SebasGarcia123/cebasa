@@ -86,8 +86,12 @@ export class ProductosList implements OnInit {
       codigo_producto: producto.codigo_producto,
       descripcion_producto: producto.descripcion_producto,
       bolsones_por_pallet: producto.bolsones_por_pallet,
-      peso_por_bolson: producto.peso_por_bolson,
-      precio_venta: producto.precio_venta,
+      // precio_venta y peso_por_bolson son Decimal en la base: Prisma los
+      // serializa como string en el JSON, no como number. Si no se
+      // convierten acá, un guardado sin tocar esos campos manda el string
+      // de vuelta y el backend lo rechaza (@IsNumber real, no string).
+      peso_por_bolson: producto.peso_por_bolson != null ? Number(producto.peso_por_bolson) : null,
+      precio_venta: Number(producto.precio_venta),
       stock_actual: producto.stock_actual,
       stock_minimo: producto.stock_minimo,
       id_estado: producto.id_estado,
@@ -149,11 +153,11 @@ export class ProductosList implements OnInit {
     const dto = {
       codigo_producto: raw.codigo_producto,
       descripcion_producto: raw.descripcion_producto,
-      precio_venta: raw.precio_venta!,
+      precio_venta: Number(raw.precio_venta),
       id_estado: raw.id_estado,
       id_archivo_adjunto: foto?.id_archivo_adjunto ?? null,
       ...(raw.bolsones_por_pallet != null ? { bolsones_por_pallet: raw.bolsones_por_pallet } : {}),
-      ...(raw.peso_por_bolson != null ? { peso_por_bolson: raw.peso_por_bolson } : {}),
+      ...(raw.peso_por_bolson != null ? { peso_por_bolson: Number(raw.peso_por_bolson) } : {}),
       ...(raw.stock_actual != null ? { stock_actual: raw.stock_actual } : {}),
       ...(raw.stock_minimo != null ? { stock_minimo: raw.stock_minimo } : {}),
     };
@@ -167,9 +171,10 @@ export class ProductosList implements OnInit {
         this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
         this.load();
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         this.saving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo guardar';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
       },
     });
   }

@@ -22,15 +22,14 @@ import { ItemProdApiService } from '../../../core/api/item-prod-api.service';
 import { TurnosApiService } from '../../../core/api/turnos-api.service';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
 import { LineasApiService } from '../../../core/api/lineas-api.service';
-import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { LoteProd } from '../../../core/models/lote-prod.model';
 import { ItemProd } from '../../../core/models/item-prod.model';
 import { Turno } from '../../../core/models/turno.model';
 import { Producto } from '../../../core/models/producto.model';
 import { Linea } from '../../../core/models/linea.model';
-import { Estado } from '../../../core/models/estado.model';
 
-const ESTADOS_LOTE_PROD = new Set(['Activo', 'Anulado']);
+const ESTADO_APROBADO = 'Aprobado';
+const ESTADO_RECHAZADO = 'Rechazado';
 
 type ItemProdForm = FormGroup<{
   id_item: FormControl<number | null>;
@@ -63,7 +62,6 @@ export class LotesProdList implements OnInit {
   private readonly turnosApi = inject(TurnosApiService);
   private readonly productosApi = inject(ProductosApiService);
   private readonly lineasApi = inject(LineasApiService);
-  private readonly estadosApi = inject(EstadosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
@@ -72,27 +70,23 @@ export class LotesProdList implements OnInit {
   protected readonly turnos = signal<Turno[]>([]);
   protected readonly productos = signal<Producto[]>([]);
   protected readonly lineas = signal<Linea[]>([]);
-  protected readonly estados = signal<Estado[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly itemsLoading = signal(false);
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
+  // Motivo del último rechazo del lote que se está editando (si lo hay),
+  // para mostrárselo a Producción como contexto al corregirlo.
+  protected readonly motivoRechazo = signal<string | null>(null);
 
   // Solo productos activos para elegir en un ítem nuevo.
   protected readonly productosActivos = computed(() =>
     this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
   );
 
-  // Al crear no se elige estado: el sistema lo pone en "Activo". El
-  // selector de estado solo se muestra al editar, y restringido a
-  // Activo/Anulado.
-  protected readonly estadosLoteProd = computed(() => this.estados().filter((e) => ESTADOS_LOTE_PROD.has(e.nombreEstado)));
-
   protected readonly form = this.fb.nonNullable.group({
     id_turno: [null as number | null, Validators.required],
     fecha_lote_prod: [null as Date | null, Validators.required],
-    id_estado: [null as number | null],
   });
 
   // Los ítems se arman en memoria (una fila por producto, con cálculo
@@ -113,14 +107,12 @@ export class LotesProdList implements OnInit {
       turnos: this.turnosApi.list(),
       productos: this.productosApi.list(),
       lineas: this.lineasApi.list(),
-      estados: this.estadosApi.list(),
     }).subscribe({
-      next: ({ lotes, turnos, productos, lineas, estados }) => {
+      next: ({ lotes, turnos, productos, lineas }) => {
         this.lotes.set(lotes);
         this.turnos.set(turnos);
         this.productos.set(productos);
         this.lineas.set(lineas);
-        this.estados.set(estados);
         this.loading.set(false);
       },
       error: () => {
@@ -213,8 +205,15 @@ export class LotesProdList implements OnInit {
     return this.itemsFormArray.controls.reduce((acc, fila) => acc + (fila.controls.cantidad_pallets.value ?? 0), 0);
   }
 
+  // No se puede editar un lote ya aprobado: el stock que generó ya
+  // quedó asentado, y el backend lo rechaza igual (ver LoteProdService).
+  protected puedeEditar(lote: LoteProd): boolean {
+    return lote.estados?.nombreEstado !== ESTADO_APROBADO;
+  }
+
   openCreate(): void {
     this.editingId.set(null);
+    this.motivoRechazo.set(null);
     this.itemsOriginales = [];
     this.form.reset();
     this.itemsFormArray.clear();
@@ -224,10 +223,10 @@ export class LotesProdList implements OnInit {
 
   openEdit(lote: LoteProd): void {
     this.editingId.set(lote.id_lote);
+    this.motivoRechazo.set(lote.estados?.nombreEstado === ESTADO_RECHAZADO ? (lote.motivo_rechazo ?? null) : null);
     this.form.setValue({
       id_turno: lote.id_turno,
       fecha_lote_prod: new Date(lote.fecha_lote_prod),
-      id_estado: lote.id_estado,
     });
     this.itemsFormArray.clear();
     this.itemsOriginales = [];
@@ -272,7 +271,7 @@ export class LotesProdList implements OnInit {
 
     const id = this.editingId();
     if (id) {
-      this.api.update(id, { ...headerDto, id_estado: raw.id_estado! }).subscribe({
+      this.api.update(id, headerDto).subscribe({
         next: () => this.guardarItems(id),
         error: () => this.onGuardarError(),
       });

@@ -163,6 +163,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/logistica/lotes/lotes-list').then((m) => m.LotesList),
       },
       {
+        path: 'logistica/aprobacion-lotes-prod',
+        loadComponent: () =>
+          import('./features/logistica/aprobacion-lotes-prod/aprobacion-lotes-prod-list').then(
+            (m) => m.AprobacionLotesProdList,
+          ),
+      },
+      {
         path: 'pedido-insumos/pedido-insumos',
         loadComponent: () =>
           import('./features/pedido-insumos/pedido-insumos/pedido-insumos-list').then(

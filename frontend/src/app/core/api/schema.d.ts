@@ -1028,6 +1028,38 @@ export interface paths {
         patch: operations["LoteProdController_update"];
         trace?: never;
     };
+    "/lotes-prod/{id}/aprobar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LoteProdController_aprobar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes-prod/{id}/rechazar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LoteProdController_rechazar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/lotes-prod/{idLote}/items": {
         parameters: {
             query?: never;
@@ -2201,8 +2233,9 @@ export interface components {
             id_turno: number;
             fecha_lote_prod: string;
         };
-        UpdateLoteProdDto: {
-            id_estado?: number;
+        UpdateLoteProdDto: Record<string, never>;
+        RechazarLoteProdDto: {
+            motivo_rechazo: string;
         };
         CreateItemProdDto: {
             id_producto: number;
@@ -5341,6 +5374,50 @@ export interface operations {
         };
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LoteProdController_aprobar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    LoteProdController_rechazar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RechazarLoteProdDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

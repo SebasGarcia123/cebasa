@@ -7,6 +7,7 @@ export interface LoteProd {
   id_turno: number;
   fecha_lote_prod: string;
   id_estado: number;
+  motivo_rechazo?: string | null;
   turnos?: Turno;
   estados?: Estado;
   item_prod?: ItemProd[];

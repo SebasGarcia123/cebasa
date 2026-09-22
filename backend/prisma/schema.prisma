@@ -376,6 +376,7 @@ model lote_prod {
   id_turno        Int
   fecha_lote_prod DateTime    @db.Date
   id_estado       Int
+  motivo_rechazo  String?     @db.VarChar(255)
   item_prod       item_prod[]
   estados         estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lote_prod_estado")
   turnos          turnos      @relation(fields: [id_turno], references: [id_turno], onUpdate: Restrict, map: "fk_lote_prod_turno")

@@ -1,0 +1,127 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Aprobación de Lotes de Producción</h1>
+  </div>
+
+  <p-table [value]="pendientes()" [loading]="loading()" dataKey="id_lote" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Turno</th>
+        <th scope="col" style="width: 5rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-lote>
+      <tr>
+        <td>{{ lote.id_lote }}</td>
+        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ lote.turnos?.descripcion_turnos || '—' }}</td>
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-eye" [text]="true" (onClick)="ver(lote)" pTooltip="Ver" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">No hay lotes pendientes de aprobación.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="verDialogVisible()"
+    (visibleChange)="verDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '900px' }"
+    header="Lote de producción"
+  >
+    @if (loteActivo(); as lote) {
+      <div class="aprobacion-lotes__header-fields">
+        <div class="page__field">
+          <label>Fecha</label>
+          <span>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Turno</label>
+          <span>{{ lote.turnos?.descripcion_turnos || '—' }}</span>
+        </div>
+      </div>
+
+      <p-table [value]="lote.item_prod || []" dataKey="id_item" class="aprobacion-lotes__items-table">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Línea</th>
+            <th scope="col">Código</th>
+            <th scope="col">Producto</th>
+            <th scope="col" style="width: 6.5rem">Bolsones</th>
+            <th scope="col" style="width: 6.5rem">Pallets</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
+            <td>{{ item.productos?.codigo_producto || '—' }}</td>
+            <td>{{ item.productos?.descripcion_producto || '—' }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>{{ item.productos?.bolsones_por_pallet ? (item.cantidad / item.productos.bolsones_por_pallet | number: '1.0-2') : '—' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5">Este lote no tiene productos cargados.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="aprobacion-lotes__total-pallets">Total de pallets: <strong>{{ totalPallets(lote) }}</strong></div>
+
+      @if (puedeAprobar()) {
+        @if (rechazando()) {
+          <form [formGroup]="rechazoForm" (ngSubmit)="confirmarRechazar()" class="aprobacion-lotes__rechazo-form">
+            <div class="page__field">
+              <label for="motivo_rechazo">Motivo del rechazo</label>
+              <textarea
+                id="motivo_rechazo"
+                pTextarea
+                formControlName="motivo_rechazo"
+                rows="3"
+                placeholder="Explicá por qué se rechaza el lote"
+              ></textarea>
+            </div>
+            <div class="page__form-actions">
+              <p-button
+                type="button"
+                label="Cancelar"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="cancelarRechazo()"
+              />
+              <p-button
+                type="submit"
+                label="Confirmar rechazo"
+                severity="danger"
+                [loading]="procesando()"
+                [disabled]="rechazoForm.invalid"
+              />
+            </div>
+          </form>
+        } @else {
+          <div class="page__form-actions">
+            <p-button
+              type="button"
+              label="Rechazar"
+              severity="danger"
+              [outlined]="true"
+              [disabled]="procesando()"
+              (onClick)="abrirRechazo()"
+            />
+            <p-button type="button" label="Aprobar" [loading]="procesando()" (onClick)="confirmarAprobar()" />
+          </div>
+        }
+      }
+    }
+  </p-dialog>
+</div>

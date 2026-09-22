@@ -22,13 +22,15 @@
         <td>{{ lote.estados?.nombreEstado || '—' }}</td>
         <td>
           <div class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" pTooltip="Editar" />
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              (onClick)="confirmDelete(lote)"
-            />
+            @if (puedeEditar(lote)) {
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" pTooltip="Editar" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="confirmDelete(lote)"
+              />
+            }
           </div>
         </td>
       </tr>
@@ -48,6 +50,13 @@
     [header]="editingId() ? 'Editar lote' : 'Nuevo lote'"
   >
     <form [formGroup]="form" (ngSubmit)="guardar()" class="page__form">
+      @if (motivoRechazo(); as motivo) {
+        <div class="lotes-prod__rechazo-banner">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>Logística rechazó este lote: <strong>{{ motivo }}</strong>. Corregilo y guardá para reenviarlo a aprobación.</span>
+        </div>
+      }
+
       <div class="lotes-prod__header-fields">
         <div class="page__field lotes-prod__field--turno">
           <label for="id_turno">Turno</label>
@@ -71,21 +80,6 @@
             [showIcon]="true"
           />
         </div>
-
-        @if (editingId()) {
-          <div class="page__field lotes-prod__field--fecha">
-            <label for="id_estado">Estado</label>
-            <p-select
-              inputId="id_estado"
-              formControlName="id_estado"
-              [options]="estadosLoteProd()"
-              optionLabel="nombreEstado"
-              optionValue="id_estado"
-              placeholder="Seleccionar estado"
-              [appendTo]="'body'"
-            />
-          </div>
-        }
       </div>
 
       <div class="lotes-prod__items-header">

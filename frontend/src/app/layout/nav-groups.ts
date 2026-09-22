@@ -144,6 +144,12 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { label: 'Transportes', icon: 'pi pi-car', route: '/logistica/transporte', permission: 'logistica.ver' },
       { label: 'Lotes', icon: 'pi pi-box', route: '/logistica/lotes', permission: 'logistica.ver' },
+      {
+        label: 'Aprobación de Lotes de Producción',
+        icon: 'pi pi-verified',
+        route: '/logistica/aprobacion-lotes-prod',
+        permission: 'produccion.lotes_aprobar',
+      },
     ],
   },
   {

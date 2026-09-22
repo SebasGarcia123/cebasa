@@ -121,7 +121,7 @@
       <p-table [value]="itemsFormArray.controls" [loading]="itemsLoading()" dataKey="id_producto" class="pedidos__items-table">
         <ng-template #header>
           <tr>
-            <th scope="col" style="width: 13rem">Código</th>
+            <th scope="col" style="width: 10rem">Código</th>
             <th scope="col">Producto</th>
             <th scope="col" style="width: 6.5rem">Bolsones</th>
             <th scope="col" style="width: 6.5rem">Pallets</th>
@@ -132,7 +132,7 @@
           <tr [formGroup]="fila">
             <td>
               <p-select
-                formControlName="id_producto"
+                formControlName="id_producto_codigo"
                 [options]="productosActivos()"
                 optionLabel="codigo_producto"
                 optionValue="id_producto"

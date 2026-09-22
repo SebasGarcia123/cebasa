@@ -34,6 +34,7 @@ const ESTADOS_PEDIDO = new Set(['Activo', 'Anulado']);
 type ItemPedidoForm = FormGroup<{
   id_item_pedido: FormControl<number | null>;
   id_producto: FormControl<number | null>;
+  id_producto_codigo: FormControl<number | null>;
   cantidad_bolsones: FormControl<number | null>;
   cantidad_pallets: FormControl<number | null>;
 }>;
@@ -154,6 +155,12 @@ export class PedidosList implements OnInit {
     const fila: ItemPedidoForm = this.fb.group({
       id_item_pedido: this.fb.control<number | null>(item?.id_item_pedido ?? null),
       id_producto: this.fb.control<number | null>(item?.id_producto ?? null, Validators.required),
+      // Selector duplicado (Código y Producto eligen el mismo id_producto,
+      // pero son dos <p-select> con distinto optionLabel). Compartir un
+      // único FormControl entre dos p-select no sincronizaba la vista del
+      // otro de forma confiable, así que se mantienen dos controles
+      // sincronizados a mano, igual que bolsones <-> pallets más abajo.
+      id_producto_codigo: this.fb.control<number | null>(item?.id_producto ?? null),
       cantidad_bolsones: this.fb.control<number | null>(item?.cantidad_bolsones ?? null, [
         Validators.required,
         Validators.min(1),
@@ -161,17 +168,25 @@ export class PedidosList implements OnInit {
       cantidad_pallets: this.fb.control<number | null>(cantidadPallets),
     });
 
-    // Bolsones <-> Pallets: cambiar uno recalcula el otro tomando como
-    // referencia productos.bolsones_por_pallet del producto elegido en
-    // la fila. emitEvent:false evita que el recálculo dispare este mismo
-    // listener en bucle.
-    fila.controls.id_producto.valueChanges.subscribe((idProducto) => {
+    const sincronizarProducto = (idProducto: number | null, origen: 'principal' | 'codigo') => {
+      if (origen === 'principal') {
+        fila.controls.id_producto_codigo.setValue(idProducto, { emitEvent: false });
+      } else {
+        fila.controls.id_producto.setValue(idProducto, { emitEvent: false });
+      }
       const bpp = this.productoDe(idProducto)?.bolsones_por_pallet;
       const bolsones = fila.controls.cantidad_bolsones.value;
       if (bpp && bolsones != null) {
         fila.controls.cantidad_pallets.setValue(this.calcularPallets(bolsones, bpp), { emitEvent: false });
       }
-    });
+    };
+
+    // Bolsones <-> Pallets: cambiar uno recalcula el otro tomando como
+    // referencia productos.bolsones_por_pallet del producto elegido en
+    // la fila. emitEvent:false evita que el recálculo dispare este mismo
+    // listener en bucle.
+    fila.controls.id_producto.valueChanges.subscribe((idProducto) => sincronizarProducto(idProducto, 'principal'));
+    fila.controls.id_producto_codigo.valueChanges.subscribe((idProducto) => sincronizarProducto(idProducto, 'codigo'));
 
     fila.controls.cantidad_bolsones.valueChanges.subscribe((bolsones) => {
       const bpp = this.productoDe(fila.controls.id_producto.value)?.bolsones_por_pallet;

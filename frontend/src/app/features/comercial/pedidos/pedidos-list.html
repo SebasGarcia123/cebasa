@@ -50,7 +50,7 @@
     [visible]="dialogVisible()"
     (visibleChange)="dialogVisible.set($event)"
     [modal]="true"
-    [style]="{ width: '920px' }"
+    [style]="{ width: '95vw', maxWidth: '1100px' }"
     [header]="editingId() ? 'Editar pedido' : 'Nuevo pedido'"
   >
     <form [formGroup]="form" (ngSubmit)="guardar()" class="page__form">
@@ -72,11 +72,12 @@
 
         <div class="page__field">
           <label for="fecha_carga">Fecha de carga</label>
-          <p-datepicker
-            inputId="fecha_carga"
-            formControlName="fecha_carga"
-            dateFormat="dd/mm/yy"
-            [showIcon]="true"
+          <input
+            id="fecha_carga"
+            type="text"
+            pInputText
+            [disabled]="true"
+            [value]="form.value.fecha_carga ? (form.value.fecha_carga | date: 'dd/MM/yyyy') : ''"
           />
         </div>
 
@@ -117,19 +118,31 @@
         />
       </div>
 
-      <p-table [value]="itemsFormArray.controls" [loading]="itemsLoading()" dataKey="id_producto">
+      <p-table [value]="itemsFormArray.controls" [loading]="itemsLoading()" dataKey="id_producto" class="pedidos__items-table">
         <ng-template #header>
           <tr>
-            <th scope="col">Código</th>
-            <th scope="col">Producto</th>
-            <th scope="col">Bolsones</th>
-            <th scope="col">Pallets</th>
-            <th scope="col" style="width: 4rem"></th>
+            <th scope="col" style="width: 16%">Código</th>
+            <th scope="col" style="width: 40%">Producto</th>
+            <th scope="col" style="width: 16%">Bolsones</th>
+            <th scope="col" style="width: 16%">Pallets</th>
+            <th scope="col" style="width: 3rem"></th>
           </tr>
         </ng-template>
         <ng-template #body let-fila let-i="rowIndex">
           <tr [formGroup]="fila">
-            <td>{{ productoDe(fila.value.id_producto)?.codigo_producto || '—' }}</td>
+            <td>
+              <p-select
+                formControlName="id_producto"
+                [options]="productosActivos()"
+                optionLabel="codigo_producto"
+                optionValue="id_producto"
+                [filter]="true"
+                filterBy="codigo_producto"
+                placeholder="Buscar por producto"
+                [appendTo]="'body'"
+                [style]="{ width: '100%' }"
+              />
+            </td>
             <td>
               <p-select
                 formControlName="id_producto"
@@ -137,13 +150,14 @@
                 optionLabel="descripcion_producto"
                 optionValue="id_producto"
                 [filter]="true"
-                filterBy="codigo_producto,descripcion_producto"
-                placeholder="Buscar por código o nombre"
+                filterBy="descripcion_producto,codigo_producto"
+                placeholder="Buscar por producto"
                 [appendTo]="'body'"
+                [style]="{ width: '100%' }"
               />
             </td>
             <td>
-              <p-inputNumber formControlName="cantidad_bolsones" [min]="0" />
+              <p-inputNumber formControlName="cantidad_bolsones" [min]="0" [style]="{ width: '100%' }" inputStyleClass="w-full" />
             </td>
             <td>
               <p-inputNumber
@@ -153,6 +167,8 @@
                 [disabled]="!productoDe(fila.value.id_producto)?.bolsones_por_pallet"
                 pTooltip="Este producto no tiene bolsones por pallet configurados"
                 [tooltipDisabled]="!!productoDe(fila.value.id_producto)?.bolsones_por_pallet"
+                [style]="{ width: '100%' }"
+                inputStyleClass="w-full"
               />
             </td>
             <td>

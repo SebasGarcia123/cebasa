@@ -14,6 +14,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
+import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -47,6 +48,7 @@ type ItemPedidoForm = FormGroup<{
     DialogModule,
     SelectModule,
     DatePickerModule,
+    InputTextModule,
     InputNumberModule,
     TooltipModule,
   ],
@@ -203,7 +205,8 @@ export class PedidosList implements OnInit {
   openCreate(): void {
     this.editingId.set(null);
     this.itemsOriginales = [];
-    this.form.reset();
+    // La fecha de carga no se elige: siempre es la de hoy.
+    this.form.reset({ fecha_carga: new Date() });
     this.itemsFormArray.clear();
     this.itemsFormArray.push(this.crearFilaItem());
     this.dialogVisible.set(true);

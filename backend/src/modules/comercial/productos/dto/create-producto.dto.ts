@@ -40,9 +40,6 @@ export class CreateProductoDto {
   @Min(0)
   stock_minimo?: number;
 
-  @IsInt()
-  id_estado: number;
-
   @IsOptional()
   @IsInt()
   id_archivo_adjunto?: number;

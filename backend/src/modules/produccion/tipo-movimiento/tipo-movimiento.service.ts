@@ -1,14 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateTipoMovimientoDto } from './dto/create-tipo-movimiento.dto.js';
 import { UpdateTipoMovimientoDto } from './dto/update-tipo-movimiento.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+
 @Injectable()
 export class TipoMovimientoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
-  create(dto: CreateTipoMovimientoDto) {
-    return this.prisma.tipo_movimiento.create({ data: dto });
+  async create(dto: CreateTipoMovimientoDto) {
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
+    return this.prisma.tipo_movimiento.create({ data: { ...dto, id_estado: idEstadoActivo } });
   }
 
   findAll() {
@@ -30,6 +38,16 @@ export class TipoMovimientoService {
 
   async update(id: number, dto: UpdateTipoMovimientoDto) {
     await this.findOne(id);
+
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un tipo de movimiento solo puede estar Activo o Anulado');
+      }
+    }
+
     return this.prisma.tipo_movimiento.update({
       where: { id_tipo_movimiento: id },
       data: dto,

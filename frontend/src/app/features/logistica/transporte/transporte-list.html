@@ -106,18 +106,20 @@
         />
       </div>
 
-      <div class="page__field">
-        <label for="id_estado">Estado</label>
-        <p-select
-          inputId="id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
-          [appendTo]="'body'"
-        />
-      </div>
+      @if (editingId()) {
+        <div class="page__field">
+          <label for="id_estado">Estado</label>
+          <p-select
+            inputId="id_estado"
+            formControlName="id_estado"
+            [options]="estadosPermitidos()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
 
       <fieldset class="transporte__direccion-field" formGroupName="direccion">
         <legend>Dirección</legend>
@@ -302,18 +304,20 @@
         <label for="dni">DNI</label>
         <input id="dni" type="text" pInputText formControlName="dni" />
       </div>
-      <div class="page__field">
-        <label for="chofer_id_estado">Estado</label>
-        <p-select
-          inputId="chofer_id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
-          [appendTo]="'body'"
-        />
-      </div>
+      @if (editingChoferId()) {
+        <div class="page__field">
+          <label for="chofer_id_estado">Estado</label>
+          <p-select
+            inputId="chofer_id_estado"
+            formControlName="id_estado"
+            [options]="estadosPermitidos()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
 
       <fieldset class="transporte__direccion-field" formGroupName="direccion">
         <legend>Dirección del chofer</legend>

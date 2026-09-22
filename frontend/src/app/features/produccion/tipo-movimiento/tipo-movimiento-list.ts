@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -13,6 +13,8 @@ import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { TipoMovimiento } from '../../../core/models/tipo-movimiento.model';
 import { Naturaleza } from '../../../core/models/naturaleza.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_TIPO_MOVIMIENTO = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-tipo-movimiento-list',
@@ -36,10 +38,17 @@ export class TipoMovimientoList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosTipoMovimiento = computed(() =>
+    this.estados().filter((e) => ESTADOS_TIPO_MOVIMIENTO.has(e.nombreEstado)),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     nombre_movimiento: ['', Validators.required],
     id_naturaleza: [null as number | null, Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -93,9 +102,9 @@ export class TipoMovimientoList implements OnInit {
 
     this.saving.set(true);
     const raw = this.form.getRawValue();
-    const dto = { nombre_movimiento: raw.nombre_movimiento, id_naturaleza: raw.id_naturaleza!, id_estado: raw.id_estado! };
+    const dto = { nombre_movimiento: raw.nombre_movimiento, id_naturaleza: raw.id_naturaleza! };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

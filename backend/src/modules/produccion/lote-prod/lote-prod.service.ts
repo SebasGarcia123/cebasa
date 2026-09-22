@@ -1,15 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreateLoteProdDto } from './dto/create-lote-prod.dto.js';
 import { UpdateLoteProdDto } from './dto/update-lote-prod.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+
 @Injectable()
 export class LoteProdService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
-  create(dto: CreateLoteProdDto) {
+  async create(dto: CreateLoteProdDto) {
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.lote_prod.create({
-      data: { ...dto, fecha_lote_prod: new Date(dto.fecha_lote_prod) },
+      data: { ...dto, id_estado: idEstadoActivo, fecha_lote_prod: new Date(dto.fecha_lote_prod) },
     });
   }
 
@@ -36,6 +44,16 @@ export class LoteProdService {
 
   async update(id: number, dto: UpdateLoteProdDto) {
     await this.findOne(id);
+
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un lote de producción solo puede estar Activo o Anulado');
+      }
+    }
+
     return this.prisma.lote_prod.update({
       where: { id_lote: id },
       data: {

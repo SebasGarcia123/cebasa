@@ -1,11 +1,18 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreatePedidoDto } from './dto/create-pedido.dto.js';
 import { UpdatePedidoDto } from './dto/update-pedido.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+
 @Injectable()
 export class PedidosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
   // Un cliente cancelado no puede recibir pedidos nuevos.
   private async assertClienteActivo(idCliente: number): Promise<void> {
@@ -20,9 +27,11 @@ export class PedidosService {
 
   async create(dto: CreatePedidoDto) {
     await this.assertClienteActivo(dto.id_cliente);
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.pedidos.create({
       data: {
         ...dto,
+        id_estado: idEstadoActivo,
         fecha_carga: new Date(dto.fecha_carga),
         fecha_prometido: dto.fecha_prometido
           ? new Date(dto.fecha_prometido)
@@ -57,6 +66,14 @@ export class PedidosService {
     await this.findOne(id);
     if (dto.id_cliente !== undefined) {
       await this.assertClienteActivo(dto.id_cliente);
+    }
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un pedido solo puede estar Activo o Anulado');
+      }
     }
     return this.prisma.pedidos.update({
       where: { id_pedido: id },

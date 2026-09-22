@@ -1,15 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { CreatePlanProduccionDto } from './dto/create-plan-produccion.dto.js';
 import { UpdatePlanProduccionDto } from './dto/update-plan-produccion.dto.js';
 
+const ESTADO_ACTIVO = 'Activo';
+const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+
 @Injectable()
 export class PlanProduccionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estadosLookup: EstadosLookupService,
+  ) {}
 
-  create(dto: CreatePlanProduccionDto) {
+  async create(dto: CreatePlanProduccionDto) {
+    const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.plan_produccion.create({
-      data: { ...dto, fecha_inicio_semana: new Date(dto.fecha_inicio_semana) },
+      data: {
+        ...dto,
+        id_estado: idEstadoActivo,
+        fecha_inicio_semana: new Date(dto.fecha_inicio_semana),
+      },
     });
   }
 
@@ -38,6 +50,16 @@ export class PlanProduccionService {
 
   async update(id: number, dto: UpdatePlanProduccionDto) {
     await this.findOne(id);
+
+    if (dto.id_estado !== undefined) {
+      const estado = await this.prisma.estados.findUnique({
+        where: { id_estado: dto.id_estado },
+      });
+      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
+        throw new BadRequestException('Un plan de producción solo puede estar Activo o Anulado');
+      }
+    }
+
     return this.prisma.plan_produccion.update({
       where: { id_plan_produccion: id },
       data: {

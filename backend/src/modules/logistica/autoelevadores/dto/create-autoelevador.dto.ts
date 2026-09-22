@@ -1,6 +1,5 @@
 import {
   IsDateString,
-  IsInt,
   IsNotEmpty,
   IsString,
   MaxLength,
@@ -14,7 +13,4 @@ export class CreateAutoelevadorDto {
 
   @IsDateString()
   fecha_alta: string;
-
-  @IsInt()
-  id_estado: number;
 }

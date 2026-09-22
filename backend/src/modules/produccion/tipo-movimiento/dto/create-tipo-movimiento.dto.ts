@@ -8,7 +8,4 @@ export class CreateTipoMovimientoDto {
 
   @IsInt()
   id_naturaleza: number;
-
-  @IsInt()
-  id_estado: number;
 }

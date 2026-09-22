@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -22,6 +22,8 @@ import { Linea } from '../../../core/models/linea.model';
 import { Producto } from '../../../core/models/producto.model';
 import { Turno } from '../../../core/models/turno.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_PLAN_PRODUCCION = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-plan-produccion-list',
@@ -62,9 +64,16 @@ export class PlanProduccionList implements OnInit {
 
   // id_usuario: quien arma el plan. Por ahora se fija a 1 (usuario de
   // prueba), igual que en el resto de la app.
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosPlanProduccion = computed(() =>
+    this.estados().filter((e) => ESTADOS_PLAN_PRODUCCION.has(e.nombreEstado)),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     fecha_inicio_semana: [null as Date | null, Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   protected readonly itemsDialogVisible = signal(false);
@@ -138,11 +147,10 @@ export class PlanProduccionList implements OnInit {
     const raw = this.form.getRawValue();
     const dto = {
       fecha_inicio_semana: raw.fecha_inicio_semana!.toISOString().slice(0, 10),
-      id_estado: raw.id_estado!,
       id_usuario: 1,
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

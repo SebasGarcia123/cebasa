@@ -13,7 +13,4 @@ export class CreateChoferDto {
 
   @IsInt()
   id_direccion: number;
-
-  @IsInt()
-  id_estado: number;
 }

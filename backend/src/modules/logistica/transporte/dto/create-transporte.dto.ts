@@ -39,7 +39,4 @@ export class CreateTransporteDto {
   @IsString()
   @MaxLength(50)
   alias_cuenta_bancaria?: string;
-
-  @IsInt()
-  id_estado: number;
 }

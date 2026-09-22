@@ -6,7 +6,4 @@ export class CreateLoteProdDto {
 
   @IsDateString()
   fecha_lote_prod: string;
-
-  @IsInt()
-  id_estado: number;
 }

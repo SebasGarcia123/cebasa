@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -22,6 +22,8 @@ import { Turno } from '../../../core/models/turno.model';
 import { Producto } from '../../../core/models/producto.model';
 import { Linea } from '../../../core/models/linea.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_LOTE_PROD = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-lotes-prod-list',
@@ -60,10 +62,15 @@ export class LotesProdList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosLoteProd = computed(() => this.estados().filter((e) => ESTADOS_LOTE_PROD.has(e.nombreEstado)));
+
   protected readonly form = this.fb.nonNullable.group({
     id_turno: [null as number | null, Validators.required],
     fecha_lote_prod: [null as Date | null, Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   protected readonly itemsDialogVisible = signal(false);
@@ -137,10 +144,9 @@ export class LotesProdList implements OnInit {
     const dto = {
       id_turno: raw.id_turno!,
       fecha_lote_prod: raw.fecha_lote_prod!.toISOString().slice(0, 10),
-      id_estado: raw.id_estado!,
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

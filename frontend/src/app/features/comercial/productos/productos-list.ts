@@ -1,17 +1,23 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { SelectModule } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
 import { ArchivoAdjuntoApiService } from '../../../core/api/archivo-adjunto-api.service';
+import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { Producto } from '../../../core/models/producto.model';
 import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
+import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_PRODUCTO = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-productos-list',
@@ -23,6 +29,7 @@ import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
     DialogModule,
     InputTextModule,
     InputNumberModule,
+    SelectModule,
   ],
   templateUrl: './productos-list.html',
   styleUrl: './productos-list.scss',
@@ -30,11 +37,13 @@ import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
 export class ProductosList implements OnInit {
   private readonly api = inject(ProductosApiService);
   protected readonly archivoAdjuntoApi = inject(ArchivoAdjuntoApiService);
+  private readonly estadosApi = inject(EstadosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
   protected readonly productos = signal<Producto[]>([]);
+  protected readonly estados = signal<Estado[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly dialogVisible = signal(false);
@@ -42,6 +51,11 @@ export class ProductosList implements OnInit {
 
   protected readonly fotoActual = signal<ArchivoAdjunto | null>(null);
   protected readonly fotoUploading = signal(false);
+
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosProducto = computed(() => this.estados().filter((e) => ESTADOS_PRODUCTO.has(e.nombreEstado)));
 
   protected readonly form = this.fb.nonNullable.group({
     codigo_producto: ['', Validators.required],
@@ -51,7 +65,7 @@ export class ProductosList implements OnInit {
     precio_venta: [null as number | null, Validators.required],
     stock_actual: [0 as number | null],
     stock_minimo: [0 as number | null],
-    id_estado: [1],
+    id_estado: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -60,9 +74,13 @@ export class ProductosList implements OnInit {
 
   private load(): void {
     this.loading.set(true);
-    this.api.list().subscribe({
-      next: (data) => {
-        this.productos.set(data);
+    forkJoin({
+      productos: this.api.list(),
+      estados: this.estadosApi.list(),
+    }).subscribe({
+      next: ({ productos, estados }) => {
+        this.productos.set(productos);
+        this.estados.set(estados);
         this.loading.set(false);
       },
       error: () => {
@@ -75,7 +93,7 @@ export class ProductosList implements OnInit {
   openCreate(): void {
     this.editingId.set(null);
     this.fotoActual.set(null);
-    this.form.reset({ stock_actual: 0, stock_minimo: 0, id_estado: 1 });
+    this.form.reset({ stock_actual: 0, stock_minimo: 0 });
     this.dialogVisible.set(true);
   }
 
@@ -154,7 +172,6 @@ export class ProductosList implements OnInit {
       codigo_producto: raw.codigo_producto,
       descripcion_producto: raw.descripcion_producto,
       precio_venta: Number(raw.precio_venta),
-      id_estado: raw.id_estado,
       id_archivo_adjunto: foto?.id_archivo_adjunto ?? null,
       ...(raw.bolsones_por_pallet != null ? { bolsones_por_pallet: raw.bolsones_por_pallet } : {}),
       ...(raw.peso_por_bolson != null ? { peso_por_bolson: Number(raw.peso_por_bolson) } : {}),
@@ -162,7 +179,7 @@ export class ProductosList implements OnInit {
       ...(raw.stock_minimo != null ? { stock_minimo: raw.stock_minimo } : {}),
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

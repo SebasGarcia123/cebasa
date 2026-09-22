@@ -19,9 +19,6 @@ export class CreateLoteDto {
   @IsInt()
   id_tipo_lote: number;
 
-  @IsInt()
-  id_estado: number;
-
   @IsOptional()
   @IsString()
   @MaxLength(255)

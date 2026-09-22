@@ -69,18 +69,20 @@
         <input id="telefono" type="text" pInputText formControlName="telefono" />
       </div>
 
-      <div class="page__field">
-        <label for="id_estado">Estado</label>
-        <p-select
-          inputId="id_estado"
-          formControlName="id_estado"
-          [options]="estados()"
-          optionLabel="nombreEstado"
-          optionValue="id_estado"
-          placeholder="Seleccionar estado"
-          [appendTo]="'body'"
-        />
-      </div>
+      @if (editingId()) {
+        <div class="page__field">
+          <label for="id_estado">Estado</label>
+          <p-select
+            inputId="id_estado"
+            formControlName="id_estado"
+            [options]="estadosFletero()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
 
       <div class="page__form-actions">
         <p-button

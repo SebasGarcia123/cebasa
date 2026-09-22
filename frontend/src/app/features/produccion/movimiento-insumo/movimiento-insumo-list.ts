@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -20,6 +20,8 @@ import { Insumo } from '../../../core/models/insumo.model';
 import { TipoMovimiento } from '../../../core/models/tipo-movimiento.model';
 import { Deposito } from '../../../core/models/deposito.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_MOVIMIENTO_INSUMO = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-movimiento-insumo-list',
@@ -57,6 +59,13 @@ export class MovimientoInsumoList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosMovimientoInsumo = computed(() =>
+    this.estados().filter((e) => ESTADOS_MOVIMIENTO_INSUMO.has(e.nombreEstado)),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     id_insumo: [null as number | null, Validators.required],
     id_tipo_movimiento: [null as number | null, Validators.required],
@@ -66,7 +75,7 @@ export class MovimientoInsumoList implements OnInit {
     id_deposito_destino: [null as number | null],
     observaciones: [''],
     motivo: [''],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -138,14 +147,13 @@ export class MovimientoInsumoList implements OnInit {
       id_tipo_movimiento: raw.id_tipo_movimiento!,
       cantidad: Number(raw.cantidad),
       fecha_movimiento: raw.fecha_movimiento!.toISOString().slice(0, 10),
-      id_estado: raw.id_estado!,
       ...(raw.id_deposito_origen ? { id_deposito_origen: raw.id_deposito_origen } : {}),
       ...(raw.id_deposito_destino ? { id_deposito_destino: raw.id_deposito_destino } : {}),
       ...(raw.observaciones ? { observaciones: raw.observaciones } : {}),
       ...(raw.motivo ? { motivo: raw.motivo } : {}),
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

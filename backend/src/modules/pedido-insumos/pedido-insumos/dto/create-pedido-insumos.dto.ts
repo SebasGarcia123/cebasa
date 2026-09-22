@@ -16,9 +16,6 @@ export class CreatePedidoInsumosDto {
   @IsDateString()
   fecha_necesidad: string;
 
-  @IsInt()
-  id_estado: number;
-
   @IsOptional()
   @IsString()
   @MaxLength(255)

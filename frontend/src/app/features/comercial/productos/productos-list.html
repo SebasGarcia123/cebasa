@@ -119,6 +119,21 @@
         <p-inputNumber inputId="stock_minimo" formControlName="stock_minimo" [min]="0" />
       </div>
 
+      @if (editingId()) {
+        <div class="page__field">
+          <label for="id_estado">Estado</label>
+          <p-select
+            inputId="id_estado"
+            formControlName="id_estado"
+            [options]="estadosProducto()"
+            optionLabel="nombreEstado"
+            optionValue="id_estado"
+            placeholder="Seleccionar estado"
+            [appendTo]="'body'"
+          />
+        </div>
+      }
+
       <div class="page__field">
         <label for="producto_foto">Foto del producto</label>
         <input

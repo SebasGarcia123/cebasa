@@ -6,7 +6,4 @@ export class CreatePlanProduccionDto {
 
   @IsDateString()
   fecha_inicio_semana: string;
-
-  @IsInt()
-  id_estado: number;
 }

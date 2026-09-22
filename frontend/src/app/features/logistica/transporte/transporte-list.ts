@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -17,6 +17,8 @@ import { Transporte } from '../../../core/models/transporte.model';
 import { Camion } from '../../../core/models/camion.model';
 import { Chofer } from '../../../core/models/chofer.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_TRANSPORTE = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-transporte-list',
@@ -42,6 +44,13 @@ export class TransporteList implements OnInit {
   protected readonly editingId = signal<number | null>(null);
   private transporteEnEdicion: Transporte | null = null;
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado. Vale igual para Transporte que para Chofer.
+  protected readonly estadosPermitidos = computed(() =>
+    this.estados().filter((e) => ESTADOS_TRANSPORTE.has(e.nombreEstado)),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     nombre_transporte: ['', Validators.required],
     cuit: ['', Validators.required],
@@ -49,7 +58,7 @@ export class TransporteList implements OnInit {
     telefono: [''],
     cbu_cuenta_bancaria: [''],
     alias_cuenta_bancaria: [''],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
     direccion: this.fb.nonNullable.group({
       calle: ['', Validators.required],
       numero: [''],
@@ -138,7 +147,6 @@ export class TransporteList implements OnInit {
     const transporteBase = {
       nombre_transporte: raw.nombre_transporte,
       cuit: raw.cuit,
-      id_estado: raw.id_estado!,
       ...(raw.nombre_contacto ? { nombre_contacto: raw.nombre_contacto } : {}),
       ...(raw.telefono ? { telefono: raw.telefono } : {}),
       ...(raw.cbu_cuenta_bancaria ? { cbu_cuenta_bancaria: raw.cbu_cuenta_bancaria } : {}),
@@ -148,7 +156,7 @@ export class TransporteList implements OnInit {
     const id = this.editingId();
     if (id && this.transporteEnEdicion) {
       forkJoin({
-        transporte: this.api.update(id, transporteBase),
+        transporte: this.api.update(id, { ...transporteBase, id_estado: raw.id_estado! }),
         direccion: this.direccionesApi.update(this.transporteEnEdicion.id_direccion, direccionDto),
       }).subscribe({
         next: () => this.onSaveSuccess(),
@@ -317,7 +325,7 @@ export class TransporteList implements OnInit {
   protected readonly choferForm = this.fb.nonNullable.group({
     nombre_chofer: ['', Validators.required],
     dni: ['', Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
     direccion: this.fb.nonNullable.group({
       calle: ['', Validators.required],
       numero: [''],
@@ -393,12 +401,15 @@ export class TransporteList implements OnInit {
       ...(raw.direccion.entrecalle1 ? { entrecalle1: raw.direccion.entrecalle1 } : {}),
       ...(raw.direccion.entrecalle2 ? { entrecalle2: raw.direccion.entrecalle2 } : {}),
     };
-    const choferBase = { nombre_chofer: raw.nombre_chofer, dni: raw.dni, id_estado: raw.id_estado! };
+    const choferBase = { nombre_chofer: raw.nombre_chofer, dni: raw.dni };
 
     const idChofer = this.editingChoferId();
     if (idChofer && this.choferEnEdicion) {
       forkJoin({
-        chofer: this.choferApi.update(this.transporteActivo.id_transporte, idChofer, choferBase),
+        chofer: this.choferApi.update(this.transporteActivo.id_transporte, idChofer, {
+          ...choferBase,
+          id_estado: raw.id_estado!,
+        }),
         direccion: this.direccionesApi.update(this.choferEnEdicion.id_direccion, direccionDto),
       }).subscribe({
         next: () => this.onChoferSaved(),

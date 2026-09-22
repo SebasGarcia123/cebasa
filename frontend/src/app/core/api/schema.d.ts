@@ -2099,10 +2099,11 @@ export interface components {
             id_cliente: number;
             fecha_carga: string;
             fecha_prometido?: string;
-            id_estado: number;
             id_usuario: number;
         };
-        UpdatePedidoDto: Record<string, never>;
+        UpdatePedidoDto: {
+            id_estado?: number;
+        };
         CreateItemPedidoDto: {
             id_producto: number;
             cantidad_bolsones: number;
@@ -2116,10 +2117,11 @@ export interface components {
             precio_venta: number;
             stock_actual?: number;
             stock_minimo?: number;
-            id_estado: number;
             id_archivo_adjunto?: number;
         };
-        UpdateProductoDto: Record<string, never>;
+        UpdateProductoDto: {
+            id_estado?: number;
+        };
         CreateReclamoDto: {
             fecha: string;
             descripcion?: string;
@@ -2156,15 +2158,17 @@ export interface components {
         UpdateLineaDto: Record<string, never>;
         CreateTurnoDto: {
             descripcion_turnos: string;
-            id_estado: number;
         };
-        UpdateTurnoDto: Record<string, never>;
+        UpdateTurnoDto: {
+            id_estado?: number;
+        };
         CreateTipoMovimientoDto: {
             nombre_movimiento: string;
             id_naturaleza: number;
-            id_estado: number;
         };
-        UpdateTipoMovimientoDto: Record<string, never>;
+        UpdateTipoMovimientoDto: {
+            id_estado?: number;
+        };
         CreateInsumoDto: {
             codigo_insumo: string;
             nombre_insumo: string;
@@ -2184,9 +2188,10 @@ export interface components {
         };
         CreateRecetaDto: {
             id_producto: number;
-            id_estado: number;
         };
-        UpdateRecetaDto: Record<string, never>;
+        UpdateRecetaDto: {
+            id_estado?: number;
+        };
         CreateRecetaItemDto: {
             id_insumo: number;
             cantidad_utilizada: number;
@@ -2195,9 +2200,10 @@ export interface components {
         CreateLoteProdDto: {
             id_turno: number;
             fecha_lote_prod: string;
-            id_estado: number;
         };
-        UpdateLoteProdDto: Record<string, never>;
+        UpdateLoteProdDto: {
+            id_estado?: number;
+        };
         CreateItemProdDto: {
             id_producto: number;
             cantidad: number;
@@ -2214,9 +2220,10 @@ export interface components {
             observaciones?: string;
             id_item_pedido_insumo?: number;
             motivo?: string;
-            id_estado: number;
         };
-        UpdateMovimientoInsumoDto: Record<string, never>;
+        UpdateMovimientoInsumoDto: {
+            id_estado?: number;
+        };
         CreateMovimientoProductoDto: {
             id_producto: number;
             id_tipo_movimiento: number;
@@ -2226,16 +2233,18 @@ export interface components {
             id_deposito_destino?: number;
             observaciones?: string;
             motivo?: string;
-            id_estado: number;
         };
-        UpdateMovimientoProductoDto: Record<string, never>;
+        UpdateMovimientoProductoDto: {
+            id_estado?: number;
+        };
         CreateFleteroDto: {
             nombre_fletero: string;
             cuit?: string;
             telefono?: string;
-            id_estado: number;
         };
-        UpdateFleteroDto: Record<string, never>;
+        UpdateFleteroDto: {
+            id_estado?: number;
+        };
         CreateTipoLoteDto: {
             descripcion_lote: string;
         };
@@ -2248,9 +2257,10 @@ export interface components {
             telefono?: string;
             cbu_cuenta_bancaria?: string;
             alias_cuenta_bancaria?: string;
-            id_estado: number;
         };
-        UpdateTransporteDto: Record<string, never>;
+        UpdateTransporteDto: {
+            id_estado?: number;
+        };
         CreateCamionDto: {
             marca?: string;
             modelo?: string;
@@ -2262,19 +2272,21 @@ export interface components {
             nombre_chofer: string;
             dni: string;
             id_direccion: number;
-            id_estado: number;
         };
-        UpdateChoferDto: Record<string, never>;
+        UpdateChoferDto: {
+            id_estado?: number;
+        };
         CreateLoteDto: {
             fecha_lote: string;
             id_chofer: number;
             id_camion: number;
             id_tipo_lote: number;
-            id_estado: number;
             observaciones?: string;
             motivo?: string;
         };
-        UpdateLoteDto: Record<string, never>;
+        UpdateLoteDto: {
+            id_estado?: number;
+        };
         CreateItemLoteDto: {
             descripcion_item: string;
             id_unidad_medida: number;
@@ -2284,9 +2296,10 @@ export interface components {
         CreateAutoelevadorDto: {
             nombre: string;
             fecha_alta: string;
-            id_estado: number;
         };
-        UpdateAutoelevadorDto: Record<string, never>;
+        UpdateAutoelevadorDto: {
+            id_estado?: number;
+        };
         CreateServicioAutoelevadorDto: {
             horas: number;
             detalle?: string;
@@ -2376,10 +2389,11 @@ export interface components {
             id_usuario: number;
             fecha_carga: string;
             fecha_necesidad: string;
-            id_estado: number;
             motivo_rechazo?: string;
         };
-        UpdatePedidoInsumosDto: Record<string, never>;
+        UpdatePedidoInsumosDto: {
+            id_estado?: number;
+        };
         CreateItemPedidoInsumoDto: {
             id_insumo: number;
             cantidad_solicitada: number;
@@ -2389,9 +2403,10 @@ export interface components {
         CreatePlanProduccionDto: {
             id_usuario: number;
             fecha_inicio_semana: string;
-            id_estado: number;
         };
-        UpdatePlanProduccionDto: Record<string, never>;
+        UpdatePlanProduccionDto: {
+            id_estado?: number;
+        };
         CreateItemPlanProduccionDto: {
             id_lineas: number;
             id_producto: number;

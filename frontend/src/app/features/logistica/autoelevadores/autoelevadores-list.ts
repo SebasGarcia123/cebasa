@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -17,6 +17,8 @@ import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { Autoelevador } from '../../../core/models/autoelevador.model';
 import { ServiceAutoelevador } from '../../../core/models/service-autoelevador.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_AUTOELEVADOR = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-autoelevadores-list',
@@ -50,10 +52,17 @@ export class AutoelevadoresList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosAutoelevador = computed(() =>
+    this.estados().filter((e) => ESTADOS_AUTOELEVADOR.has(e.nombreEstado)),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
     fecha_alta: [null as Date | null, Validators.required],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   protected readonly serviciosDialogVisible = signal(false);
@@ -120,10 +129,9 @@ export class AutoelevadoresList implements OnInit {
     const dto = {
       nombre: raw.nombre,
       fecha_alta: raw.fecha_alta!.toISOString().slice(0, 10),
-      id_estado: raw.id_estado!,
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

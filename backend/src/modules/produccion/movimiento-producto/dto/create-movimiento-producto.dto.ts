@@ -36,7 +36,4 @@ export class CreateMovimientoProductoDto {
   @IsString()
   @MaxLength(255)
   motivo?: string;
-
-  @IsInt()
-  id_estado: number;
 }

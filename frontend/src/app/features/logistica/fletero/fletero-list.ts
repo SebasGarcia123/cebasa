@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -11,6 +11,8 @@ import { FleteroApiService } from '../../../core/api/fletero-api.service';
 import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { Fletero } from '../../../core/models/fletero.model';
 import { Estado } from '../../../core/models/estado.model';
+
+const ESTADOS_FLETERO = new Set(['Activo', 'Anulado']);
 
 @Component({
   selector: 'app-fletero-list',
@@ -32,11 +34,16 @@ export class FleteroList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosFletero = computed(() => this.estados().filter((e) => ESTADOS_FLETERO.has(e.nombreEstado)));
+
   protected readonly form = this.fb.nonNullable.group({
     nombre_fletero: ['', Validators.required],
     cuit: [''],
     telefono: [''],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -91,12 +98,11 @@ export class FleteroList implements OnInit {
     const raw = this.form.getRawValue();
     const dto = {
       nombre_fletero: raw.nombre_fletero,
-      id_estado: raw.id_estado!,
       ...(raw.cuit ? { cuit: raw.cuit } : {}),
       ...(raw.telefono ? { telefono: raw.telefono } : {}),
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

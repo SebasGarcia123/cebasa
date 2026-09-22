@@ -21,6 +21,8 @@ import { Cliente } from '../../../core/models/cliente.model';
 import { Estado } from '../../../core/models/estado.model';
 import { Producto } from '../../../core/models/producto.model';
 
+const ESTADOS_PEDIDO = new Set(['Activo', 'Anulado']);
+
 @Component({
   selector: 'app-pedidos-list',
   imports: [
@@ -62,11 +64,16 @@ export class PedidosList implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
+  // Al crear no se elige estado: el sistema lo pone en "Activo". El
+  // selector de estado solo se muestra al editar, y restringido a
+  // Activo/Anulado.
+  protected readonly estadosPedido = computed(() => this.estados().filter((e) => ESTADOS_PEDIDO.has(e.nombreEstado)));
+
   protected readonly form = this.fb.nonNullable.group({
     id_cliente: [null as number | null, Validators.required],
     fecha_carga: [null as Date | null, Validators.required],
     fecha_prometido: [null as Date | null],
-    id_estado: [null as number | null, Validators.required],
+    id_estado: [null as number | null],
   });
 
   // Diálogo de ítems del pedido
@@ -139,12 +146,11 @@ export class PedidosList implements OnInit {
     const dto = {
       id_cliente: raw.id_cliente!,
       fecha_carga: raw.fecha_carga!.toISOString().slice(0, 10),
-      id_estado: raw.id_estado!,
       id_usuario: 1,
       ...(raw.fecha_prometido ? { fecha_prometido: raw.fecha_prometido.toISOString().slice(0, 10) } : {}),
     };
     const id = this.editingId();
-    const request$ = id ? this.api.update(id, dto) : this.api.create(dto);
+    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
     request$.subscribe({
       next: () => {

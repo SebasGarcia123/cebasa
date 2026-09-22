@@ -12,8 +12,5 @@ export class CreatePedidoDto {
   fecha_prometido?: string;
 
   @IsInt()
-  id_estado: number;
-
-  @IsInt()
   id_usuario: number;
 }

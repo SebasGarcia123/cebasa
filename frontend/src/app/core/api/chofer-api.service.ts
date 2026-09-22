@@ -8,8 +8,11 @@ export interface ChoferDto {
   nombre_chofer: string;
   dni: string;
   id_direccion: number;
-  id_estado: number;
 }
+
+// id_estado no está en el alta (arranca Activo), pero sí se puede
+// editar después entre Activo/Anulado.
+export type UpdateChoferDto = Partial<ChoferDto> & { id_estado?: number };
 
 @Injectable({ providedIn: 'root' })
 export class ChoferApiService {
@@ -28,7 +31,7 @@ export class ChoferApiService {
     return this.http.post<Chofer>(this.base(idTransporte), dto);
   }
 
-  update(idTransporte: number, idChofer: number, dto: Partial<ChoferDto>): Observable<Chofer> {
+  update(idTransporte: number, idChofer: number, dto: UpdateChoferDto): Observable<Chofer> {
     return this.http.patch<Chofer>(`${this.base(idTransporte)}/${idChofer}`, dto);
   }
 

@@ -55,7 +55,7 @@
   >
     <form [formGroup]="form" (ngSubmit)="guardar()" class="page__form">
       <div class="pedidos__header-fields">
-        <div class="page__field">
+        <div class="page__field pedidos__field--cliente">
           <label for="id_cliente">Cliente</label>
           <p-select
             inputId="id_cliente"
@@ -70,7 +70,7 @@
           />
         </div>
 
-        <div class="page__field">
+        <div class="page__field pedidos__field--fecha">
           <label for="fecha_carga">Fecha de carga</label>
           <input
             id="fecha_carga"
@@ -81,7 +81,7 @@
           />
         </div>
 
-        <div class="page__field">
+        <div class="page__field pedidos__field--fecha">
           <label for="fecha_prometido">Fecha prometida (opcional)</label>
           <p-datepicker
             inputId="fecha_prometido"
@@ -92,7 +92,7 @@
         </div>
 
         @if (editingId()) {
-          <div class="page__field">
+          <div class="page__field pedidos__field--fecha">
             <label for="id_estado">Estado</label>
             <p-select
               inputId="id_estado"
@@ -121,10 +121,10 @@
       <p-table [value]="itemsFormArray.controls" [loading]="itemsLoading()" dataKey="id_producto" class="pedidos__items-table">
         <ng-template #header>
           <tr>
-            <th scope="col" style="width: 5%">Código</th>
-            <th scope="col" style="width: 52%">Producto</th>
-            <th scope="col" style="width: 5%">Bolsones</th>
-            <th scope="col" style="width: 5%">Pallets</th>
+            <th scope="col" style="width: 6.5rem">Código</th>
+            <th scope="col">Producto</th>
+            <th scope="col" style="width: 6.5rem">Bolsones</th>
+            <th scope="col" style="width: 6.5rem">Pallets</th>
             <th scope="col" style="width: 3rem"></th>
           </tr>
         </ng-template>

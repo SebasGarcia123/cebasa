@@ -1,8 +1,21 @@
 .pedidos__header-fields {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem 1.5rem;
   margin-bottom: 1.25rem;
+}
+
+// Cliente ocupa el espacio disponible; las fechas/estado quedan
+// angostas al lado, todo en una sola línea en pantallas grandes. Con
+// flex-wrap alcanza para que se acomoden solos en pantallas chicas,
+// sin necesidad de un breakpoint explícito.
+.pedidos__field--cliente {
+  flex: 2 1 220px;
+}
+
+.pedidos__field--fecha {
+  flex: 1 1 140px;
+  max-width: 180px;
 }
 
 .pedidos__items-header {
@@ -15,6 +28,34 @@
     font-family: var(--font-family-display);
     font-size: 1rem;
     font-weight: 600;
+  }
+}
+
+// p-table usa table-layout:auto por default, así que el ancho de
+// contenido de los p-select/p-inputNumber le gana a los anchos
+// declarados en los <th> (por eso las columnas angostas no se veían
+// angostas). table-layout:fixed hace que el navegador respete esos
+// anchos en vez de estirar la columna para que entre el contenido.
+.pedidos__items-table {
+  ::ng-deep .p-datatable-table {
+    table-layout: fixed;
+  }
+
+  ::ng-deep .p-select,
+  ::ng-deep .p-inputnumber {
+    width: 100%;
+    min-width: 0;
+  }
+
+  ::ng-deep .p-select-label,
+  ::ng-deep .p-inputnumber-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  td {
+    overflow: hidden;
   }
 }
 

@@ -10,12 +10,12 @@
 // flex-wrap alcanza para que se acomoden solos en pantallas chicas,
 // sin necesidad de un breakpoint explícito.
 .pedidos__field--cliente {
-  flex: 2 1 220px;
+  flex: 1.4 1 180px;
 }
 
 .pedidos__field--fecha {
-  flex: 1 1 140px;
-  max-width: 180px;
+  flex: 1 1 160px;
+  max-width: 200px;
 }
 
 .pedidos__items-header {

@@ -82,7 +82,7 @@
         </div>
 
         <div class="page__field pedidos__field--fecha">
-          <label for="fecha_prometido">Fecha prometida (opcional)</label>
+          <label for="fecha_prometido">Fecha prometida</label>
           <p-datepicker
             inputId="fecha_prometido"
             formControlName="fecha_prometido"
@@ -121,7 +121,7 @@
       <p-table [value]="itemsFormArray.controls" [loading]="itemsLoading()" dataKey="id_producto" class="pedidos__items-table">
         <ng-template #header>
           <tr>
-            <th scope="col" style="width: 6.5rem">Código</th>
+            <th scope="col" style="width: 13rem">Código</th>
             <th scope="col">Producto</th>
             <th scope="col" style="width: 6.5rem">Bolsones</th>
             <th scope="col" style="width: 6.5rem">Pallets</th>

@@ -1,6 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -22,6 +29,13 @@ import { Estado } from '../../../core/models/estado.model';
 import { Producto } from '../../../core/models/producto.model';
 
 const ESTADOS_PEDIDO = new Set(['Activo', 'Anulado']);
+
+type ItemPedidoForm = FormGroup<{
+  id_item_pedido: FormControl<number | null>;
+  id_producto: FormControl<number | null>;
+  cantidad_bolsones: FormControl<number | null>;
+  cantidad_pallets: FormControl<number | null>;
+}>;
 
 @Component({
   selector: 'app-pedidos-list',
@@ -60,7 +74,13 @@ export class PedidosList implements OnInit {
   protected readonly clientesActivos = computed(() =>
     this.clientes().filter((c) => c.estados?.nombreEstado !== 'Cancelado'),
   );
+  // Solo productos activos para elegir en un ítem nuevo.
+  protected readonly productosActivos = computed(() =>
+    this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
+  );
+
   protected readonly saving = signal(false);
+  protected readonly itemsLoading = signal(false);
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
@@ -76,18 +96,12 @@ export class PedidosList implements OnInit {
     id_estado: [null as number | null],
   });
 
-  // Diálogo de ítems del pedido
-  protected readonly itemsDialogVisible = signal(false);
-  protected readonly itemsLoading = signal(false);
-  protected readonly itemsSaving = signal(false);
-  protected readonly items = signal<ItemPedido[]>([]);
-  protected readonly editingItemId = signal<number | null>(null);
-  private pedidoActivo: Pedido | null = null;
-
-  protected readonly itemForm = this.fb.nonNullable.group({
-    id_producto: [null as number | null, Validators.required],
-    cantidad_bolsones: [null as number | null, [Validators.required, Validators.min(1)]],
-  });
+  // Los ítems se arman en memoria (una fila por producto, con cálculo
+  // bolsones <-> pallets en vivo) y recién se persisten todos juntos al
+  // guardar el pedido: se comparan contra itemsOriginales para saber qué
+  // crear, actualizar o borrar.
+  protected readonly itemsFormArray = new FormArray<ItemPedidoForm>([]);
+  private itemsOriginales: ItemPedido[] = [];
 
   ngOnInit(): void {
     this.load();
@@ -115,9 +129,83 @@ export class PedidosList implements OnInit {
     });
   }
 
+  protected productoDe(idProducto: number | null): Producto | undefined {
+    if (idProducto == null) {
+      return undefined;
+    }
+    return this.productos().find((p) => p.id_producto === idProducto);
+  }
+
+  private calcularPallets(bolsones: number, bolsonesPorPallet: number): number {
+    return Math.round((bolsones / bolsonesPorPallet) * 100) / 100;
+  }
+
+  private calcularBolsones(pallets: number, bolsonesPorPallet: number): number {
+    return Math.round(pallets * bolsonesPorPallet);
+  }
+
+  private crearFilaItem(item?: ItemPedido): ItemPedidoForm {
+    const bolsonesPorPallet = item ? this.productoDe(item.id_producto)?.bolsones_por_pallet : null;
+    const cantidadPallets =
+      item && bolsonesPorPallet ? this.calcularPallets(item.cantidad_bolsones, bolsonesPorPallet) : null;
+
+    const fila: ItemPedidoForm = this.fb.group({
+      id_item_pedido: this.fb.control<number | null>(item?.id_item_pedido ?? null),
+      id_producto: this.fb.control<number | null>(item?.id_producto ?? null, Validators.required),
+      cantidad_bolsones: this.fb.control<number | null>(item?.cantidad_bolsones ?? null, [
+        Validators.required,
+        Validators.min(1),
+      ]),
+      cantidad_pallets: this.fb.control<number | null>(cantidadPallets),
+    });
+
+    // Bolsones <-> Pallets: cambiar uno recalcula el otro tomando como
+    // referencia productos.bolsones_por_pallet del producto elegido en
+    // la fila. emitEvent:false evita que el recálculo dispare este mismo
+    // listener en bucle.
+    fila.controls.id_producto.valueChanges.subscribe((idProducto) => {
+      const bpp = this.productoDe(idProducto)?.bolsones_por_pallet;
+      const bolsones = fila.controls.cantidad_bolsones.value;
+      if (bpp && bolsones != null) {
+        fila.controls.cantidad_pallets.setValue(this.calcularPallets(bolsones, bpp), { emitEvent: false });
+      }
+    });
+
+    fila.controls.cantidad_bolsones.valueChanges.subscribe((bolsones) => {
+      const bpp = this.productoDe(fila.controls.id_producto.value)?.bolsones_por_pallet;
+      if (bpp && bolsones != null) {
+        fila.controls.cantidad_pallets.setValue(this.calcularPallets(bolsones, bpp), { emitEvent: false });
+      }
+    });
+
+    fila.controls.cantidad_pallets.valueChanges.subscribe((pallets) => {
+      const bpp = this.productoDe(fila.controls.id_producto.value)?.bolsones_por_pallet;
+      if (bpp && pallets != null) {
+        fila.controls.cantidad_bolsones.setValue(this.calcularBolsones(pallets, bpp), { emitEvent: false });
+      }
+    });
+
+    return fila;
+  }
+
+  protected agregarItem(): void {
+    this.itemsFormArray.push(this.crearFilaItem());
+  }
+
+  protected quitarItem(index: number): void {
+    this.itemsFormArray.removeAt(index);
+  }
+
+  protected totalPallets(): number {
+    return this.itemsFormArray.controls.reduce((acc, fila) => acc + (fila.controls.cantidad_pallets.value ?? 0), 0);
+  }
+
   openCreate(): void {
     this.editingId.set(null);
+    this.itemsOriginales = [];
     this.form.reset();
+    this.itemsFormArray.clear();
+    this.itemsFormArray.push(this.crearFilaItem());
     this.dialogVisible.set(true);
   }
 
@@ -129,41 +217,99 @@ export class PedidosList implements OnInit {
       fecha_prometido: pedido.fecha_prometido ? new Date(pedido.fecha_prometido) : null,
       id_estado: pedido.id_estado,
     });
+    this.itemsFormArray.clear();
+    this.itemsOriginales = [];
+    this.itemsLoading.set(true);
     this.dialogVisible.set(true);
+
+    this.itemsApi.list(pedido.id_pedido).subscribe({
+      next: (items) => {
+        this.itemsOriginales = items;
+        items.forEach((item) => this.itemsFormArray.push(this.crearFilaItem(item)));
+        if (this.itemsFormArray.length === 0) {
+          this.itemsFormArray.push(this.crearFilaItem());
+        }
+        this.itemsLoading.set(false);
+      },
+      error: () => {
+        this.itemsLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los productos del pedido' });
+      },
+    });
   }
 
   closeDialog(): void {
     this.dialogVisible.set(false);
   }
 
-  save(): void {
-    if (this.form.invalid || this.saving()) {
+  guardar(): void {
+    if (this.form.invalid || this.itemsFormArray.invalid || this.saving()) {
+      return;
+    }
+    if (this.itemsFormArray.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Faltan productos', detail: 'Agregá al menos un producto al pedido' });
       return;
     }
 
     this.saving.set(true);
     const raw = this.form.getRawValue();
-    const dto = {
+    const headerDto = {
       id_cliente: raw.id_cliente!,
       fecha_carga: raw.fecha_carga!.toISOString().slice(0, 10),
       id_usuario: 1,
       ...(raw.fecha_prometido ? { fecha_prometido: raw.fecha_prometido.toISOString().slice(0, 10) } : {}),
     };
-    const id = this.editingId();
-    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
-    request$.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.dialogVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
-        this.load();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
-      },
+    const id = this.editingId();
+    if (id) {
+      this.api.update(id, { ...headerDto, id_estado: raw.id_estado! }).subscribe({
+        next: () => this.guardarItems(id),
+        error: () => this.onGuardarError(),
+      });
+    } else {
+      this.api.create(headerDto).subscribe({
+        next: (pedido) => this.guardarItems(pedido.id_pedido),
+        error: () => this.onGuardarError(),
+      });
+    }
+  }
+
+  private guardarItems(idPedido: number): void {
+    const filas = this.itemsFormArray.getRawValue();
+    const idsActuales = new Set(filas.map((f) => f.id_item_pedido).filter((id): id is number => id != null));
+    const aEliminar = this.itemsOriginales.filter((item) => !idsActuales.has(item.id_item_pedido));
+
+    const operaciones = [
+      ...aEliminar.map((item) => this.itemsApi.remove(idPedido, item.id_item_pedido)),
+      ...filas.map((fila) => {
+        const dto = { id_producto: fila.id_producto!, cantidad_bolsones: fila.cantidad_bolsones! };
+        return fila.id_item_pedido
+          ? this.itemsApi.update(idPedido, fila.id_item_pedido, dto)
+          : this.itemsApi.create(idPedido, dto);
+      }),
+    ];
+
+    if (operaciones.length === 0) {
+      this.onGuardarSuccess();
+      return;
+    }
+
+    forkJoin(operaciones).subscribe({
+      next: () => this.onGuardarSuccess(),
+      error: () => this.onGuardarError(),
     });
+  }
+
+  private onGuardarSuccess(): void {
+    this.saving.set(false);
+    this.dialogVisible.set(false);
+    this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
+    this.load();
+  }
+
+  private onGuardarError(): void {
+    this.saving.set(false);
+    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
   }
 
   confirmDelete(pedido: Pedido): void {
@@ -189,82 +335,6 @@ export class PedidosList implements OnInit {
           summary: 'Error',
           detail: 'No se pudo eliminar (puede tener datos relacionados)',
         });
-      },
-    });
-  }
-
-  openItems(pedido: Pedido): void {
-    this.pedidoActivo = pedido;
-    this.editingItemId.set(null);
-    this.itemForm.reset();
-    this.itemsDialogVisible.set(true);
-    this.loadItems();
-  }
-
-  private loadItems(): void {
-    if (!this.pedidoActivo) {
-      return;
-    }
-    this.itemsLoading.set(true);
-    this.itemsApi.list(this.pedidoActivo.id_pedido).subscribe({
-      next: (data) => {
-        this.items.set(data);
-        this.itemsLoading.set(false);
-      },
-      error: () => {
-        this.itemsLoading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los ítems' });
-      },
-    });
-  }
-
-  editItem(item: ItemPedido): void {
-    this.editingItemId.set(item.id_item_pedido);
-    this.itemForm.setValue({
-      id_producto: item.id_producto,
-      cantidad_bolsones: item.cantidad_bolsones,
-    });
-  }
-
-  cancelItemEdit(): void {
-    this.editingItemId.set(null);
-    this.itemForm.reset();
-  }
-
-  saveItem(): void {
-    if (this.itemForm.invalid || this.itemsSaving() || !this.pedidoActivo) {
-      return;
-    }
-
-    this.itemsSaving.set(true);
-    const raw = this.itemForm.getRawValue();
-    const dto = { id_producto: raw.id_producto!, cantidad_bolsones: raw.cantidad_bolsones! };
-    const idItem = this.editingItemId();
-    const request$ = idItem
-      ? this.itemsApi.update(this.pedidoActivo.id_pedido, idItem, dto)
-      : this.itemsApi.create(this.pedidoActivo.id_pedido, dto);
-
-    request$.subscribe({
-      next: () => {
-        this.itemsSaving.set(false);
-        this.cancelItemEdit();
-        this.loadItems();
-      },
-      error: () => {
-        this.itemsSaving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el ítem' });
-      },
-    });
-  }
-
-  removeItem(item: ItemPedido): void {
-    if (!this.pedidoActivo) {
-      return;
-    }
-    this.itemsApi.remove(this.pedidoActivo.id_pedido, item.id_item_pedido).subscribe({
-      next: () => this.loadItems(),
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el ítem' });
       },
     });
   }

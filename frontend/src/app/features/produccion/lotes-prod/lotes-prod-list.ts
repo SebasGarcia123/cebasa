@@ -1,6 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -24,6 +31,15 @@ import { Linea } from '../../../core/models/linea.model';
 import { Estado } from '../../../core/models/estado.model';
 
 const ESTADOS_LOTE_PROD = new Set(['Activo', 'Anulado']);
+
+type ItemProdForm = FormGroup<{
+  id_item: FormControl<number | null>;
+  id_lineas: FormControl<number | null>;
+  id_producto: FormControl<number | null>;
+  id_producto_codigo: FormControl<number | null>;
+  cantidad: FormControl<number | null>;
+  cantidad_pallets: FormControl<number | null>;
+}>;
 
 @Component({
   selector: 'app-lotes-prod-list',
@@ -59,8 +75,14 @@ export class LotesProdList implements OnInit {
   protected readonly estados = signal<Estado[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
+  protected readonly itemsLoading = signal(false);
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
+
+  // Solo productos activos para elegir en un ítem nuevo.
+  protected readonly productosActivos = computed(() =>
+    this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
+  );
 
   // Al crear no se elige estado: el sistema lo pone en "Activo". El
   // selector de estado solo se muestra al editar, y restringido a
@@ -73,18 +95,12 @@ export class LotesProdList implements OnInit {
     id_estado: [null as number | null],
   });
 
-  protected readonly itemsDialogVisible = signal(false);
-  protected readonly itemsLoading = signal(false);
-  protected readonly itemsSaving = signal(false);
-  protected readonly items = signal<ItemProd[]>([]);
-  protected readonly editingItemId = signal<number | null>(null);
-  private loteActivo: LoteProd | null = null;
-
-  protected readonly itemForm = this.fb.nonNullable.group({
-    id_producto: [null as number | null, Validators.required],
-    id_lineas: [null as number | null, Validators.required],
-    cantidad: [null as number | null, [Validators.required, Validators.min(1)]],
-  });
+  // Los ítems se arman en memoria (una fila por producto, con cálculo
+  // bolsones <-> pallets en vivo) y recién se persisten todos juntos al
+  // guardar el lote: se comparan contra itemsOriginales para saber qué
+  // crear, actualizar o borrar.
+  protected readonly itemsFormArray = new FormArray<ItemProdForm>([]);
+  private itemsOriginales: ItemProd[] = [];
 
   ngOnInit(): void {
     this.load();
@@ -114,9 +130,95 @@ export class LotesProdList implements OnInit {
     });
   }
 
+  protected productoDe(idProducto: number | null): Producto | undefined {
+    if (idProducto == null) {
+      return undefined;
+    }
+    return this.productos().find((p) => p.id_producto === idProducto);
+  }
+
+  private calcularPallets(bolsones: number, bolsonesPorPallet: number): number {
+    return Math.round((bolsones / bolsonesPorPallet) * 100) / 100;
+  }
+
+  private calcularBolsones(pallets: number, bolsonesPorPallet: number): number {
+    return Math.round(pallets * bolsonesPorPallet);
+  }
+
+  private crearFilaItem(item?: ItemProd): ItemProdForm {
+    const bolsonesPorPallet = item ? this.productoDe(item.id_producto)?.bolsones_por_pallet : null;
+    const cantidadPallets =
+      item && bolsonesPorPallet ? this.calcularPallets(item.cantidad, bolsonesPorPallet) : null;
+
+    const fila: ItemProdForm = this.fb.group({
+      id_item: this.fb.control<number | null>(item?.id_item ?? null),
+      id_lineas: this.fb.control<number | null>(item?.id_lineas ?? null, Validators.required),
+      id_producto: this.fb.control<number | null>(item?.id_producto ?? null, Validators.required),
+      // Selector duplicado (Código y Producto eligen el mismo id_producto,
+      // pero son dos <p-select> con distinto optionLabel). Compartir un
+      // único FormControl entre dos p-select no sincroniza de forma
+      // confiable la vista del otro, así que se mantienen dos controles
+      // sincronizados a mano (mismo criterio que en Pedidos).
+      id_producto_codigo: this.fb.control<number | null>(item?.id_producto ?? null),
+      cantidad: this.fb.control<number | null>(item?.cantidad ?? null, [Validators.required, Validators.min(1)]),
+      cantidad_pallets: this.fb.control<number | null>(cantidadPallets),
+    });
+
+    const sincronizarProducto = (idProducto: number | null, origen: 'principal' | 'codigo') => {
+      if (origen === 'principal') {
+        fila.controls.id_producto_codigo.setValue(idProducto, { emitEvent: false });
+      } else {
+        fila.controls.id_producto.setValue(idProducto, { emitEvent: false });
+      }
+      const bpp = this.productoDe(idProducto)?.bolsones_por_pallet;
+      const cantidad = fila.controls.cantidad.value;
+      if (bpp && cantidad != null) {
+        fila.controls.cantidad_pallets.setValue(this.calcularPallets(cantidad, bpp), { emitEvent: false });
+      }
+    };
+
+    // Bolsones <-> Pallets: cambiar uno recalcula el otro tomando como
+    // referencia productos.bolsones_por_pallet del producto elegido en
+    // la fila. emitEvent:false evita que el recálculo dispare este mismo
+    // listener en bucle.
+    fila.controls.id_producto.valueChanges.subscribe((idProducto) => sincronizarProducto(idProducto, 'principal'));
+    fila.controls.id_producto_codigo.valueChanges.subscribe((idProducto) => sincronizarProducto(idProducto, 'codigo'));
+
+    fila.controls.cantidad.valueChanges.subscribe((cantidad) => {
+      const bpp = this.productoDe(fila.controls.id_producto.value)?.bolsones_por_pallet;
+      if (bpp && cantidad != null) {
+        fila.controls.cantidad_pallets.setValue(this.calcularPallets(cantidad, bpp), { emitEvent: false });
+      }
+    });
+
+    fila.controls.cantidad_pallets.valueChanges.subscribe((pallets) => {
+      const bpp = this.productoDe(fila.controls.id_producto.value)?.bolsones_por_pallet;
+      if (bpp && pallets != null) {
+        fila.controls.cantidad.setValue(this.calcularBolsones(pallets, bpp), { emitEvent: false });
+      }
+    });
+
+    return fila;
+  }
+
+  protected agregarItem(): void {
+    this.itemsFormArray.push(this.crearFilaItem());
+  }
+
+  protected quitarItem(index: number): void {
+    this.itemsFormArray.removeAt(index);
+  }
+
+  protected totalPallets(): number {
+    return this.itemsFormArray.controls.reduce((acc, fila) => acc + (fila.controls.cantidad_pallets.value ?? 0), 0);
+  }
+
   openCreate(): void {
     this.editingId.set(null);
+    this.itemsOriginales = [];
     this.form.reset();
+    this.itemsFormArray.clear();
+    this.itemsFormArray.push(this.crearFilaItem());
     this.dialogVisible.set(true);
   }
 
@@ -127,39 +229,95 @@ export class LotesProdList implements OnInit {
       fecha_lote_prod: new Date(lote.fecha_lote_prod),
       id_estado: lote.id_estado,
     });
+    this.itemsFormArray.clear();
+    this.itemsOriginales = [];
+    this.itemsLoading.set(true);
     this.dialogVisible.set(true);
+
+    this.itemsApi.list(lote.id_lote).subscribe({
+      next: (items) => {
+        this.itemsOriginales = items;
+        items.forEach((item) => this.itemsFormArray.push(this.crearFilaItem(item)));
+        if (this.itemsFormArray.length === 0) {
+          this.itemsFormArray.push(this.crearFilaItem());
+        }
+        this.itemsLoading.set(false);
+      },
+      error: () => {
+        this.itemsLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los ítems del lote' });
+      },
+    });
   }
 
   closeDialog(): void {
     this.dialogVisible.set(false);
   }
 
-  save(): void {
-    if (this.form.invalid || this.saving()) {
+  guardar(): void {
+    if (this.form.invalid || this.itemsFormArray.invalid || this.saving()) {
+      return;
+    }
+    if (this.itemsFormArray.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Faltan productos', detail: 'Agregá al menos un producto al lote' });
       return;
     }
 
     this.saving.set(true);
     const raw = this.form.getRawValue();
-    const dto = {
+    const headerDto = {
       id_turno: raw.id_turno!,
       fecha_lote_prod: raw.fecha_lote_prod!.toISOString().slice(0, 10),
     };
-    const id = this.editingId();
-    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
 
-    request$.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.dialogVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
-        this.load();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
-      },
+    const id = this.editingId();
+    if (id) {
+      this.api.update(id, { ...headerDto, id_estado: raw.id_estado! }).subscribe({
+        next: () => this.guardarItems(id),
+        error: () => this.onGuardarError(),
+      });
+    } else {
+      this.api.create(headerDto).subscribe({
+        next: (lote) => this.guardarItems(lote.id_lote),
+        error: () => this.onGuardarError(),
+      });
+    }
+  }
+
+  private guardarItems(idLote: number): void {
+    const filas = this.itemsFormArray.getRawValue();
+    const idsActuales = new Set(filas.map((f) => f.id_item).filter((id): id is number => id != null));
+    const aEliminar = this.itemsOriginales.filter((item) => !idsActuales.has(item.id_item));
+
+    const operaciones = [
+      ...aEliminar.map((item) => this.itemsApi.remove(idLote, item.id_item)),
+      ...filas.map((fila) => {
+        const dto = { id_producto: fila.id_producto!, id_lineas: fila.id_lineas!, cantidad: fila.cantidad! };
+        return fila.id_item ? this.itemsApi.update(idLote, fila.id_item, dto) : this.itemsApi.create(idLote, dto);
+      }),
+    ];
+
+    if (operaciones.length === 0) {
+      this.onGuardarSuccess();
+      return;
+    }
+
+    forkJoin(operaciones).subscribe({
+      next: () => this.onGuardarSuccess(),
+      error: () => this.onGuardarError(),
     });
+  }
+
+  private onGuardarSuccess(): void {
+    this.saving.set(false);
+    this.dialogVisible.set(false);
+    this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
+    this.load();
+  }
+
+  private onGuardarError(): void {
+    this.saving.set(false);
+    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
   }
 
   confirmDelete(lote: LoteProd): void {
@@ -185,79 +343,6 @@ export class LotesProdList implements OnInit {
           summary: 'Error',
           detail: 'No se pudo eliminar (puede tener datos relacionados)',
         });
-      },
-    });
-  }
-
-  openItems(lote: LoteProd): void {
-    this.loteActivo = lote;
-    this.editingItemId.set(null);
-    this.itemForm.reset();
-    this.itemsDialogVisible.set(true);
-    this.loadItems();
-  }
-
-  private loadItems(): void {
-    if (!this.loteActivo) {
-      return;
-    }
-    this.itemsLoading.set(true);
-    this.itemsApi.list(this.loteActivo.id_lote).subscribe({
-      next: (data) => {
-        this.items.set(data);
-        this.itemsLoading.set(false);
-      },
-      error: () => {
-        this.itemsLoading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los ítems' });
-      },
-    });
-  }
-
-  editItem(item: ItemProd): void {
-    this.editingItemId.set(item.id_item);
-    this.itemForm.setValue({ id_producto: item.id_producto, id_lineas: item.id_lineas, cantidad: item.cantidad });
-  }
-
-  cancelItemEdit(): void {
-    this.editingItemId.set(null);
-    this.itemForm.reset();
-  }
-
-  saveItem(): void {
-    if (this.itemForm.invalid || this.itemsSaving() || !this.loteActivo) {
-      return;
-    }
-
-    this.itemsSaving.set(true);
-    const raw = this.itemForm.getRawValue();
-    const dto = { id_producto: raw.id_producto!, id_lineas: raw.id_lineas!, cantidad: raw.cantidad! };
-    const idItem = this.editingItemId();
-    const request$ = idItem
-      ? this.itemsApi.update(this.loteActivo.id_lote, idItem, dto)
-      : this.itemsApi.create(this.loteActivo.id_lote, dto);
-
-    request$.subscribe({
-      next: () => {
-        this.itemsSaving.set(false);
-        this.cancelItemEdit();
-        this.loadItems();
-      },
-      error: () => {
-        this.itemsSaving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el ítem' });
-      },
-    });
-  }
-
-  removeItem(item: ItemProd): void {
-    if (!this.loteActivo) {
-      return;
-    }
-    this.itemsApi.remove(this.loteActivo.id_lote, item.id_item).subscribe({
-      next: () => this.loadItems(),
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el ítem' });
       },
     });
   }

@@ -11,7 +11,7 @@
         <th scope="col">Fecha</th>
         <th scope="col">Turno</th>
         <th scope="col">Estado</th>
-        <th scope="col" style="width: 10rem"></th>
+        <th scope="col" style="width: 8rem"></th>
       </tr>
     </ng-template>
     <ng-template #body let-lote>
@@ -22,13 +22,7 @@
         <td>{{ lote.estados?.nombreEstado || '—' }}</td>
         <td>
           <div class="page__actions">
-            <p-button
-              icon="pi pi-list"
-              [text]="true"
-              (onClick)="openItems(lote)"
-              pTooltip="Ítems"
-            />
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" />
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(lote)" pTooltip="Editar" />
             <p-button
               icon="pi pi-trash"
               [text]="true"
@@ -50,47 +44,139 @@
     [visible]="dialogVisible()"
     (visibleChange)="dialogVisible.set($event)"
     [modal]="true"
-    [style]="{ width: '400px' }"
+    [style]="{ width: '95vw', maxWidth: '1100px' }"
     [header]="editingId() ? 'Editar lote' : 'Nuevo lote'"
   >
-    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
-      <div class="page__field">
-        <label for="id_turno">Turno</label>
-        <p-select
-          inputId="id_turno"
-          formControlName="id_turno"
-          [options]="turnos()"
-          optionLabel="descripcion_turnos"
-          optionValue="id_turno"
-          placeholder="Seleccionar turno"
-          [appendTo]="'body'"
-        />
-      </div>
-
-      <div class="page__field">
-        <label for="fecha_lote_prod">Fecha</label>
-        <p-datepicker
-          inputId="fecha_lote_prod"
-          formControlName="fecha_lote_prod"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-        />
-      </div>
-
-      @if (editingId()) {
-        <div class="page__field">
-          <label for="id_estado">Estado</label>
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="page__form">
+      <div class="lotes-prod__header-fields">
+        <div class="page__field lotes-prod__field--turno">
+          <label for="id_turno">Turno</label>
           <p-select
-            inputId="id_estado"
-            formControlName="id_estado"
-            [options]="estadosLoteProd()"
-            optionLabel="nombreEstado"
-            optionValue="id_estado"
-            placeholder="Seleccionar estado"
+            inputId="id_turno"
+            formControlName="id_turno"
+            [options]="turnos()"
+            optionLabel="descripcion_turnos"
+            optionValue="id_turno"
+            placeholder="Seleccionar turno"
             [appendTo]="'body'"
           />
         </div>
-      }
+
+        <div class="page__field lotes-prod__field--fecha">
+          <label for="fecha_lote_prod">Fecha</label>
+          <p-datepicker
+            inputId="fecha_lote_prod"
+            formControlName="fecha_lote_prod"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+          />
+        </div>
+
+        @if (editingId()) {
+          <div class="page__field lotes-prod__field--fecha">
+            <label for="id_estado">Estado</label>
+            <p-select
+              inputId="id_estado"
+              formControlName="id_estado"
+              [options]="estadosLoteProd()"
+              optionLabel="nombreEstado"
+              optionValue="id_estado"
+              placeholder="Seleccionar estado"
+              [appendTo]="'body'"
+            />
+          </div>
+        }
+      </div>
+
+      <div class="lotes-prod__items-header">
+        <h3>Productos del lote</h3>
+        <p-button
+          type="button"
+          icon="pi pi-plus"
+          label="Agregar producto"
+          [text]="true"
+          (onClick)="agregarItem()"
+        />
+      </div>
+
+      <p-table [value]="itemsFormArray.controls" [loading]="itemsLoading()" dataKey="id_producto" class="lotes-prod__items-table">
+        <ng-template #header>
+          <tr>
+            <th scope="col" style="width: 9rem">Línea</th>
+            <th scope="col" style="width: 10rem">Código</th>
+            <th scope="col">Producto</th>
+            <th scope="col" style="width: 6.5rem">Bolsones</th>
+            <th scope="col" style="width: 6.5rem">Pallets</th>
+            <th scope="col" style="width: 3rem"></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-fila let-i="rowIndex">
+          <tr [formGroup]="fila">
+            <td>
+              <p-select
+                formControlName="id_lineas"
+                [options]="lineas()"
+                optionLabel="descripcion_lineas"
+                optionValue="id_lineas"
+                placeholder="Línea"
+                [appendTo]="'body'"
+                [style]="{ width: '100%' }"
+              />
+            </td>
+            <td>
+              <p-select
+                formControlName="id_producto_codigo"
+                [options]="productosActivos()"
+                optionLabel="codigo_producto"
+                optionValue="id_producto"
+                [filter]="true"
+                filterBy="codigo_producto"
+                placeholder="Buscar por producto"
+                [appendTo]="'body'"
+                [style]="{ width: '100%' }"
+              />
+            </td>
+            <td>
+              <p-select
+                formControlName="id_producto"
+                [options]="productosActivos()"
+                optionLabel="descripcion_producto"
+                optionValue="id_producto"
+                [filter]="true"
+                filterBy="descripcion_producto,codigo_producto"
+                placeholder="Buscar por producto"
+                [appendTo]="'body'"
+                [style]="{ width: '100%' }"
+              />
+            </td>
+            <td>
+              <p-inputNumber formControlName="cantidad" [min]="0" [style]="{ width: '100%' }" inputStyleClass="w-full" />
+            </td>
+            <td>
+              <p-inputNumber
+                formControlName="cantidad_pallets"
+                [min]="0"
+                [maxFractionDigits]="2"
+                [disabled]="!productoDe(fila.value.id_producto)?.bolsones_por_pallet"
+                pTooltip="Este producto no tiene bolsones por pallet configurados"
+                [tooltipDisabled]="!!productoDe(fila.value.id_producto)?.bolsones_por_pallet"
+                [style]="{ width: '100%' }"
+                inputStyleClass="w-full"
+              />
+            </td>
+            <td>
+              <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="quitarItem(i)" />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6">Agregá al menos un producto.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="lotes-prod__total-pallets">Total de pallets: <strong>{{ totalPallets() }}</strong></div>
 
       <div class="page__form-actions">
         <p-button
@@ -100,100 +186,7 @@
           [outlined]="true"
           (onClick)="closeDialog()"
         />
-        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
-      </div>
-    </form>
-  </p-dialog>
-
-  <p-dialog
-    [visible]="itemsDialogVisible()"
-    (visibleChange)="itemsDialogVisible.set($event)"
-    [modal]="true"
-    [style]="{ width: '520px' }"
-    header="Ítems del lote"
-  >
-    <p-table [value]="items()" [loading]="itemsLoading()" dataKey="id_item">
-      <ng-template #header>
-        <tr>
-          <th scope="col">Producto</th>
-          <th scope="col">Línea</th>
-          <th scope="col">Cantidad</th>
-          <th scope="col" style="width: 6rem"></th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-item>
-        <tr>
-          <td>{{ item.productos?.descripcion_producto || '—' }}</td>
-          <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
-          <td>{{ item.cantidad }}</td>
-          <td>
-            <div class="page__actions">
-              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                severity="danger"
-                (onClick)="removeItem(item)"
-              />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="4">Todavía no hay ítems cargados.</td>
-        </tr>
-      </ng-template>
-    </p-table>
-
-    <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="page__form lotes-prod__item-form">
-      <div class="page__field">
-        <label for="item_producto">Producto</label>
-        <p-select
-          inputId="item_producto"
-          formControlName="id_producto"
-          [options]="productos()"
-          optionLabel="descripcion_producto"
-          optionValue="id_producto"
-          [filter]="true"
-          filterBy="codigo_producto,descripcion_producto"
-          placeholder="Seleccionar producto"
-          [appendTo]="'body'"
-        />
-      </div>
-      <div class="page__field">
-        <label for="item_lineas">Línea</label>
-        <p-select
-          inputId="item_lineas"
-          formControlName="id_lineas"
-          [options]="lineas()"
-          optionLabel="descripcion_lineas"
-          optionValue="id_lineas"
-          placeholder="Seleccionar línea"
-          [appendTo]="'body'"
-        />
-      </div>
-      <div class="page__field">
-        <label for="item_cantidad">Cantidad</label>
-        <p-inputNumber inputId="item_cantidad" formControlName="cantidad" [min]="1" />
-      </div>
-
-      <div class="page__form-actions">
-        @if (editingItemId()) {
-          <p-button
-            type="button"
-            label="Cancelar edición"
-            severity="secondary"
-            [outlined]="true"
-            (onClick)="cancelItemEdit()"
-          />
-        }
-        <p-button
-          type="submit"
-          [label]="editingItemId() ? 'Guardar ítem' : 'Agregar ítem'"
-          [loading]="itemsSaving()"
-          [disabled]="itemForm.invalid"
-        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid || itemsFormArray.invalid" />
       </div>
     </form>
   </p-dialog>

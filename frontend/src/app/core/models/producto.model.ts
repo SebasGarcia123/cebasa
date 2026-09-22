@@ -1,4 +1,5 @@
 import { ArchivoAdjunto } from './archivo-adjunto.model';
+import { Estado } from './estado.model';
 
 export interface Producto {
   id_producto: number;
@@ -12,4 +13,5 @@ export interface Producto {
   id_estado: number;
   id_archivo_adjunto: number | null;
   archivo_adjunto: ArchivoAdjunto | null;
+  estados?: Estado;
 }

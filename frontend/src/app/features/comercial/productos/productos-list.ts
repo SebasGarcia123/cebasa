@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +9,9 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
+import { CheckboxModule } from 'primeng/checkbox';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
 import { ArchivoAdjuntoApiService } from '../../../core/api/archivo-adjunto-api.service';
@@ -30,6 +33,10 @@ const ESTADOS_PRODUCTO = new Set(['Activo', 'Anulado']);
     InputTextModule,
     InputNumberModule,
     SelectModule,
+    CheckboxModule,
+    IconFieldModule,
+    InputIconModule,
+    FormsModule,
   ],
   templateUrl: './productos-list.html',
   styleUrl: './productos-list.scss',
@@ -56,6 +63,29 @@ export class ProductosList implements OnInit {
   // selector de estado solo se muestra al editar, y restringido a
   // Activo/Anulado.
   protected readonly estadosProducto = computed(() => this.estados().filter((e) => ESTADOS_PRODUCTO.has(e.nombreEstado)));
+
+  // Buscador (código/nombre) + checkbox "ver anulados": por default la
+  // lista solo muestra productos Activos. Es la única forma de encontrar
+  // (y desde ahí, reactivar) un producto anulado.
+  protected readonly busqueda = signal('');
+  protected readonly verAnulados = signal(false);
+
+  protected readonly productosFiltrados = computed(() => {
+    const texto = this.busqueda().trim().toLowerCase();
+    const verAnulados = this.verAnulados();
+    return this.productos().filter((producto) => {
+      if (!verAnulados && producto.estados?.nombreEstado === 'Anulado') {
+        return false;
+      }
+      if (!texto) {
+        return true;
+      }
+      return (
+        producto.codigo_producto.toLowerCase().includes(texto) ||
+        producto.descripcion_producto.toLowerCase().includes(texto)
+      );
+    });
+  });
 
   protected readonly form = this.fb.nonNullable.group({
     codigo_producto: ['', Validators.required],

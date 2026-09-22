@@ -1,3 +1,16 @@
+.productos__filtros {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.productos__filtro-anulados {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .productos__thumb {
   width: 2.5rem;
   height: 2.5rem;

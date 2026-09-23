@@ -193,6 +193,7 @@ model deposito {
   movimientos_producto_destino movimiento_producto[]   @relation("movimiento_producto_id_deposito_destinoTodeposito")
   movimientos_producto_origen  movimiento_producto[]   @relation("movimiento_producto_id_deposito_origenTodeposito")
   stock_insumo_deposito        stock_insumo_deposito[]
+  lote_prod                    lote_prod[]
 
   @@index([id_estado], map: "fk_deposito_estado")
 }
@@ -376,13 +377,16 @@ model lote_prod {
   id_turno        Int
   fecha_lote_prod DateTime    @db.Date
   id_estado       Int
+  id_deposito     Int
   motivo_rechazo  String?     @db.VarChar(255)
   item_prod       item_prod[]
   estados         estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lote_prod_estado")
   turnos          turnos      @relation(fields: [id_turno], references: [id_turno], onUpdate: Restrict, map: "fk_lote_prod_turno")
+  deposito        deposito    @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_lote_prod_deposito")
 
   @@index([id_estado], map: "fk_lote_prod_estado")
   @@index([id_turno], map: "fk_lote_prod_turno")
+  @@index([id_deposito], map: "fk_lote_prod_deposito")
 }
 
 model lotes {

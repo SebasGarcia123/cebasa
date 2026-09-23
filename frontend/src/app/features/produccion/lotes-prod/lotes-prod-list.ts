@@ -22,11 +22,13 @@ import { ItemProdApiService } from '../../../core/api/item-prod-api.service';
 import { TurnosApiService } from '../../../core/api/turnos-api.service';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
 import { LineasApiService } from '../../../core/api/lineas-api.service';
+import { DepositosApiService } from '../../../core/api/depositos-api.service';
 import { LoteProd } from '../../../core/models/lote-prod.model';
 import { ItemProd } from '../../../core/models/item-prod.model';
 import { Turno } from '../../../core/models/turno.model';
 import { Producto } from '../../../core/models/producto.model';
 import { Linea } from '../../../core/models/linea.model';
+import { Deposito } from '../../../core/models/deposito.model';
 
 const ESTADO_APROBADO = 'Aprobado';
 const ESTADO_RECHAZADO = 'Rechazado';
@@ -62,6 +64,7 @@ export class LotesProdList implements OnInit {
   private readonly turnosApi = inject(TurnosApiService);
   private readonly productosApi = inject(ProductosApiService);
   private readonly lineasApi = inject(LineasApiService);
+  private readonly depositosApi = inject(DepositosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
@@ -70,6 +73,7 @@ export class LotesProdList implements OnInit {
   protected readonly turnos = signal<Turno[]>([]);
   protected readonly productos = signal<Producto[]>([]);
   protected readonly lineas = signal<Linea[]>([]);
+  protected readonly depositos = signal<Deposito[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly itemsLoading = signal(false);
@@ -84,9 +88,17 @@ export class LotesProdList implements OnInit {
     this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
   );
 
+  // El lote solo puede cargarse contra un depósito de planta (no uno de
+  // logística): se filtra por nombre, ya que no hay un flag específico
+  // en el catálogo de depósitos para distinguirlos.
+  protected readonly depositosProduccion = computed(() =>
+    this.depositos().filter((d) => d.nombre_deposito.toLowerCase().includes('produc')),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     id_turno: [null as number | null, Validators.required],
     fecha_lote_prod: [null as Date | null, Validators.required],
+    id_deposito: [null as number | null, Validators.required],
   });
 
   // Los ítems se arman en memoria (una fila por producto, con cálculo
@@ -107,12 +119,14 @@ export class LotesProdList implements OnInit {
       turnos: this.turnosApi.list(),
       productos: this.productosApi.list(),
       lineas: this.lineasApi.list(),
+      depositos: this.depositosApi.list(),
     }).subscribe({
-      next: ({ lotes, turnos, productos, lineas }) => {
+      next: ({ lotes, turnos, productos, lineas, depositos }) => {
         this.lotes.set(lotes);
         this.turnos.set(turnos);
         this.productos.set(productos);
         this.lineas.set(lineas);
+        this.depositos.set(depositos);
         this.loading.set(false);
       },
       error: () => {
@@ -227,6 +241,7 @@ export class LotesProdList implements OnInit {
     this.form.setValue({
       id_turno: lote.id_turno,
       fecha_lote_prod: new Date(lote.fecha_lote_prod),
+      id_deposito: lote.id_deposito,
     });
     this.itemsFormArray.clear();
     this.itemsOriginales = [];
@@ -267,6 +282,7 @@ export class LotesProdList implements OnInit {
     const headerDto = {
       id_turno: raw.id_turno!,
       fecha_lote_prod: raw.fecha_lote_prod!.toISOString().slice(0, 10),
+      id_deposito: raw.id_deposito!,
     };
 
     const id = this.editingId();

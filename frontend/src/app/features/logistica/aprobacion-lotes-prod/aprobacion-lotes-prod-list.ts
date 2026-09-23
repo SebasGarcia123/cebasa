@@ -110,7 +110,7 @@ export class AprobacionLotesProdList implements OnInit {
     }
     this.confirmationService.confirm({
       header: 'Confirmar aprobación',
-      message: `¿Aprobar el lote #${lote.id_lote}? Las cantidades se sumarán al stock de cada producto.`,
+      message: `¿Aprobar el lote #${lote.id_lote}? Las cantidades se sumarán al stock de cada producto y se descontarán del depósito los insumos que use la receta de cada uno.`,
       icon: 'pi pi-check-circle',
       acceptButtonProps: { label: 'Aprobar' },
       rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },

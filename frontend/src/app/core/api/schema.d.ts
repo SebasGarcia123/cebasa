@@ -2232,6 +2232,7 @@ export interface components {
         CreateLoteProdDto: {
             id_turno: number;
             fecha_lote_prod: string;
+            id_deposito: number;
         };
         UpdateLoteProdDto: Record<string, never>;
         RechazarLoteProdDto: {
@@ -5465,7 +5466,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };

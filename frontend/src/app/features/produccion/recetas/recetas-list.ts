@@ -65,7 +65,7 @@ export class RecetasList implements OnInit {
 
   protected readonly itemForm = this.fb.nonNullable.group({
     id_insumo: [null as number | null, Validators.required],
-    cantidad_utilizada: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    cantidad_utilizada: [null as number | null, [Validators.required, Validators.min(0.0001)]],
   });
 
   ngOnInit(): void {
@@ -205,10 +205,22 @@ export class RecetasList implements OnInit {
       return;
     }
 
-    this.itemsSaving.set(true);
     const raw = this.itemForm.getRawValue();
-    const dto = { id_insumo: raw.id_insumo!, cantidad_utilizada: Number(raw.cantidad_utilizada) };
     const idItem = this.editingItemId();
+    const yaEnLaLista = this.items().some(
+      (item) => item.id_insumo === raw.id_insumo && item.id_receta_item !== idItem,
+    );
+    if (yaEnLaLista) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Insumo repetido',
+        detail: 'Ese insumo ya está en la lista de esta receta.',
+      });
+      return;
+    }
+
+    this.itemsSaving.set(true);
+    const dto = { id_insumo: raw.id_insumo!, cantidad_utilizada: Number(raw.cantidad_utilizada) };
     const request$ = idItem
       ? this.itemsApi.update(this.recetaActiva.id_receta, idItem, dto)
       : this.itemsApi.create(this.recetaActiva.id_receta, dto);

@@ -428,7 +428,7 @@ model movimiento_insumo {
   id_movimiento_insumo  Int                 @id @default(autoincrement())
   id_insumo             Int
   id_tipo_movimiento    Int
-  cantidad              Decimal             @db.Decimal(10, 2)
+  cantidad              Decimal             @db.Decimal(10, 4)
   fecha_movimiento      DateTime            @db.Date
   id_deposito_origen    Int?
   id_deposito_destino   Int?
@@ -593,10 +593,11 @@ model receta_item {
   id_receta_item     Int     @id @default(autoincrement())
   id_insumo          Int
   id_receta          Int
-  cantidad_utilizada Decimal @db.Decimal(10, 2)
+  cantidad_utilizada Decimal @db.Decimal(10, 4)
   insumo             insumo  @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_receta_item_insumo")
   receta             receta  @relation(fields: [id_receta], references: [id_receta], onDelete: Cascade, onUpdate: Restrict, map: "fk_receta_item_receta")
 
+  @@unique([id_receta, id_insumo], map: "uq_receta_insumo")
   @@index([id_insumo], map: "fk_receta_item_insumo")
   @@index([id_receta], map: "fk_receta_item_receta")
 }

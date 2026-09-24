@@ -4,7 +4,7 @@ export class CreateRecetaItemDto {
   @IsInt()
   id_insumo: number;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 4 })
   @Min(0)
   cantidad_utilizada: number;
 }

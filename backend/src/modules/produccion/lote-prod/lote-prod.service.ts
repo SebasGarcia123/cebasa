@@ -209,7 +209,7 @@ export class LoteProdService {
       .filter(([idInsumo]) => stockeablePorInsumo.get(idInsumo))
       .map(([idInsumo, cantidad]) => ({
         id_insumo: idInsumo,
-        cantidad: Math.round(cantidad * 100) / 100,
+        cantidad: Math.round(cantidad * 10000) / 10000,
         cantidadEntera: Math.round(cantidad),
       }));
   }

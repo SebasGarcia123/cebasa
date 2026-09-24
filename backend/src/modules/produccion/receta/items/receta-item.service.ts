@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { CreateRecetaItemDto } from './dto/create-receta-item.dto.js';
 import { UpdateRecetaItemDto } from './dto/update-receta-item.dto.js';
@@ -14,7 +14,13 @@ export class RecetaItemService {
     });
   }
 
-  create(idReceta: number, dto: CreateRecetaItemDto) {
+  async create(idReceta: number, dto: CreateRecetaItemDto) {
+    const existente = await this.prisma.receta_item.findUnique({
+      where: { id_receta_id_insumo: { id_receta: idReceta, id_insumo: dto.id_insumo } },
+    });
+    if (existente) {
+      throw new ConflictException('Ese insumo ya está cargado en esta receta');
+    }
     return this.prisma.receta_item.create({
       data: { ...dto, id_receta: idReceta },
       include: { insumo: true },
@@ -36,6 +42,14 @@ export class RecetaItemService {
 
   async update(idReceta: number, idItem: number, dto: UpdateRecetaItemDto) {
     await this.findOne(idReceta, idItem);
+    if (dto.id_insumo !== undefined) {
+      const existente = await this.prisma.receta_item.findUnique({
+        where: { id_receta_id_insumo: { id_receta: idReceta, id_insumo: dto.id_insumo } },
+      });
+      if (existente && existente.id_receta_item !== idItem) {
+        throw new ConflictException('Ese insumo ya está cargado en esta receta');
+      }
+    }
     return this.prisma.receta_item.update({
       where: { id_receta_item: idItem },
       data: dto,

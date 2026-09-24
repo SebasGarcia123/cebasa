@@ -1,12 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsInt, IsOptional } from 'class-validator';
 import { CreatePedidoDto } from './create-pedido.dto.js';
 
-// id_estado no está en CreatePedidoDto (el alta siempre arranca
-// "Activo"), pero sí se puede cambiar al editar entre Activo/Anulado.
-// PedidosService.update valida que el nombre resuelto sea uno de los dos.
-export class UpdatePedidoDto extends PartialType(CreatePedidoDto) {
-  @IsOptional()
-  @IsInt()
-  id_estado?: number;
-}
+// El estado ya no se edita a mano: el alta arranca siempre "Cargado" y
+// de ahí en más solo avanza vía facturar()/despachar(), o se corta
+// vía anular() (ver PedidosService). Editar el pedido en sí (este DTO)
+// solo es posible mientras está "Cargado".
+export class UpdatePedidoDto extends PartialType(CreatePedidoDto) {}

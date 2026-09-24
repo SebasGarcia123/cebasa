@@ -28,13 +28,30 @@
         <td>{{ pedido.estados?.nombreEstado || '—' }}</td>
         <td>
           <div class="page__actions">
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" pTooltip="Editar" />
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              (onClick)="confirmDelete(pedido)"
-            />
+            @if (puedeEditar(pedido)) {
+              <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" pTooltip="Editar" />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="confirmDelete(pedido)"
+                pTooltip="Eliminar"
+              />
+            }
+            @if (puedeFacturar()) {
+              @if (pedido.estados?.nombreEstado === 'Cargado') {
+                <p-button icon="pi pi-file-check" [text]="true" (onClick)="confirmFacturar(pedido)" pTooltip="Facturar" />
+              }
+              @if (pedido.estados?.nombreEstado === 'Cargado' || pedido.estados?.nombreEstado === 'Facturado') {
+                <p-button
+                  icon="pi pi-ban"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="abrirAnular(pedido)"
+                  pTooltip="Anular"
+                />
+              }
+            }
           </div>
         </td>
       </tr>
@@ -90,21 +107,6 @@
             [showIcon]="true"
           />
         </div>
-
-        @if (editingId()) {
-          <div class="page__field pedidos__field--fecha">
-            <label for="id_estado">Estado</label>
-            <p-select
-              inputId="id_estado"
-              formControlName="id_estado"
-              [options]="estadosPedido()"
-              optionLabel="nombreEstado"
-              optionValue="id_estado"
-              placeholder="Seleccionar estado"
-              [appendTo]="'body'"
-            />
-          </div>
-        }
       </div>
 
       <div class="pedidos__items-header">
@@ -194,6 +196,39 @@
           (onClick)="closeDialog()"
         />
         <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid || itemsFormArray.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="anularDialogVisible()"
+    (visibleChange)="anularDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Anular pedido"
+  >
+    <form [formGroup]="anularForm" (ngSubmit)="confirmarAnular()" class="page__form">
+      @if (requiereNotaDebito()) {
+        <div class="page__field">
+          <label for="nro_nota_debito">N° de nota de débito</label>
+          <input id="nro_nota_debito" type="text" pInputText formControlName="nro_nota_debito" />
+        </div>
+      } @else {
+        <div class="page__field">
+          <label for="motivo">Motivo</label>
+          <textarea id="motivo" pTextarea formControlName="motivo" rows="3"></textarea>
+        </div>
+      }
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="cerrarAnular()"
+        />
+        <p-button type="submit" label="Anular pedido" severity="danger" [loading]="anularSaving()" />
       </div>
     </form>
   </p-dialog>

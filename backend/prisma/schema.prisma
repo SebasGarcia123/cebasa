@@ -16,6 +16,7 @@ model archivo_adjunto {
   compra             compra[]
   cotizacion         cotizacion[]
   productos          productos[]
+  pedidos            pedidos?
 }
 
 // Ajuste manual de stock (insumo o producto terminado), hecho desde la
@@ -194,6 +195,7 @@ model deposito {
   movimientos_producto_origen  movimiento_producto[]   @relation("movimiento_producto_id_deposito_origenTodeposito")
   stock_insumo_deposito        stock_insumo_deposito[]
   lote_prod                    lote_prod[]
+  pedidos                      pedidos[]
 
   @@index([id_estado], map: "fk_deposito_estado")
 }
@@ -497,20 +499,35 @@ model pedido_insumos {
 }
 
 model pedidos {
-  id_pedido       Int           @id @default(autoincrement())
-  id_cliente      Int
-  fecha_carga     DateTime      @db.Date
-  fecha_prometido DateTime?     @db.Date
-  id_estado       Int
-  id_usuario      Int
-  item_pedido     item_pedido[]
-  clientes        clientes      @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_pedidos_cliente")
-  estados         estados       @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedidos_estado")
-  usuarios        usuarios      @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedidos_usuario")
+  id_pedido          Int              @id @default(autoincrement())
+  id_cliente         Int
+  fecha_carga        DateTime         @db.Date
+  fecha_prometido    DateTime?        @db.Date
+  id_estado          Int
+  id_usuario         Int
+  // Se completan recién al despachar (ver PedidosService.despachar):
+  // depósito de logística de donde salió la mercadería (según el sector
+  // del usuario que despacha), cantidad de copias del remito elegida en
+  // ese momento, fecha real de despacho, y el PDF generado.
+  id_deposito        Int?
+  cantidad_copias    Int?
+  fecha_despacho     DateTime?        @db.Date
+  id_archivo_remito  Int?             @unique
+  // Motivo al anular desde "Cargado", o número de nota de débito al
+  // anular desde "Facturado" (ver PedidosService.anular).
+  motivo_anulacion   String?          @db.VarChar(255)
+  nro_nota_debito    String?          @db.VarChar(100)
+  item_pedido        item_pedido[]
+  clientes           clientes         @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_pedidos_cliente")
+  estados            estados          @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedidos_estado")
+  usuarios           usuarios         @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedidos_usuario")
+  deposito           deposito?        @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_pedidos_deposito")
+  archivo_remito     archivo_adjunto? @relation(fields: [id_archivo_remito], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_pedidos_archivo_remito")
 
   @@index([id_cliente], map: "fk_pedidos_cliente")
   @@index([id_estado], map: "fk_pedidos_estado")
   @@index([id_usuario], map: "fk_pedidos_usuario")
+  @@index([id_deposito], map: "fk_pedidos_deposito")
 }
 
 model permisos {

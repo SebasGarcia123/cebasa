@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   FormArray,
   FormBuilder,
@@ -16,20 +17,21 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { PedidosApiService } from '../../../core/api/pedidos-api.service';
 import { ItemPedidoApiService } from '../../../core/api/item-pedido-api.service';
 import { ClientesApiService } from '../../../core/api/clientes-api.service';
-import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Pedido } from '../../../core/models/pedido.model';
 import { ItemPedido } from '../../../core/models/item-pedido.model';
 import { Cliente } from '../../../core/models/cliente.model';
-import { Estado } from '../../../core/models/estado.model';
 import { Producto } from '../../../core/models/producto.model';
 
-const ESTADOS_PEDIDO = new Set(['Activo', 'Anulado']);
+const ESTADO_CARGADO = 'Cargado';
+const ESTADO_FACTURADO = 'Facturado';
 
 type ItemPedidoForm = FormGroup<{
   id_item_pedido: FormControl<number | null>;
@@ -51,6 +53,7 @@ type ItemPedidoForm = FormGroup<{
     DatePickerModule,
     InputTextModule,
     InputNumberModule,
+    TextareaModule,
     TooltipModule,
   ],
   templateUrl: './pedidos-list.html',
@@ -60,15 +63,14 @@ export class PedidosList implements OnInit {
   private readonly api = inject(PedidosApiService);
   private readonly itemsApi = inject(ItemPedidoApiService);
   private readonly clientesApi = inject(ClientesApiService);
-  private readonly estadosApi = inject(EstadosApiService);
   private readonly productosApi = inject(ProductosApiService);
+  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
   protected readonly pedidos = signal<Pedido[]>([]);
   protected readonly clientes = signal<Cliente[]>([]);
-  protected readonly estados = signal<Estado[]>([]);
   protected readonly productos = signal<Producto[]>([]);
   protected readonly loading = signal(false);
 
@@ -82,21 +84,22 @@ export class PedidosList implements OnInit {
     this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
   );
 
+  // Facturar/anular es de Logística, no de quien carga el pedido: se
+  // oculta client-side sin el permiso, la barrera real está en el backend.
+  protected readonly puedeFacturar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('comercial.pedidos_facturar'));
+  });
+
   protected readonly saving = signal(false);
   protected readonly itemsLoading = signal(false);
   protected readonly dialogVisible = signal(false);
   protected readonly editingId = signal<number | null>(null);
 
-  // Al crear no se elige estado: el sistema lo pone en "Activo". El
-  // selector de estado solo se muestra al editar, y restringido a
-  // Activo/Anulado.
-  protected readonly estadosPedido = computed(() => this.estados().filter((e) => ESTADOS_PEDIDO.has(e.nombreEstado)));
-
   protected readonly form = this.fb.nonNullable.group({
     id_cliente: [null as number | null, Validators.required],
     fecha_carga: [null as Date | null, Validators.required],
     fecha_prometido: [null as Date | null],
-    id_estado: [null as number | null],
   });
 
   // Los ítems se arman en memoria (una fila por producto, con cálculo
@@ -115,13 +118,11 @@ export class PedidosList implements OnInit {
     forkJoin({
       pedidos: this.api.list(),
       clientes: this.clientesApi.list(),
-      estados: this.estadosApi.list(),
       productos: this.productosApi.list(),
     }).subscribe({
-      next: ({ pedidos, clientes, estados, productos }) => {
+      next: ({ pedidos, clientes, productos }) => {
         this.pedidos.set(pedidos);
         this.clientes.set(clientes);
-        this.estados.set(estados);
         this.productos.set(productos);
         this.loading.set(false);
       },
@@ -205,6 +206,12 @@ export class PedidosList implements OnInit {
     return fila;
   }
 
+  // No se puede editar un pedido una vez facturado (ver
+  // PedidosService.assertEditable en el backend).
+  protected puedeEditar(pedido: Pedido): boolean {
+    return pedido.estados?.nombreEstado === ESTADO_CARGADO;
+  }
+
   protected agregarItem(): void {
     this.itemsFormArray.push(this.crearFilaItem());
   }
@@ -233,7 +240,6 @@ export class PedidosList implements OnInit {
       id_cliente: pedido.id_cliente,
       fecha_carga: new Date(pedido.fecha_carga),
       fecha_prometido: pedido.fecha_prometido ? new Date(pedido.fecha_prometido) : null,
-      id_estado: pedido.id_estado,
     });
     this.itemsFormArray.clear();
     this.itemsOriginales = [];
@@ -274,13 +280,13 @@ export class PedidosList implements OnInit {
     const headerDto = {
       id_cliente: raw.id_cliente!,
       fecha_carga: raw.fecha_carga!.toISOString().slice(0, 10),
-      id_usuario: 1,
+      id_usuario: this.authService.currentUser()?.id_usuario ?? 0,
       ...(raw.fecha_prometido ? { fecha_prometido: raw.fecha_prometido.toISOString().slice(0, 10) } : {}),
     };
 
     const id = this.editingId();
     if (id) {
-      this.api.update(id, { ...headerDto, id_estado: raw.id_estado! }).subscribe({
+      this.api.update(id, headerDto).subscribe({
         next: () => this.guardarItems(id),
         error: () => this.onGuardarError(),
       });
@@ -328,6 +334,78 @@ export class PedidosList implements OnInit {
   private onGuardarError(): void {
     this.saving.set(false);
     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
+  }
+
+  confirmFacturar(pedido: Pedido): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar facturación',
+      message: `¿Marcar el pedido #${pedido.id_pedido} como facturado?`,
+      icon: 'pi pi-check-circle',
+      acceptButtonProps: { label: 'Facturar' },
+      rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },
+      accept: () => {
+        this.api.facturar(pedido.id_pedido).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Facturado', detail: 'El pedido fue facturado' });
+            this.load();
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo facturar el pedido' });
+          },
+        });
+      },
+    });
+  }
+
+  protected readonly anularDialogVisible = signal(false);
+  protected readonly anularSaving = signal(false);
+  private pedidoAAnular: Pedido | null = null;
+
+  protected readonly anularForm = this.fb.nonNullable.group({
+    motivo: [''],
+    nro_nota_debito: [''],
+  });
+
+  // Cargado: pide motivo. Facturado: pide n° de nota de débito (la nota
+  // en sí se emite por fuera del sistema, acá solo queda la referencia).
+  protected requiereNotaDebito(): boolean {
+    return this.pedidoAAnular?.estados?.nombreEstado === ESTADO_FACTURADO;
+  }
+
+  abrirAnular(pedido: Pedido): void {
+    this.pedidoAAnular = pedido;
+    this.anularForm.reset();
+    this.anularDialogVisible.set(true);
+  }
+
+  cerrarAnular(): void {
+    this.anularDialogVisible.set(false);
+  }
+
+  confirmarAnular(): void {
+    if (!this.pedidoAAnular || this.anularSaving()) {
+      return;
+    }
+    const raw = this.anularForm.getRawValue();
+    const dto = this.requiereNotaDebito() ? { nro_nota_debito: raw.nro_nota_debito } : { motivo: raw.motivo };
+    if (!dto.motivo && !dto.nro_nota_debito) {
+      return;
+    }
+
+    this.anularSaving.set(true);
+    this.api.anular(this.pedidoAAnular.id_pedido, dto).subscribe({
+      next: () => {
+        this.anularSaving.set(false);
+        this.anularDialogVisible.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Anulado', detail: 'El pedido fue anulado' });
+        this.load();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.anularSaving.set(false);
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo anular el pedido';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
+      },
+    });
   }
 
   confirmDelete(pedido: Pedido): void {

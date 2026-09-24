@@ -170,6 +170,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'logistica/despacho-pedidos',
+        loadComponent: () =>
+          import('./features/logistica/despacho-pedidos/despacho-pedidos-list').then(
+            (m) => m.DespachoPedidosList,
+          ),
+      },
+      {
         path: 'pedido-insumos/pedido-insumos',
         loadComponent: () =>
           import('./features/pedido-insumos/pedido-insumos/pedido-insumos-list').then(

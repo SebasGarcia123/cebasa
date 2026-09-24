@@ -1,0 +1,122 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Despacho de Pedidos</h1>
+  </div>
+
+  <div class="despacho-pedidos__filtros">
+    <div class="page__field despacho-pedidos__field-fecha">
+      <label for="desde">Desde</label>
+      <p-datepicker
+        inputId="desde"
+        [ngModel]="desde()"
+        (ngModelChange)="desde.set($event)"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="page__field despacho-pedidos__field-fecha">
+      <label for="hasta">Hasta</label>
+      <p-datepicker
+        inputId="hasta"
+        [ngModel]="hasta()"
+        (ngModelChange)="hasta.set($event)"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="despacho-pedidos__filtro-todos">
+      <p-checkbox
+        inputId="ver_todos"
+        [binary]="true"
+        [ngModel]="verTodos()"
+        (ngModelChange)="verTodos.set($event)"
+      />
+      <label for="ver_todos">Ver todos los pedidos</label>
+    </div>
+  </div>
+
+  <p-table [value]="pedidosFiltrados()" [loading]="loading()" dataKey="id_pedido" [paginator]="true" [rows]="15">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Cliente</th>
+        <th scope="col">Fecha de carga</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-pedido>
+      <tr>
+        <td>{{ pedido.id_pedido }}</td>
+        <td>{{ pedido.clientes?.nombre_cli || '—' }}</td>
+        <td>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ pedido.estados?.nombreEstado || '—' }}</td>
+        <td>
+          <div class="page__actions">
+            @if (puedeDespachar(pedido)) {
+              <p-button
+                type="button"
+                label="Despachar"
+                icon="pi pi-truck"
+                [text]="true"
+                (onClick)="abrirDespachar(pedido)"
+              />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay pedidos para mostrar.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="despacharDialogVisible()"
+    (visibleChange)="despacharDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Despachar pedido"
+  >
+    @if (pedidoADespachar(); as pedido) {
+      <p class="despacho-pedidos__confirmacion">
+        ¿Despachar el pedido #{{ pedido.id_pedido }} de <strong>{{ pedido.clientes?.nombre_cli }}</strong>?
+        Esto descuenta la mercadería del stock y genera el remito. No se puede deshacer.
+      </p>
+
+      <div class="page__field">
+        <label>Copias del remito</label>
+        <p-selectButton
+          [options]="copiasOpciones"
+          [ngModel]="cantidadCopias()"
+          (ngModelChange)="cantidadCopias.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          [allowEmpty]="false"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="cerrarDespachar()"
+        />
+        <p-button
+          type="button"
+          label="Confirmar despacho"
+          [loading]="despachando()"
+          (onClick)="confirmarDespachar()"
+        />
+      </div>
+    }
+  </p-dialog>
+</div>

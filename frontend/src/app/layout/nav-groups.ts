@@ -150,6 +150,12 @@ export const NAV_GROUPS: NavGroup[] = [
         route: '/logistica/aprobacion-lotes-prod',
         permission: 'produccion.lotes_aprobar',
       },
+      {
+        label: 'Despacho de Pedidos',
+        icon: 'pi pi-truck',
+        route: '/logistica/despacho-pedidos',
+        permission: 'comercial.pedidos_despachar',
+      },
     ],
   },
   {

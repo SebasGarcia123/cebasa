@@ -1,0 +1,23 @@
+.despacho-pedidos__filtros {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.despacho-pedidos__field-fecha {
+  max-width: 160px;
+}
+
+.despacho-pedidos__filtro-todos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.despacho-pedidos__confirmacion {
+  font-family: var(--font-family-body);
+  font-size: 0.9rem;
+  margin: 0 0 1.25rem;
+}

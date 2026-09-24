@@ -48,10 +48,22 @@
       color: var(--color-text);
     }
 
-    input,
-    :host ::ng-deep .p-password,
-    :host ::ng-deep .p-password input {
+    > input {
       width: 100%;
+    }
+  }
+
+  // El botón del ojo queda afuera del input, en su propio compartimento,
+  // así el input de contraseña mide exactamente lo mismo que el de
+  // usuario en vez de compartir el ancho con un ícono superpuesto.
+  &__password-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.375rem;
+
+    input {
+      flex: 1 1 auto;
+      min-width: 0;
     }
   }
 }

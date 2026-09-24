@@ -20,13 +20,22 @@
 
       <div class="login__field">
         <label for="password">Contraseña</label>
-        <p-password
-          inputId="password"
-          formControlName="password"
-          [feedback]="false"
-          [toggleMask]="true"
-          autocomplete="current-password"
-        />
+        <div class="login__password-row">
+          <input
+            id="password"
+            [type]="mostrarPassword() ? 'text' : 'password'"
+            pInputText
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <p-button
+            type="button"
+            [text]="true"
+            [icon]="mostrarPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'"
+            [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            (onClick)="mostrarPassword.set(!mostrarPassword())"
+          />
+        </div>
       </div>
 
       @if (errorMessage(); as error) {

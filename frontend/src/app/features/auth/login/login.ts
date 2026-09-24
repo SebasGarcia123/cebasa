@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { CardModule } from 'primeng/card';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -15,7 +14,6 @@ import { AuthService } from '../../../core/auth/auth.service';
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
-    PasswordModule,
     MessageModule,
     CardModule,
   ],
@@ -29,6 +27,10 @@ export class Login {
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  // El toggle de ver/ocultar contraseña vive afuera del input (no
+  // superpuesto como en p-password), para que el campo de contraseña
+  // mida exactamente lo mismo que el de usuario.
+  protected readonly mostrarPassword = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
     nombre_usuario: ['', Validators.required],

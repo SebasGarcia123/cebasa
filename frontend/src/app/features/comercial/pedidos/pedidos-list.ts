@@ -30,7 +30,7 @@ import { ItemPedido } from '../../../core/models/item-pedido.model';
 import { Cliente } from '../../../core/models/cliente.model';
 import { Producto } from '../../../core/models/producto.model';
 
-const ESTADO_CARGADO = 'Cargado';
+const ESTADO_PENDIENTE = 'Pendiente';
 const ESTADO_FACTURADO = 'Facturado';
 
 type ItemPedidoForm = FormGroup<{
@@ -209,7 +209,7 @@ export class PedidosList implements OnInit {
   // No se puede editar un pedido una vez facturado (ver
   // PedidosService.assertEditable en el backend).
   protected puedeEditar(pedido: Pedido): boolean {
-    return pedido.estados?.nombreEstado === ESTADO_CARGADO;
+    return pedido.estados?.nombreEstado === ESTADO_PENDIENTE;
   }
 
   protected agregarItem(): void {

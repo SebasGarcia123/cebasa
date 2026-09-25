@@ -11,7 +11,7 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto.js';
 import { AnularPedidoDto } from './dto/anular-pedido.dto.js';
 import { DespacharPedidoDto } from './dto/despachar-pedido.dto.js';
 
-const ESTADO_CARGADO = 'Cargado';
+const ESTADO_PENDIENTE = 'Pendiente';
 const ESTADO_FACTURADO = 'Facturado';
 const ESTADO_DESPACHADO = 'Despachado';
 const ESTADO_ANULADO = 'Anulado';
@@ -39,11 +39,11 @@ export class PedidosService {
 
   async create(dto: CreatePedidoDto) {
     await this.assertClienteActivo(dto.id_cliente);
-    const idEstadoCargado = await this.estadosLookup.getId(ESTADO_CARGADO);
+    const idEstadoPendiente = await this.estadosLookup.getId(ESTADO_PENDIENTE);
     return this.prisma.pedidos.create({
       data: {
         ...dto,
-        id_estado: idEstadoCargado,
+        id_estado: idEstadoPendiente,
         fecha_carga: new Date(dto.fecha_carga),
         fecha_prometido: dto.fecha_prometido
           ? new Date(dto.fecha_prometido)
@@ -75,13 +75,13 @@ export class PedidosService {
     return pedido;
   }
 
-  // El pedido solo se edita (header o ítems) mientras está "Cargado":
+  // El pedido solo se edita (header o ítems) mientras está "Pendiente":
   // una vez facturado, se asume que lo que dice el pedido ya se
   // trasladó a otros comprobantes y no se puede tocar en silencio.
   async assertEditable(id: number): Promise<void> {
     const pedido = await this.findOne(id);
-    if (pedido.estados.nombreEstado !== ESTADO_CARGADO) {
-      throw new BadRequestException('Un pedido solo se puede editar mientras está Cargado');
+    if (pedido.estados.nombreEstado !== ESTADO_PENDIENTE) {
+      throw new BadRequestException('Un pedido solo se puede editar mientras está Pendiente');
     }
   }
 
@@ -111,8 +111,8 @@ export class PedidosService {
   // facturado: recién ahí se puede despachar.
   async facturar(id: number) {
     const pedido = await this.findOne(id);
-    if (pedido.estados.nombreEstado !== ESTADO_CARGADO) {
-      throw new BadRequestException('Solo se puede facturar un pedido Cargado');
+    if (pedido.estados.nombreEstado !== ESTADO_PENDIENTE) {
+      throw new BadRequestException('Solo se puede facturar un pedido Pendiente');
     }
     const idEstadoFacturado = await this.estadosLookup.getId(ESTADO_FACTURADO);
     return this.prisma.pedidos.update({
@@ -121,16 +121,16 @@ export class PedidosService {
     });
   }
 
-  // Anular: motivo si estaba Cargado, nro de nota de débito si ya
+  // Anular: motivo si estaba Pendiente, nro de nota de débito si ya
   // estaba Facturado (la nota de débito en sí se emite por fuera del
   // sistema por ahora, acá solo queda la referencia).
   async anular(id: number, dto: AnularPedidoDto) {
     const pedido = await this.findOne(id);
     const idEstadoAnulado = await this.estadosLookup.getId(ESTADO_ANULADO);
 
-    if (pedido.estados.nombreEstado === ESTADO_CARGADO) {
+    if (pedido.estados.nombreEstado === ESTADO_PENDIENTE) {
       if (!dto.motivo) {
-        throw new BadRequestException('Hace falta un motivo para anular un pedido Cargado');
+        throw new BadRequestException('Hace falta un motivo para anular un pedido Pendiente');
       }
       return this.prisma.pedidos.update({
         where: { id_pedido: id },
@@ -148,7 +148,7 @@ export class PedidosService {
       });
     }
 
-    throw new BadRequestException('Solo se puede anular un pedido Cargado o Facturado');
+    throw new BadRequestException('Solo se puede anular un pedido Pendiente o Facturado');
   }
 
   // Resuelve el depósito de logística del usuario que despacha, según

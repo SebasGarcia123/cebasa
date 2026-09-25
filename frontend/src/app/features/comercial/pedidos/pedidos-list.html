@@ -39,10 +39,10 @@
               />
             }
             @if (puedeFacturar()) {
-              @if (pedido.estados?.nombreEstado === 'Cargado') {
+              @if (pedido.estados?.nombreEstado === 'Pendiente') {
                 <p-button icon="pi pi-file-check" [text]="true" (onClick)="confirmFacturar(pedido)" pTooltip="Facturar" />
               }
-              @if (pedido.estados?.nombreEstado === 'Cargado' || pedido.estados?.nombreEstado === 'Facturado') {
+              @if (pedido.estados?.nombreEstado === 'Pendiente' || pedido.estados?.nombreEstado === 'Facturado') {
                 <p-button
                   icon="pi pi-ban"
                   [text]="true"

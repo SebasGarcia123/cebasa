@@ -14,7 +14,7 @@ import { PedidosApiService } from '../../../core/api/pedidos-api.service';
 import { Pedido } from '../../../core/models/pedido.model';
 
 const ESTADO_FACTURADO = 'Facturado';
-const ESTADO_CARGADO = 'Cargado';
+const ESTADO_PENDIENTE = 'Pendiente';
 
 @Component({
   selector: 'app-despacho-pedidos-list',
@@ -31,16 +31,16 @@ export class DespachoPedidosList implements OnInit {
 
   protected readonly desde = signal<Date | null>(null);
   protected readonly hasta = signal<Date | null>(null);
-  // Sin tildar: solo pedidos Facturados (los únicos que se pueden
-  // despachar). Tildado: también muestra los Cargados, para que
-  // Logística vea lo que viene aunque todavía no se pueda despachar.
+  // Sin tildar: solo pedidos Pendientes, que es lo que Logística tiene
+  // que revisar primero. Tildado: también muestra los Facturados (los
+  // únicos que ya se pueden despachar).
   protected readonly verTodos = signal(false);
 
   protected readonly pedidosFiltrados = computed(() => {
     const desde = this.desde();
     const hasta = this.hasta();
     const verTodos = this.verTodos();
-    const estadosVisibles = verTodos ? new Set([ESTADO_FACTURADO, ESTADO_CARGADO]) : new Set([ESTADO_FACTURADO]);
+    const estadosVisibles = verTodos ? new Set([ESTADO_PENDIENTE, ESTADO_FACTURADO]) : new Set([ESTADO_PENDIENTE]);
 
     return this.pedidos().filter((pedido) => {
       const estado = pedido.estados?.nombreEstado;

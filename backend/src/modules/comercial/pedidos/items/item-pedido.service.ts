@@ -3,7 +3,7 @@ import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { CreateItemPedidoDto } from './dto/create-item-pedido.dto.js';
 import { UpdateItemPedidoDto } from './dto/update-item-pedido.dto.js';
 
-const ESTADO_CARGADO = 'Cargado';
+const ESTADO_PENDIENTE = 'Pendiente';
 
 @Injectable()
 export class ItemPedidoService {
@@ -64,8 +64,8 @@ export class ItemPedidoService {
     if (!pedido) {
       throw new NotFoundException(`Pedido ${idPedido} no encontrado`);
     }
-    if (pedido.estados.nombreEstado !== ESTADO_CARGADO) {
-      throw new BadRequestException('Un pedido solo se puede editar mientras está Cargado');
+    if (pedido.estados.nombreEstado !== ESTADO_PENDIENTE) {
+      throw new BadRequestException('Un pedido solo se puede editar mientras está Pendiente');
     }
   }
 }

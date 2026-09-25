@@ -91,7 +91,7 @@ export class PedidosController {
     res.send(buffer);
   }
 
-  // Anular con motivo (pedido Cargado) o nro de nota de débito (pedido
+  // Anular con motivo (pedido Pendiente) o nro de nota de débito (pedido
   // Facturado): el permiso requerido depende de en cuál de los dos
   // casos esté, así que se exige el más restrictivo de los dos
   // (comercial.pedidos_facturar) y PedidosService.anular valida el resto.

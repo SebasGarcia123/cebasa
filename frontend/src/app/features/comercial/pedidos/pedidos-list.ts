@@ -339,7 +339,7 @@ export class PedidosList implements OnInit {
   confirmFacturar(pedido: Pedido): void {
     this.confirmationService.confirm({
       header: 'Confirmar facturación',
-      message: `¿Marcar el pedido #${pedido.id_pedido} como facturado?`,
+      message: `¿Desea facturar el pedido #${pedido.id_pedido}? Esta acción enviará la factura al cliente.`,
       icon: 'pi pi-check-circle',
       acceptButtonProps: { label: 'Facturar' },
       rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },

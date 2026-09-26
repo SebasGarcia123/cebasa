@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TableModule } from 'primeng/table';
@@ -14,11 +14,22 @@ import { PedidosApiService } from '../../../core/api/pedidos-api.service';
 import { Pedido } from '../../../core/models/pedido.model';
 
 const ESTADO_FACTURADO = 'Facturado';
-const ESTADO_PENDIENTE = 'Pendiente';
+const ESTADO_DESPACHADO = 'Despachado';
 
 @Component({
   selector: 'app-despacho-pedidos-list',
-  imports: [DatePipe, FormsModule, TableModule, ButtonModule, DialogModule, DatePickerModule, CheckboxModule, SelectButtonModule, TooltipModule],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    DialogModule,
+    DatePickerModule,
+    CheckboxModule,
+    SelectButtonModule,
+    TooltipModule,
+  ],
   templateUrl: './despacho-pedidos-list.html',
   styleUrl: './despacho-pedidos-list.scss',
 })
@@ -31,20 +42,19 @@ export class DespachoPedidosList implements OnInit {
 
   protected readonly desde = signal<Date | null>(null);
   protected readonly hasta = signal<Date | null>(null);
-  // Sin tildar: solo pedidos Pendientes, que es lo que Logística tiene
-  // que revisar primero. Tildado: también muestra los Facturados (los
-  // únicos que ya se pueden despachar).
+  // Sin tildar: todos los pedidos menos los ya Despachados (es la
+  // bandeja de trabajo). Tildado: literalmente todos, incluidos los ya
+  // despachados, para consultar el historial completo.
   protected readonly verTodos = signal(false);
 
   protected readonly pedidosFiltrados = computed(() => {
     const desde = this.desde();
     const hasta = this.hasta();
     const verTodos = this.verTodos();
-    const estadosVisibles = verTodos ? new Set([ESTADO_PENDIENTE, ESTADO_FACTURADO]) : new Set([ESTADO_PENDIENTE]);
 
     return this.pedidos().filter((pedido) => {
       const estado = pedido.estados?.nombreEstado;
-      if (!estado || !estadosVisibles.has(estado)) {
+      if (!verTodos && estado === ESTADO_DESPACHADO) {
         return false;
       }
       const fecha = this.soloFecha(new Date(pedido.fecha_carga));
@@ -57,6 +67,9 @@ export class DespachoPedidosList implements OnInit {
       return true;
     });
   });
+
+  protected readonly verDialogVisible = signal(false);
+  protected readonly pedidoAVer = signal<Pedido | null>(null);
 
   protected readonly despacharDialogVisible = signal(false);
   protected readonly despachando = signal(false);
@@ -91,6 +104,22 @@ export class DespachoPedidosList implements OnInit {
 
   puedeDespachar(pedido: Pedido): boolean {
     return pedido.estados?.nombreEstado === ESTADO_FACTURADO;
+  }
+
+  ver(pedido: Pedido): void {
+    this.pedidoAVer.set(null);
+    this.verDialogVisible.set(true);
+    this.api.getOne(pedido.id_pedido).subscribe({
+      next: (completo) => this.pedidoAVer.set(completo),
+      error: () => {
+        this.verDialogVisible.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el pedido' });
+      },
+    });
+  }
+
+  cerrarVer(): void {
+    this.verDialogVisible.set(false);
   }
 
   abrirDespachar(pedido: Pedido): void {

@@ -52,6 +52,9 @@
                 />
               }
             }
+            @if (puedeVerRemito(pedido)) {
+              <p-button icon="pi pi-file-pdf" [text]="true" (onClick)="verRemito(pedido)" pTooltip="Ver remito" />
+            }
           </div>
         </td>
       </tr>

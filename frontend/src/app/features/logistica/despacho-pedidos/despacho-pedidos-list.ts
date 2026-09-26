@@ -127,6 +127,19 @@ export class DespachoPedidosList implements OnInit {
     return pedido.estados?.nombreEstado === ESTADO_FACTURADO;
   }
 
+  puedeVerRemito(pedido: Pedido): boolean {
+    return pedido.estados?.nombreEstado === ESTADO_DESPACHADO;
+  }
+
+  verRemito(pedido: Pedido): void {
+    this.api.remito(pedido.id_pedido).subscribe({
+      next: (pdf) => window.open(URL.createObjectURL(pdf), '_blank'),
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo abrir el remito' });
+      },
+    });
+  }
+
   ver(pedido: Pedido): void {
     this.pedidoAVer.set(null);
     this.verDialogVisible.set(true);

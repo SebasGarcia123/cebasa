@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
 
@@ -12,10 +14,21 @@ const EMPRESA = {
   iva: 'Responsable Inscripto',
 };
 
+// assets/ vive en la raíz del backend, junto a uploads/ (ver
+// archivo-adjunto.storage.ts, mismo criterio de path relativo).
+const LOGO_PATH = join(
+  fileURLToPath(new URL('.', import.meta.url)),
+  '../../../../assets/logo-celulosa-baradero.png',
+);
+
 const COPIA_LABELS: Record<number, string[]> = {
   2: ['ORIGINAL', 'DUPLICADO'],
   3: ['ORIGINAL', 'DUPLICADO', 'TRIPLICADO'],
 };
+
+const MARGEN_IZQ = 40;
+const MARGEN_DER = 555;
+const COL_DERECHA_X = 350;
 
 interface PedidoParaRemito {
   id_pedido: number;
@@ -46,7 +59,7 @@ export class RemitoPdfService {
   // Genera un PDF con una página por copia (Original/Duplicado/[Triplicado]),
   // para que imprimir el archivo entero dé directamente el juego completo.
   generar(pedido: PedidoParaRemito, cantidadCopias: number): Promise<Buffer> {
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    const doc = new PDFDocument({ size: 'A4', margin: MARGEN_IZQ });
     const chunks: Buffer[] = [];
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     const listo = new Promise<Buffer>((resolve) => {
@@ -67,69 +80,85 @@ export class RemitoPdfService {
 
   private renderPagina(doc: PDFKit.PDFDocument, pedido: PedidoParaRemito, copiaLabel: string): void {
     const numeroRemito = String(pedido.id_pedido).padStart(8, '0');
+    const anchoDerecha = MARGEN_DER - COL_DERECHA_X;
 
-    doc.fontSize(16).font('Helvetica-Bold').text(EMPRESA.razonSocial, { continued: false });
+    // Logo arriba a la izquierda, y debajo los datos de la empresa,
+    // todos alineados al mismo margen izquierdo que el resto del
+    // documento (cliente, fecha, ítems).
+    const inicioY = doc.y;
+    try {
+      doc.image(LOGO_PATH, MARGEN_IZQ, inicioY, { width: 140 });
+    } catch {
+      // Si por algún motivo no está el archivo del logo, el remito se
+      // sigue generando igual, solo sin la imagen.
+    }
+
+    let ejeY = inicioY + 48;
+    doc.fontSize(13).font('Helvetica-Bold').text(EMPRESA.razonSocial, MARGEN_IZQ, ejeY, { width: 260 });
     doc.fontSize(9).font('Helvetica');
-    doc.text(EMPRESA.domicilio);
-    doc.text(`Tel: ${EMPRESA.telefono}`);
-    doc.text(`CUIT: ${EMPRESA.cuit} — IVA: ${EMPRESA.iva}`);
+    doc.text(EMPRESA.domicilio, MARGEN_IZQ, doc.y, { width: 260 });
+    doc.text(`Tel: ${EMPRESA.telefono}`, MARGEN_IZQ, doc.y, { width: 260 });
+    doc.text(`CUIT: ${EMPRESA.cuit} — IVA: ${EMPRESA.iva}`, MARGEN_IZQ, doc.y, { width: 260 });
+    const finIzquierda = doc.y;
 
-    doc.moveUp(4);
-    doc.fontSize(18).font('Helvetica-Bold').text('REMITO', 0, doc.y, { align: 'right' });
-    doc.fontSize(11).font('Helvetica-Bold').text(`N° ${numeroRemito}`, { align: 'right' });
-    doc.fontSize(10).font('Helvetica-Bold').text(copiaLabel, { align: 'right' });
+    // Título del remito arriba a la derecha, arrancando a la misma
+    // altura que el logo.
+    doc.fontSize(18).font('Helvetica-Bold').text('REMITO', COL_DERECHA_X, inicioY, { width: anchoDerecha, align: 'right' });
+    doc.fontSize(11).font('Helvetica-Bold').text(`N° ${numeroRemito}`, COL_DERECHA_X, doc.y, { width: anchoDerecha, align: 'right' });
+    doc.fontSize(10).font('Helvetica-Bold').text(copiaLabel, COL_DERECHA_X, doc.y, { width: anchoDerecha, align: 'right' });
+    const finDerecha = doc.y;
 
-    doc.moveDown(2);
-    doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-    doc.moveDown(1);
+    ejeY = Math.max(finIzquierda, finDerecha) + 12;
+    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
+    ejeY += 16;
 
     const cliente = pedido.clientes;
     const direccion = cliente.direcciones;
-    doc.fontSize(11).font('Helvetica-Bold').text('Cliente');
+    doc.fontSize(11).font('Helvetica-Bold').text('Cliente', MARGEN_IZQ, ejeY);
     doc.fontSize(10).font('Helvetica');
-    doc.text(cliente.nombre_cli);
+    doc.text(cliente.nombre_cli, MARGEN_IZQ, doc.y);
     doc.text(
       [direccion.calle, direccion.numero].filter(Boolean).join(' ') +
         `, ${direccion.localidad}, ${direccion.provincia}`,
+      MARGEN_IZQ,
+      doc.y,
     );
     if (cliente.telefono_cli) {
-      doc.text(`Tel: ${cliente.telefono_cli}`);
+      doc.text(`Tel: ${cliente.telefono_cli}`, MARGEN_IZQ, doc.y);
     }
 
-    doc.moveDown(0.5);
     const fecha = pedido.fecha_despacho ?? pedido.fecha_carga;
-    doc.text(`Fecha de despacho: ${fecha.toLocaleDateString('es-AR')}`);
+    doc.text(`Fecha de despacho: ${fecha.toLocaleDateString('es-AR')}`, MARGEN_IZQ, doc.y + 8);
 
-    doc.moveDown(1.5);
-
-    const colX = { codigo: 40, descripcion: 130, bolsones: 400, pallets: 480 };
-    const filaHeaderY = doc.y;
+    ejeY = doc.y + 20;
+    const colX = { codigo: MARGEN_IZQ, descripcion: 130, bolsones: 400, pallets: 480 };
     doc.font('Helvetica-Bold').fontSize(10);
-    doc.text('Código', colX.codigo, filaHeaderY, { width: 80 });
-    doc.text('Producto', colX.descripcion, filaHeaderY, { width: 260 });
-    doc.text('Bolsones', colX.bolsones, filaHeaderY, { width: 70, align: 'right' });
-    doc.text('Pallets', colX.pallets, filaHeaderY, { width: 70, align: 'right' });
-    doc.moveDown(0.5);
-    doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-    doc.moveDown(0.3);
+    doc.text('Código', colX.codigo, ejeY, { width: 80 });
+    doc.text('Producto', colX.descripcion, ejeY, { width: 260 });
+    doc.text('Bolsones', colX.bolsones, ejeY, { width: 70, align: 'right' });
+    doc.text('Pallets', colX.pallets, ejeY, { width: 70, align: 'right' });
+    ejeY += 18;
+    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
+    ejeY += 8;
 
     doc.font('Helvetica').fontSize(10);
     for (const item of pedido.item_pedido) {
       const bpp = item.productos.bolsones_por_pallet;
       const pallets = bpp ? Math.round((item.cantidad_bolsones / bpp) * 100) / 100 : null;
-      const filaY = doc.y;
-      doc.text(item.productos.codigo_producto, colX.codigo, filaY, { width: 80 });
-      doc.text(item.productos.descripcion_producto, colX.descripcion, filaY, { width: 260 });
-      doc.text(String(item.cantidad_bolsones), colX.bolsones, filaY, { width: 70, align: 'right' });
-      doc.text(pallets != null ? pallets.toFixed(2) : '—', colX.pallets, filaY, { width: 70, align: 'right' });
-      doc.moveDown(0.6);
+      doc.text(item.productos.codigo_producto, colX.codigo, ejeY, { width: 80 });
+      doc.text(item.productos.descripcion_producto, colX.descripcion, ejeY, { width: 260 });
+      doc.text(String(item.cantidad_bolsones), colX.bolsones, ejeY, { width: 70, align: 'right' });
+      doc.text(pallets != null ? pallets.toFixed(2) : '—', colX.pallets, ejeY, { width: 70, align: 'right' });
+      ejeY += 16;
     }
 
-    doc.moveDown(3);
-    doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-    doc.moveDown(2);
-    doc.fontSize(9).text('Recibí conforme: _______________________________', 40, doc.y);
-    doc.moveDown(0.5);
-    doc.text('Aclaración y DNI: _______________________________');
+    ejeY += 40;
+    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
+    ejeY += 30;
+
+    // Firma y aclaración una al lado de la otra, no una debajo de la otra.
+    doc.fontSize(9);
+    doc.text('Recibí conforme: ___________________________', MARGEN_IZQ, ejeY, { width: 240 });
+    doc.text('Aclaración y DNI: _____________________', COL_DERECHA_X, ejeY, { width: anchoDerecha });
   }
 }

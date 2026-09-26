@@ -32,6 +32,7 @@ import { Producto } from '../../../core/models/producto.model';
 
 const ESTADO_PENDIENTE = 'Pendiente';
 const ESTADO_FACTURADO = 'Facturado';
+const ESTADO_DESPACHADO = 'Despachado';
 
 type ItemPedidoForm = FormGroup<{
   id_item_pedido: FormControl<number | null>;
@@ -334,6 +335,19 @@ export class PedidosList implements OnInit {
   private onGuardarError(): void {
     this.saving.set(false);
     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
+  }
+
+  protected puedeVerRemito(pedido: Pedido): boolean {
+    return pedido.estados?.nombreEstado === ESTADO_DESPACHADO;
+  }
+
+  verRemito(pedido: Pedido): void {
+    this.api.remito(pedido.id_pedido).subscribe({
+      next: (pdf) => window.open(URL.createObjectURL(pdf), '_blank'),
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo abrir el remito' });
+      },
+    });
   }
 
   confirmFacturar(pedido: Pedido): void {

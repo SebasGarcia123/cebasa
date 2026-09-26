@@ -16,9 +16,11 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
 import { ArchivoAdjuntoApiService } from '../../../core/api/archivo-adjunto-api.service';
 import { EstadosApiService } from '../../../core/api/estados-api.service';
+import { TipoProductoApiService } from '../../../core/api/tipo-producto-api.service';
 import { Producto } from '../../../core/models/producto.model';
 import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
 import { Estado } from '../../../core/models/estado.model';
+import { TipoProducto } from '../../../core/models/tipo-producto.model';
 
 const ESTADOS_PRODUCTO = new Set(['Activo', 'Anulado']);
 
@@ -45,12 +47,14 @@ export class ProductosList implements OnInit {
   private readonly api = inject(ProductosApiService);
   protected readonly archivoAdjuntoApi = inject(ArchivoAdjuntoApiService);
   private readonly estadosApi = inject(EstadosApiService);
+  private readonly tipoProductoApi = inject(TipoProductoApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
   protected readonly productos = signal<Producto[]>([]);
   protected readonly estados = signal<Estado[]>([]);
+  protected readonly tiposProducto = signal<TipoProducto[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly dialogVisible = signal(false);
@@ -96,6 +100,7 @@ export class ProductosList implements OnInit {
     stock_actual: [0 as number | null],
     stock_minimo: [0 as number | null],
     id_estado: [null as number | null],
+    id_tipo_producto: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -107,10 +112,12 @@ export class ProductosList implements OnInit {
     forkJoin({
       productos: this.api.list(),
       estados: this.estadosApi.list(),
+      tiposProducto: this.tipoProductoApi.list(),
     }).subscribe({
-      next: ({ productos, estados }) => {
+      next: ({ productos, estados, tiposProducto }) => {
         this.productos.set(productos);
         this.estados.set(estados);
+        this.tiposProducto.set(tiposProducto);
         this.loading.set(false);
       },
       error: () => {
@@ -143,6 +150,7 @@ export class ProductosList implements OnInit {
       stock_actual: producto.stock_actual,
       stock_minimo: producto.stock_minimo,
       id_estado: producto.id_estado,
+      id_tipo_producto: producto.id_tipo_producto,
     });
     this.dialogVisible.set(true);
   }
@@ -207,6 +215,7 @@ export class ProductosList implements OnInit {
       ...(raw.peso_por_bolson != null ? { peso_por_bolson: Number(raw.peso_por_bolson) } : {}),
       ...(raw.stock_actual != null ? { stock_actual: raw.stock_actual } : {}),
       ...(raw.stock_minimo != null ? { stock_minimo: raw.stock_minimo } : {}),
+      id_tipo_producto: raw.id_tipo_producto ?? undefined,
     };
     const id = this.editingId();
     const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);

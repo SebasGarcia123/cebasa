@@ -740,6 +740,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tipo-producto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TipoProductoController_findAll"];
+        put?: never;
+        post: operations["TipoProductoController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tipo-producto/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TipoProductoController_findOne"];
+        put?: never;
+        post?: never;
+        delete: operations["TipoProductoController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["TipoProductoController_update"];
+        trace?: never;
+    };
     "/unidad-medida": {
         parameters: {
             query?: never;
@@ -2221,6 +2253,7 @@ export interface components {
             stock_actual?: number;
             stock_minimo?: number;
             id_archivo_adjunto?: number;
+            id_tipo_producto?: number;
         };
         UpdateProductoDto: {
             id_estado?: number;
@@ -2241,6 +2274,10 @@ export interface components {
             tipo_rechazo: "redireccion" | "no_corresponde";
             id_sector_nuevo?: number;
         };
+        CreateTipoProductoDto: {
+            descripcion: string;
+        };
+        UpdateTipoProductoDto: Record<string, never>;
         CreateUnidadMedidaDto: {
             nombre_unidad_medida: string;
         };
@@ -4393,6 +4430,107 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoProductoController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    TipoProductoController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTipoProductoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoProductoController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoProductoController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoProductoController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTipoProductoDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,0 +1,69 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Tipo de Producto</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table
+    [value]="items()"
+    [loading]="loading()"
+    dataKey="id_tipo_producto"
+    [paginator]="true"
+    [rows]="10"
+  >
+    <ng-template #header>
+      <tr>
+        <th scope="col" style="width: 5rem">ID</th>
+        <th scope="col">Descripción</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-item>
+      <tr>
+        <td>{{ item.id_tipo_producto }}</td>
+        <td>{{ item.descripcion }}</td>
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(item)" />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (onClick)="confirmDelete(item)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="3">No hay tipos de producto cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [header]="editingId() ? 'Editar tipo de producto' : 'Nuevo tipo de producto'"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
+      <div class="page__field">
+        <label for="descripcion">Descripción</label>
+        <input id="descripcion" type="text" pInputText formControlName="descripcion" />
+      </div>
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeDialog()"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

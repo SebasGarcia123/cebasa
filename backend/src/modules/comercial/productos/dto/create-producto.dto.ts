@@ -43,4 +43,8 @@ export class CreateProductoDto {
   @IsOptional()
   @IsInt()
   id_archivo_adjunto?: number;
+
+  @IsOptional()
+  @IsInt()
+  id_tipo_producto?: number;
 }

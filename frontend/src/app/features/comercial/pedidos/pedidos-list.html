@@ -128,7 +128,7 @@
           <tr>
             <th scope="col" style="width: 10rem">Código</th>
             <th scope="col">Producto</th>
-            <th scope="col" style="width: 6.5rem">Bolsones</th>
+            <th scope="col" style="width: 9rem">Cantidad</th>
             <th scope="col" style="width: 6.5rem">Pallets</th>
             <th scope="col" style="width: 3rem"></th>
           </tr>
@@ -162,7 +162,13 @@
               />
             </td>
             <td>
-              <p-inputNumber formControlName="cantidad_bolsones" [min]="0" [style]="{ width: '100%' }" inputStyleClass="w-full" />
+              <p-inputNumber
+                formControlName="cantidad_bolsones"
+                [min]="0"
+                [suffix]="esBobina(fila.value.id_producto) ? ' kg' : ' bolsones'"
+                [style]="{ width: '100%' }"
+                inputStyleClass="w-full"
+              />
             </td>
             <td>
               <p-inputNumber

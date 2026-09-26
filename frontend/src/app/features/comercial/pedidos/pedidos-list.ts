@@ -141,6 +141,12 @@ export class PedidosList implements OnInit {
     return this.productos().find((p) => p.id_producto === idProducto);
   }
 
+  // Las bobinas se venden por peso, no por bolsón: se muestran en Kg
+  // en vez de Bolsones (mismo criterio en el remito del backend).
+  protected esBobina(idProducto: number | null): boolean {
+    return this.productoDe(idProducto)?.tipo_producto?.descripcion === 'Bobina';
+  }
+
   private calcularPallets(bolsones: number, bolsonesPorPallet: number): number {
     return Math.round((bolsones / bolsonesPorPallet) * 100) / 100;
   }

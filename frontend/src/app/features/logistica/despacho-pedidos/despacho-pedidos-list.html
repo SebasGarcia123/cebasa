@@ -115,7 +115,7 @@
           <tr>
             <th scope="col">Código</th>
             <th scope="col">Producto</th>
-            <th scope="col" style="width: 6.5rem">Bolsones</th>
+            <th scope="col" style="width: 8rem">Cantidad</th>
             <th scope="col" style="width: 6.5rem">Pallets</th>
           </tr>
         </ng-template>
@@ -123,7 +123,7 @@
           <tr>
             <td>{{ item.productos?.codigo_producto || '—' }}</td>
             <td>{{ item.productos?.descripcion_producto || '—' }}</td>
-            <td>{{ item.cantidad_bolsones }}</td>
+            <td>{{ item.cantidad_bolsones }} {{ item.productos?.tipo_producto?.descripcion === 'Bobina' ? 'kg' : 'bolsones' }}</td>
             <td>{{ item.productos?.bolsones_por_pallet ? (item.cantidad_bolsones / item.productos.bolsones_por_pallet | number: '1.0-2') : '—' }}</td>
           </tr>
         </ng-template>

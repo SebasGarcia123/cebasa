@@ -1,5 +1,6 @@
 import { ArchivoAdjunto } from './archivo-adjunto.model';
 import { Estado } from './estado.model';
+import { TipoProducto } from './tipo-producto.model';
 
 export interface Producto {
   id_producto: number;
@@ -12,6 +13,8 @@ export interface Producto {
   stock_minimo: number;
   id_estado: number;
   id_archivo_adjunto: number | null;
+  id_tipo_producto: number | null;
   archivo_adjunto: ArchivoAdjunto | null;
   estados?: Estado;
+  tipo_producto?: TipoProducto | null;
 }

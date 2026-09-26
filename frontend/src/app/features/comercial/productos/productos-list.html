@@ -107,6 +107,19 @@
       </div>
 
       <div class="page__field">
+        <label for="id_tipo_producto">Tipo de producto</label>
+        <p-select
+          inputId="id_tipo_producto"
+          formControlName="id_tipo_producto"
+          [options]="tiposProducto()"
+          optionLabel="descripcion"
+          optionValue="id_tipo_producto"
+          placeholder="Seleccionar tipo"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
         <label for="bolsones_por_pallet">Bolsones por pallet</label>
         <p-inputNumber
           inputId="bolsones_por_pallet"

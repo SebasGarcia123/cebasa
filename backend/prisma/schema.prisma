@@ -560,6 +560,7 @@ model productos {
   stock_minimo         Int                    @default(0)
   id_estado            Int
   id_archivo_adjunto   Int?
+  id_tipo_producto     Int?
   item_pedido          item_pedido[]
   item_plan_produccion item_plan_produccion[]
   item_prod            item_prod[]
@@ -570,11 +571,23 @@ model productos {
   // (sube/borra el archivo_adjunto antes de guardar el producto), así que
   // el borrado del archivo no puede quedar bloqueado por esta FK.
   archivo_adjunto      archivo_adjunto?       @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_productos_archivo_adjunto")
+  tipo_producto        tipo_producto?         @relation(fields: [id_tipo_producto], references: [id_tipo_producto], onUpdate: Restrict, map: "fk_productos_tipo_producto")
   receta               receta[]
   ajuste_stock         ajuste_stock[]
 
   @@index([id_estado], map: "fk_productos_estado")
   @@index([id_archivo_adjunto], map: "fk_productos_archivo_adjunto")
+  @@index([id_tipo_producto], map: "fk_productos_tipo_producto")
+}
+
+// Clasificación del producto (Bobina, Producto procesado, Producto
+// tercerizado, ...) pensada para indicadores más adelante. Por ahora
+// solo se usa para decidir si un ítem se muestra en "Kg" o en
+// "Bolsones" en pedidos/remitos (ver PedidosList y RemitoPdfService).
+model tipo_producto {
+  id_tipo_producto Int         @id @default(autoincrement())
+  descripcion      String      @db.VarChar(100)
+  productos        productos[]
 }
 
 model proveedor {

@@ -30,6 +30,10 @@ const MARGEN_IZQ = 40;
 const MARGEN_DER = 555;
 const COL_DERECHA_X = 350;
 
+// Las bobinas se venden por peso, no por bolsón: se muestran en Kg en
+// vez de Bolsones (mismo criterio en PedidosList del frontend).
+const TIPO_PRODUCTO_BOBINA = 'Bobina';
+
 interface PedidoParaRemito {
   id_pedido: number;
   fecha_carga: Date;
@@ -50,6 +54,7 @@ interface PedidoParaRemito {
       codigo_producto: string;
       descripcion_producto: string;
       bolsones_por_pallet: number | null;
+      tipo_producto: { descripcion: string } | null;
     };
   }[];
 }
@@ -131,11 +136,11 @@ export class RemitoPdfService {
     doc.text(`Fecha de despacho: ${fecha.toLocaleDateString('es-AR')}`, MARGEN_IZQ, doc.y + 8);
 
     ejeY = doc.y + 20;
-    const colX = { codigo: MARGEN_IZQ, descripcion: 130, bolsones: 400, pallets: 480 };
+    const colX = { codigo: MARGEN_IZQ, descripcion: 130, cantidad: 400, pallets: 480 };
     doc.font('Helvetica-Bold').fontSize(10);
     doc.text('Código', colX.codigo, ejeY, { width: 80 });
     doc.text('Producto', colX.descripcion, ejeY, { width: 260 });
-    doc.text('Bolsones', colX.bolsones, ejeY, { width: 70, align: 'right' });
+    doc.text('Cantidad', colX.cantidad, ejeY, { width: 70, align: 'right' });
     doc.text('Pallets', colX.pallets, ejeY, { width: 70, align: 'right' });
     ejeY += 18;
     doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
@@ -145,9 +150,11 @@ export class RemitoPdfService {
     for (const item of pedido.item_pedido) {
       const bpp = item.productos.bolsones_por_pallet;
       const pallets = bpp ? Math.round((item.cantidad_bolsones / bpp) * 100) / 100 : null;
+      const esBobina = item.productos.tipo_producto?.descripcion === TIPO_PRODUCTO_BOBINA;
+      const cantidadTexto = `${item.cantidad_bolsones} ${esBobina ? 'kg' : 'bolsones'}`;
       doc.text(item.productos.codigo_producto, colX.codigo, ejeY, { width: 80 });
       doc.text(item.productos.descripcion_producto, colX.descripcion, ejeY, { width: 260 });
-      doc.text(String(item.cantidad_bolsones), colX.bolsones, ejeY, { width: 70, align: 'right' });
+      doc.text(cantidadTexto, colX.cantidad, ejeY, { width: 70, align: 'right' });
       doc.text(pallets != null ? pallets.toFixed(2) : '—', colX.pallets, ejeY, { width: 70, align: 'right' });
       ejeY += 16;
     }

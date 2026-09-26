@@ -69,6 +69,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'comercial/tipo-producto',
+        loadComponent: () =>
+          import('./features/comercial/tipo-producto/tipo-producto-list').then((m) => m.TipoProductoList),
+      },
+      {
         path: 'compras/proveedores',
         loadComponent: () =>
           import('./features/compras/proveedores/proveedores-list').then((m) => m.ProveedoresList),

@@ -68,7 +68,7 @@ export class PedidosService {
         estados: true,
         usuarios: true,
         deposito: true,
-        item_pedido: { include: { productos: true } },
+        item_pedido: { include: { productos: { include: { tipo_producto: true } } } },
       },
     });
     if (!pedido) {

@@ -60,6 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { label: 'Tipo de Impacto', icon: 'pi pi-bolt', route: '/comercial/tipo-impacto', permission: 'comercial.ver' },
       { label: 'Tipo de Documento', icon: 'pi pi-file', route: '/comercial/tipo-documento', permission: 'comercial.ver' },
+      { label: 'Tipo de Producto', icon: 'pi pi-tags', route: '/comercial/tipo-producto', permission: 'comercial.ver' },
     ],
   },
   {

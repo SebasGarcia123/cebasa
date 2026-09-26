@@ -12,7 +12,7 @@ export class ItemPedidoService {
   findAllForPedido(idPedido: number) {
     return this.prisma.item_pedido.findMany({
       where: { id_pedido: idPedido },
-      include: { productos: true },
+      include: { productos: { include: { tipo_producto: true } } },
     });
   }
 
@@ -20,14 +20,14 @@ export class ItemPedidoService {
     await this.assertPedidoEditable(idPedido);
     return this.prisma.item_pedido.create({
       data: { ...dto, id_pedido: idPedido },
-      include: { productos: true },
+      include: { productos: { include: { tipo_producto: true } } },
     });
   }
 
   async findOne(idPedido: number, idItem: number) {
     const item = await this.prisma.item_pedido.findFirst({
       where: { id_item_pedido: idItem, id_pedido: idPedido },
-      include: { productos: true },
+      include: { productos: { include: { tipo_producto: true } } },
     });
     if (!item) {
       throw new NotFoundException(

@@ -14,6 +14,8 @@ import { UpdateLoteProdDto } from './dto/update-lote-prod.dto.js';
 import { RechazarLoteProdDto } from './dto/rechazar-lote-prod.dto.js';
 import { ApiTags } from '@nestjs/swagger';
 import { RequirePermissions } from '../../../auth/decorators/permissions.decorator.js';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator.js';
+import type { JwtPayload } from '../../../auth/types/jwt-payload.interface.js';
 
 @ApiTags('Lote Prod')
 @Controller('lotes-prod')
@@ -57,13 +59,17 @@ export class LoteProdController {
   // permiso propio en vez de reusar produccion.editar.
   @RequirePermissions('produccion.lotes_aprobar')
   @Post(':id/aprobar')
-  aprobar(@Param('id', ParseIntPipe) id: number) {
-    return this.loteProdService.aprobar(id);
+  aprobar(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {
+    return this.loteProdService.aprobar(id, user);
   }
 
   @RequirePermissions('produccion.lotes_aprobar')
   @Post(':id/rechazar')
-  rechazar(@Param('id', ParseIntPipe) id: number, @Body() dto: RechazarLoteProdDto) {
-    return this.loteProdService.rechazar(id, dto);
+  rechazar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RechazarLoteProdDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.loteProdService.rechazar(id, dto, user);
   }
 }

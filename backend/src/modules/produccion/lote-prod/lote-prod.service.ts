@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
+import { PlantaLookupService } from '../../../prisma/planta-lookup.service.js';
+import type { JwtPayload } from '../../../auth/types/jwt-payload.interface.js';
 import { CreateLoteProdDto } from './dto/create-lote-prod.dto.js';
 import { UpdateLoteProdDto } from './dto/update-lote-prod.dto.js';
 import { RechazarLoteProdDto } from './dto/rechazar-lote-prod.dto.js';
@@ -18,6 +20,7 @@ export class LoteProdService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly estadosLookup: EstadosLookupService,
+    private readonly plantaLookup: PlantaLookupService,
   ) {}
 
   async create(dto: CreateLoteProdDto) {
@@ -82,12 +85,13 @@ export class LoteProdService {
   // además se descuentan del depósito del lote los insumos que marque
   // la receta activa de cada producto, cantidad_utilizada × cantidad
   // producida (con su propio movimiento de consumo).
-  async aprobar(id: number) {
+  async aprobar(id: number, user: JwtPayload) {
     const lote = await this.findOne(id);
 
     if (lote.estados.nombreEstado !== ESTADO_PENDIENTE) {
       throw new BadRequestException('Solo se puede aprobar un lote pendiente de aprobación');
     }
+    await this.assertMismaPlanta(user, lote.deposito.nombre_deposito);
 
     const [idEstadoAprobado, idEstadoActivo, tipoMovimientoIngreso, tipoMovimientoConsumo, consumoInsumos] =
       await Promise.all([
@@ -217,18 +221,37 @@ export class LoteProdService {
   // Logística rechaza: el lote vuelve a la pantalla de Producción en
   // estado "Rechazado" con el motivo, para que se corrija y se
   // reenvíe (ver update() de más arriba).
-  async rechazar(id: number, dto: RechazarLoteProdDto) {
+  async rechazar(id: number, dto: RechazarLoteProdDto, user: JwtPayload) {
     const lote = await this.findOne(id);
 
     if (lote.estados.nombreEstado !== ESTADO_PENDIENTE) {
       throw new BadRequestException('Solo se puede rechazar un lote pendiente de aprobación');
     }
+    await this.assertMismaPlanta(user, lote.deposito.nombre_deposito);
 
     const idEstadoRechazado = await this.estadosLookup.getId(ESTADO_RECHAZADO);
     return this.prisma.lote_prod.update({
       where: { id_lote: id },
       data: { id_estado: idEstadoRechazado, motivo_rechazo: dto.motivo_rechazo },
     });
+  }
+
+  // Un Jefe de Logística solo puede aprobar/rechazar lotes de su propia
+  // planta (según su sector), no los de la otra. Los administradores
+  // no tienen planta asignada, así que quedan exceptuados.
+  private async assertMismaPlanta(user: JwtPayload, nombreDepositoLote: string): Promise<void> {
+    if (user.es_administrador) {
+      return;
+    }
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id_usuario: user.sub },
+      include: { sectores: true },
+    });
+    const plantaUsuario = usuario ? this.plantaLookup.plantaDeSector(usuario.sectores.nombreSector) : null;
+    const plantaLote = this.plantaLookup.plantaDeDeposito(nombreDepositoLote);
+    if (!plantaUsuario || !plantaLote || plantaUsuario !== plantaLote) {
+      throw new BadRequestException('No podés aprobar ni rechazar lotes de producción de otra planta');
+    }
   }
 
   async remove(id: number) {

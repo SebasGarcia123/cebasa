@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
+import { PlantaLookupService } from '../../../prisma/planta-lookup.service.js';
 import { UPLOADS_DIR } from '../../compras/archivo-adjunto/archivo-adjunto.storage.js';
 import { RemitoPdfService } from './remito-pdf.service.js';
 import { CreatePedidoDto } from './dto/create-pedido.dto.js';
@@ -23,6 +24,7 @@ export class PedidosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly estadosLookup: EstadosLookupService,
+    private readonly plantaLookup: PlantaLookupService,
     private readonly remitoPdfService: RemitoPdfService,
   ) {}
 
@@ -161,9 +163,8 @@ export class PedidosService {
       where: { id_usuario: idUsuario },
       include: { sectores: true },
     });
-    const nombreSector = usuario?.sectores.nombreSector.toLowerCase() ?? '';
-    const ciudad = nombreSector.includes('caseros') ? 'caseros' : nombreSector.includes('baradero') ? 'baradero' : null;
-    if (!ciudad) {
+    const planta = usuario ? this.plantaLookup.plantaDeSector(usuario.sectores.nombreSector) : null;
+    if (!planta) {
       throw new BadRequestException(
         'No se pudo determinar el depósito de logística: tu sector no indica la planta (Baradero/Caseros)',
       );
@@ -171,10 +172,10 @@ export class PedidosService {
 
     const depositos = await this.prisma.deposito.findMany();
     const deposito = depositos.find(
-      (d) => d.nombre_deposito.toLowerCase().includes('log') && d.nombre_deposito.toLowerCase().includes(ciudad),
+      (d) => d.nombre_deposito.toLowerCase().includes('log') && this.plantaLookup.plantaDeDeposito(d.nombre_deposito) === planta,
     );
     if (!deposito) {
-      throw new BadRequestException(`No existe un depósito de logística para "${ciudad}" en el catálogo`);
+      throw new BadRequestException(`No existe un depósito de logística para "${planta}" en el catálogo`);
     }
     return { id_deposito: deposito.id_deposito };
   }

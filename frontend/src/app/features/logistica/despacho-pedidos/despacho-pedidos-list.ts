@@ -7,14 +7,21 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { CheckboxModule } from 'primeng/checkbox';
+import { SelectModule } from 'primeng/select';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { PedidosApiService } from '../../../core/api/pedidos-api.service';
+import { DepositosApiService } from '../../../core/api/depositos-api.service';
 import { Pedido } from '../../../core/models/pedido.model';
+import { Deposito } from '../../../core/models/deposito.model';
 
 const ESTADO_FACTURADO = 'Facturado';
 const ESTADO_DESPACHADO = 'Despachado';
+// Coincide con PedidosService.DEPOSITO_NO_RESUELTO en el backend: si el
+// error de despachar trae exactamente este texto, en vez de mostrarlo
+// sin más se le ofrece a quien despacha elegir el depósito a mano.
+const MENSAJE_DEPOSITO_NO_RESUELTO = 'No se pudo determinar el depósito de logística automáticamente. Elegilo manualmente.';
 
 @Component({
   selector: 'app-despacho-pedidos-list',
@@ -27,6 +34,7 @@ const ESTADO_DESPACHADO = 'Despachado';
     DialogModule,
     DatePickerModule,
     CheckboxModule,
+    SelectModule,
     SelectButtonModule,
     TooltipModule,
   ],
@@ -35,10 +43,17 @@ const ESTADO_DESPACHADO = 'Despachado';
 })
 export class DespachoPedidosList implements OnInit {
   private readonly api = inject(PedidosApiService);
+  private readonly depositosApi = inject(DepositosApiService);
   private readonly messageService = inject(MessageService);
 
   protected readonly pedidos = signal<Pedido[]>([]);
   protected readonly loading = signal(false);
+  protected readonly depositos = signal<Deposito[]>([]);
+  // Solo depósitos de logística (no los de producción) para el
+  // selector manual de respaldo.
+  protected readonly depositosLogistica = computed(() =>
+    this.depositos().filter((d) => d.nombre_deposito.toLowerCase().includes('log')),
+  );
 
   protected readonly desde = signal<Date | null>(null);
   protected readonly hasta = signal<Date | null>(null);
@@ -79,9 +94,15 @@ export class DespachoPedidosList implements OnInit {
     { label: 'Triplicado', value: 3 },
   ];
   protected readonly cantidadCopias = signal<2 | 3>(2);
+  // Se activa cuando el backend no pudo resolver el depósito solo con
+  // el sector de quien despacha (ej. una cuenta admin sin sector real):
+  // recién ahí aparece el selector para elegirlo a mano.
+  protected readonly necesitaDepositoManual = signal(false);
+  protected readonly depositoElegido = signal<number | null>(null);
 
   ngOnInit(): void {
     this.load();
+    this.depositosApi.list().subscribe({ next: (depositos) => this.depositos.set(depositos) });
   }
 
   private load(): void {
@@ -125,6 +146,8 @@ export class DespachoPedidosList implements OnInit {
   abrirDespachar(pedido: Pedido): void {
     this.pedidoADespachar.set(pedido);
     this.cantidadCopias.set(2);
+    this.necesitaDepositoManual.set(false);
+    this.depositoElegido.set(null);
     this.despacharDialogVisible.set(true);
   }
 
@@ -137,9 +160,16 @@ export class DespachoPedidosList implements OnInit {
     if (!pedido || this.despachando()) {
       return;
     }
+    if (this.necesitaDepositoManual() && !this.depositoElegido()) {
+      return;
+    }
 
     this.despachando.set(true);
-    this.api.despachar(pedido.id_pedido, { cantidad_copias: this.cantidadCopias() }).subscribe({
+    const dto = {
+      cantidad_copias: this.cantidadCopias(),
+      ...(this.depositoElegido() ? { id_deposito: this.depositoElegido()! } : {}),
+    };
+    this.api.despachar(pedido.id_pedido, dto).subscribe({
       next: (pdf) => {
         this.despachando.set(false);
         this.despacharDialogVisible.set(false);
@@ -154,7 +184,12 @@ export class DespachoPedidosList implements OnInit {
       },
       error: async (error: HttpErrorResponse) => {
         this.despachando.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: await this.extraerMensajeError(error) });
+        const detail = await this.extraerMensajeError(error);
+        if (detail === MENSAJE_DEPOSITO_NO_RESUELTO) {
+          this.necesitaDepositoManual.set(true);
+          return;
+        }
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
       },
     });
   }

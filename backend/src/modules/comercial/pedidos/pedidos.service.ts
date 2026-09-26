@@ -153,31 +153,53 @@ export class PedidosService {
     throw new BadRequestException('Solo se puede anular un pedido Pendiente o Facturado');
   }
 
+  // Mensaje fijo para que el frontend lo reconozca y, en vez de mostrar
+  // el error sin más, le ofrezca a quien despacha elegir el depósito a
+  // mano (ver DespachoPedidosList en el frontend).
+  static readonly DEPOSITO_NO_RESUELTO =
+    'No se pudo determinar el depósito de logística automáticamente. Elegilo manualmente.';
+
   // Resuelve el depósito de logística del usuario que despacha, según
   // el sector al que pertenece ("Logística Baradero"/"Logística
   // Caseros", o sus variantes "Operario de..."): busca en el nombre
   // del sector "Baradero" o "Caseros" y lo cruza con el depósito de
-  // logística de esa misma localidad.
-  private async resolverDepositoDeUsuario(idUsuario: number): Promise<{ id_deposito: number }> {
+  // logística de esa misma localidad. Devuelve null si no se puede
+  // resolver (ej. un administrador sin sector real asignado), en vez
+  // de tirar error directamente: quien llama decide si hay un
+  // id_deposito elegido a mano como respaldo.
+  private async resolverDepositoDeUsuario(idUsuario: number): Promise<number | null> {
     const usuario = await this.prisma.usuarios.findUnique({
       where: { id_usuario: idUsuario },
       include: { sectores: true },
     });
     const planta = usuario ? this.plantaLookup.plantaDeSector(usuario.sectores.nombreSector) : null;
     if (!planta) {
-      throw new BadRequestException(
-        'No se pudo determinar el depósito de logística: tu sector no indica la planta (Baradero/Caseros)',
-      );
+      return null;
     }
 
     const depositos = await this.prisma.deposito.findMany();
     const deposito = depositos.find(
       (d) => d.nombre_deposito.toLowerCase().includes('log') && this.plantaLookup.plantaDeDeposito(d.nombre_deposito) === planta,
     );
-    if (!deposito) {
-      throw new BadRequestException(`No existe un depósito de logística para "${planta}" en el catálogo`);
+    return deposito?.id_deposito ?? null;
+  }
+
+  // Combina la resolución automática con el id_deposito que se haya
+  // elegido a mano (solo se usa como respaldo cuando la automática no
+  // pudo determinar nada), validando que sea un depósito de logística real.
+  private async resolverDepositoParaDespacho(idUsuario: number, idDepositoElegido?: number): Promise<number> {
+    const automatico = await this.resolverDepositoDeUsuario(idUsuario);
+    if (automatico) {
+      return automatico;
     }
-    return { id_deposito: deposito.id_deposito };
+    if (idDepositoElegido) {
+      const deposito = await this.prisma.deposito.findUnique({ where: { id_deposito: idDepositoElegido } });
+      if (!deposito || !deposito.nombre_deposito.toLowerCase().includes('log')) {
+        throw new BadRequestException('Elegí un depósito de logística válido');
+      }
+      return deposito.id_deposito;
+    }
+    throw new BadRequestException(PedidosService.DEPOSITO_NO_RESUELTO);
   }
 
   // Despacha el pedido: descuenta stock del depósito de logística que
@@ -193,7 +215,7 @@ export class PedidosService {
       throw new BadRequestException('El pedido no tiene productos cargados');
     }
 
-    const { id_deposito } = await this.resolverDepositoDeUsuario(idUsuario);
+    const id_deposito = await this.resolverDepositoParaDespacho(idUsuario, dto.id_deposito);
     const [idEstadoDespachado, idEstadoActivo, tipoMovimiento] = await Promise.all([
       this.estadosLookup.getId(ESTADO_DESPACHADO),
       this.estadosLookup.getId(ESTADO_ACTIVO),

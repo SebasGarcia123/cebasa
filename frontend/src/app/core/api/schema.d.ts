@@ -2201,6 +2201,7 @@ export interface components {
         DespacharPedidoDto: {
             /** @enum {number} */
             cantidad_copias: 2 | 3;
+            id_deposito?: number;
         };
         AnularPedidoDto: {
             motivo?: string;
@@ -4100,7 +4101,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };

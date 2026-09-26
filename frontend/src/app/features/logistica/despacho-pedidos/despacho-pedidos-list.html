@@ -162,6 +162,23 @@
         />
       </div>
 
+      @if (necesitaDepositoManual()) {
+        <div class="page__field">
+          <label for="deposito_manual">Depósito de logística</label>
+          <p-select
+            inputId="deposito_manual"
+            [options]="depositosLogistica()"
+            [ngModel]="depositoElegido()"
+            (ngModelChange)="depositoElegido.set($event)"
+            optionLabel="nombre_deposito"
+            optionValue="id_deposito"
+            placeholder="Seleccionar depósito"
+            [appendTo]="'body'"
+          />
+          <small>No se pudo determinar tu depósito automáticamente (tu usuario no pertenece a un sector de una planta). Elegilo para continuar.</small>
+        </div>
+      }
+
       <div class="page__form-actions">
         <p-button
           type="button"
@@ -174,6 +191,7 @@
           type="button"
           label="Confirmar despacho"
           [loading]="despachando()"
+          [disabled]="necesitaDepositoManual() && !depositoElegido()"
           (onClick)="confirmarDespachar()"
         />
       </div>

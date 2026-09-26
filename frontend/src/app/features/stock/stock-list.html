@@ -11,7 +11,20 @@
     />
   </div>
 
-  <p-table [value]="filas()" [loading]="loading()" dataKey="id" [paginator]="true" [rows]="15">
+  <p-iconfield class="stock__buscador">
+    <p-inputicon styleClass="pi pi-search" />
+    <input
+      id="busqueda_stock"
+      type="text"
+      pInputText
+      aria-label="Buscar por código o descripción"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+      placeholder="Buscar por código o descripción"
+    />
+  </p-iconfield>
+
+  <p-table [value]="filasFiltradas()" [loading]="loading()" dataKey="id">
     <ng-template #header>
       <tr>
         <th scope="col">Código</th>

@@ -8,6 +8,9 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TooltipModule } from 'primeng/tooltip';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { StockApiService } from '../../core/api/stock-api.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -35,6 +38,9 @@ interface FilaStock {
     TextareaModule,
     SelectButtonModule,
     TooltipModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule,
   ],
   templateUrl: './stock-list.html',
   styleUrl: './stock-list.scss',
@@ -72,6 +78,18 @@ export class StockList implements OnInit {
           stock_minimo: i.stock_minimo,
         })),
   );
+
+  protected readonly busqueda = signal('');
+
+  protected readonly filasFiltradas = computed(() => {
+    const texto = this.busqueda().trim().toLowerCase();
+    if (!texto) {
+      return this.filas();
+    }
+    return this.filas().filter(
+      (fila) => fila.codigo.toLowerCase().includes(texto) || fila.descripcion.toLowerCase().includes(texto),
+    );
+  });
 
   // "Todos pueden consultar" el stock, pero el ajuste (el lápiz) es
   // responsabilidad de Logística: se oculta client-side si el usuario no

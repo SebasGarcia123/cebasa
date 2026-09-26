@@ -29,6 +29,12 @@ const COPIA_LABELS: Record<number, string[]> = {
 const MARGEN_IZQ = 40;
 const MARGEN_DER = 555;
 const COL_DERECHA_X = 350;
+const PT_POR_CM = 28.3465;
+// Firma y aclaración van, por default, a esta distancia del final de
+// la hoja. Si el detalle de mercadería es largo y eso se pisaría con
+// la tabla, se corren más abajo (o a una hoja nueva) — ver el cálculo
+// de yFirma en renderPagina.
+const FIRMA_DESDE_ABAJO = 4 * PT_POR_CM;
 
 // Las bobinas se venden por peso, no por bolsón: se muestran en Kg en
 // vez de Bolsones (mismo criterio en PedidosList del frontend).
@@ -137,17 +143,19 @@ export class RemitoPdfService {
 
     ejeY = doc.y + 20;
     const colX = { codigo: MARGEN_IZQ, descripcion: 130, cantidad: 400, pallets: 480 };
-    doc.font('Helvetica-Bold').fontSize(10);
-    doc.text('Código', colX.codigo, ejeY, { width: 80 });
-    doc.text('Producto', colX.descripcion, ejeY, { width: 260 });
-    doc.text('Cantidad', colX.cantidad, ejeY, { width: 70, align: 'right' });
-    doc.text('Pallets', colX.pallets, ejeY, { width: 70, align: 'right' });
-    ejeY += 18;
-    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
-    ejeY += 8;
+    const areaUtilY = doc.page.height - MARGEN_IZQ;
+    ejeY = this.renderEncabezadoItems(doc, ejeY, colX);
 
     doc.font('Helvetica').fontSize(10);
     for (const item of pedido.item_pedido) {
+      // Si no entra ni la fila, hoja nueva y se repite el encabezado de
+      // la tabla (remitos con mucha mercadería).
+      if (ejeY + 16 > areaUtilY) {
+        doc.addPage();
+        ejeY = this.renderEncabezadoItems(doc, MARGEN_IZQ, colX);
+        doc.font('Helvetica').fontSize(10);
+      }
+
       const bpp = item.productos.bolsones_por_pallet;
       const pallets = bpp ? Math.round((item.cantidad_bolsones / bpp) * 100) / 100 : null;
       const esBobina = item.productos.tipo_producto?.descripcion === TIPO_PRODUCTO_BOBINA;
@@ -159,13 +167,35 @@ export class RemitoPdfService {
       ejeY += 16;
     }
 
-    ejeY += 40;
-    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
-    ejeY += 30;
+    // Firma y aclaración, una al lado de la otra: por default a 4cm del
+    // pie de la hoja, pero nunca más arriba que el final de la tabla
+    // (si hay mucha mercadería, se corren para abajo en vez de pisarla;
+    // si ni así entran en la hoja actual, pasan a una hoja nueva).
+    const yFirmaPorDefecto = doc.page.height - FIRMA_DESDE_ABAJO;
+    let yFirma = Math.max(ejeY + 30, yFirmaPorDefecto);
+    if (yFirma > areaUtilY) {
+      doc.addPage();
+      yFirma = yFirmaPorDefecto;
+    }
 
-    // Firma y aclaración una al lado de la otra, no una debajo de la otra.
-    doc.fontSize(9);
-    doc.text('Recibí conforme: ___________________________', MARGEN_IZQ, ejeY, { width: 240 });
-    doc.text('Aclaración y DNI: _____________________', COL_DERECHA_X, ejeY, { width: anchoDerecha });
+    doc.moveTo(MARGEN_IZQ, yFirma - 15).lineTo(MARGEN_DER, yFirma - 15).stroke();
+    doc.fontSize(9).font('Helvetica');
+    doc.text('Recibí conforme: ___________________________', MARGEN_IZQ, yFirma, { width: 240 });
+    doc.text('Aclaración y DNI: _____________________', COL_DERECHA_X, yFirma, { width: anchoDerecha });
+  }
+
+  private renderEncabezadoItems(
+    doc: PDFKit.PDFDocument,
+    ejeY: number,
+    colX: { codigo: number; descripcion: number; cantidad: number; pallets: number },
+  ): number {
+    doc.font('Helvetica-Bold').fontSize(10);
+    doc.text('Código', colX.codigo, ejeY, { width: 80 });
+    doc.text('Producto', colX.descripcion, ejeY, { width: 260 });
+    doc.text('Cantidad', colX.cantidad, ejeY, { width: 70, align: 'right' });
+    doc.text('Pallets', colX.pallets, ejeY, { width: 70, align: 'right' });
+    ejeY += 18;
+    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
+    return ejeY + 8;
   }
 }

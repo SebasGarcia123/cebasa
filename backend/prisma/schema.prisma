@@ -8,15 +8,19 @@ datasource db {
 }
 
 model archivo_adjunto {
-  id_archivo_adjunto Int          @id @default(autoincrement())
-  nombre_archivo     String       @db.VarChar(200)
-  ruta_archivo       String       @db.VarChar(500)
-  tipo_archivo       String?      @db.VarChar(50)
-  fecha_carga        DateTime     @db.Date
+  id_archivo_adjunto Int           @id @default(autoincrement())
+  nombre_archivo     String        @db.VarChar(200)
+  ruta_archivo       String        @db.VarChar(500)
+  tipo_archivo       String?       @db.VarChar(50)
+  fecha_carga        DateTime      @db.Date
   compra             compra[]
   cotizacion         cotizacion[]
   productos          productos[]
   pedidos            pedidos?
+  factura            factura?
+  recibo             recibo?
+  nota_credito       nota_credito?
+  nota_debito        nota_debito?
 }
 
 // Ajuste manual de stock (insumo o producto terminado), hecho desde la
@@ -30,6 +34,10 @@ model ajuste_stock {
   id_insumo         Int?
   id_producto       Int?
   id_usuario        Int
+  // Nullable porque los ajustes hechos antes del desglose de stock por
+  // depósito no tienen forma de saber a cuál correspondían (no se
+  // inventa el dato); todo ajuste nuevo lo exige (ver StockService).
+  id_deposito       Int?
   cantidad_anterior Int
   cantidad_nueva    Int
   motivo            String     @db.VarChar(255)
@@ -37,10 +45,12 @@ model ajuste_stock {
   insumo            insumo?    @relation(fields: [id_insumo], references: [id_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_insumo")
   productos         productos? @relation(fields: [id_producto], references: [id_producto], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_producto")
   usuarios          usuarios   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_usuario")
+  deposito          deposito?  @relation(fields: [id_deposito], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_ajuste_stock_deposito")
 
   @@index([id_insumo], map: "fk_ajuste_stock_insumo")
   @@index([id_producto], map: "fk_ajuste_stock_producto")
   @@index([id_usuario], map: "fk_ajuste_stock_usuario")
+  @@index([id_deposito], map: "fk_ajuste_stock_deposito")
 }
 
 model autoelevadores {
@@ -97,9 +107,81 @@ model clientes {
   cuenta_corriente cuenta_corriente?
   pedidos          pedidos[]
   reclamos         reclamos[]
+  factura          factura[]
+  recibo           recibo[]
+  nota_credito     nota_credito[]
+  nota_debito      nota_debito[]
 
   @@index([id_direccion], map: "fk_clientes_direccion")
   @@index([id_estado], map: "fk_clientes_estado")
+}
+
+// Factura: la genera Comercial atada a un pedido Pendiente puntual (el
+// monto se calcula en el momento a partir de los ítems del pedido, no
+// se persiste un detalle propio para no duplicar esa información).
+// Genera deuda (Débito) en la cuenta corriente del cliente.
+model factura {
+  id_factura                  Int                          @id @default(autoincrement())
+  fecha                       DateTime                     @db.Date
+  id_cliente                  Int
+  id_pedido                   Int                          @unique
+  monto                       Decimal                      @db.Decimal(12, 2)
+  id_archivo                  Int?                         @unique
+  clientes                    clientes                     @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_factura_cliente")
+  pedidos                     pedidos                      @relation(fields: [id_pedido], references: [id_pedido], onUpdate: Restrict, map: "fk_factura_pedido")
+  archivo_adjunto             archivo_adjunto?             @relation(fields: [id_archivo], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_factura_archivo")
+  movimiento_cuenta_corriente movimiento_cuenta_corriente?
+
+  @@index([id_cliente], map: "fk_factura_cliente")
+}
+
+// Recibo de pago: registra un cobro a cuenta del cliente. Genera
+// Crédito (reduce la deuda) en la cuenta corriente.
+model recibo {
+  id_recibo                   Int                          @id @default(autoincrement())
+  fecha                       DateTime                     @db.Date
+  id_cliente                  Int
+  monto                       Decimal                      @db.Decimal(12, 2)
+  medio_pago                  String                       @db.VarChar(50)
+  observaciones               String?                      @db.VarChar(255)
+  id_archivo                  Int?                         @unique
+  clientes                    clientes                     @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_recibo_cliente")
+  archivo_adjunto             archivo_adjunto?             @relation(fields: [id_archivo], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_recibo_archivo")
+  movimiento_cuenta_corriente movimiento_cuenta_corriente?
+
+  @@index([id_cliente], map: "fk_recibo_cliente")
+}
+
+// Nota de crédito: reduce la deuda del cliente (Crédito), siempre con
+// un motivo explícito (ej. bonificación, devolución).
+model nota_credito {
+  id_nota_credito             Int                          @id @default(autoincrement())
+  fecha                       DateTime                     @db.Date
+  id_cliente                  Int
+  monto                       Decimal                      @db.Decimal(12, 2)
+  motivo                      String                       @db.VarChar(255)
+  id_archivo                  Int?                         @unique
+  clientes                    clientes                     @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_nota_credito_cliente")
+  archivo_adjunto             archivo_adjunto?             @relation(fields: [id_archivo], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_nota_credito_archivo")
+  movimiento_cuenta_corriente movimiento_cuenta_corriente?
+
+  @@index([id_cliente], map: "fk_nota_credito_cliente")
+}
+
+// Nota de débito: aumenta la deuda del cliente (Débito), siempre con
+// un motivo explícito (ej. gastos administrativos, intereses).
+model nota_debito {
+  id_nota_debito              Int                          @id @default(autoincrement())
+  fecha                       DateTime                     @db.Date
+  id_cliente                  Int
+  monto                       Decimal                      @db.Decimal(12, 2)
+  motivo                      String                       @db.VarChar(255)
+  id_archivo                  Int?                         @unique
+  clientes                    clientes                     @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_nota_debito_cliente")
+  archivo_adjunto             archivo_adjunto?             @relation(fields: [id_archivo], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_nota_debito_archivo")
+  movimiento_cuenta_corriente movimiento_cuenta_corriente?
+
+  @@index([id_cliente], map: "fk_nota_debito_cliente")
 }
 
 model compra {
@@ -179,23 +261,39 @@ model cotizacion_detalle {
 model cuenta_corriente {
   id_cuenta_corriente         Int                           @id @default(autoincrement())
   limite_credito              Decimal                       @default(0.00) @db.Decimal(10, 2)
+  // Saldo vigente, cacheado para no tener que recorrer todo el
+  // historial de movimientos cada vez que hace falta mostrarlo. Se
+  // actualiza atómicamente junto con cada movimiento nuevo (ver
+  // DocumentosService), en la misma transacción.
+  saldo_actual                Decimal                       @default(0.00) @db.Decimal(10, 2)
   id_cliente                  Int                           @unique(map: "id_cliente")
   clientes                    clientes                      @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_cuenta_corriente_cliente")
   movimiento_cuenta_corriente movimiento_cuenta_corriente[]
 }
 
 model deposito {
-  id_deposito                  Int                     @id @default(autoincrement())
-  nombre_deposito              String                  @db.VarChar(100)
+  id_deposito                  Int                       @id @default(autoincrement())
+  nombre_deposito              String                    @db.VarChar(100)
   id_estado                    Int
-  estados                      estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_deposito_estado")
-  movimientos_insumo_destino   movimiento_insumo[]     @relation("movimiento_insumo_id_deposito_destinoTodeposito")
-  movimientos_insumo_origen    movimiento_insumo[]     @relation("movimiento_insumo_id_deposito_origenTodeposito")
-  movimientos_producto_destino movimiento_producto[]   @relation("movimiento_producto_id_deposito_destinoTodeposito")
-  movimientos_producto_origen  movimiento_producto[]   @relation("movimiento_producto_id_deposito_origenTodeposito")
+  // planta/rol son la identidad "de negocio" de este depósito (a qué
+  // planta pertenece, si es de logística o de producción). Vive acá,
+  // no se infiere de nombre_deposito, que es solo el rótulo que ve el
+  // usuario y se puede renombrar sin que se rompa nada (ver
+  // PlantaLookupService).
+  planta                       Planta?
+  rol_deposito                 RolDeposito?
+  estados                      estados                   @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_deposito_estado")
+  movimientos_insumo_destino   movimiento_insumo[]       @relation("movimiento_insumo_id_deposito_destinoTodeposito")
+  movimientos_insumo_origen    movimiento_insumo[]       @relation("movimiento_insumo_id_deposito_origenTodeposito")
+  movimientos_producto_destino movimiento_producto[]     @relation("movimiento_producto_id_deposito_destinoTodeposito")
+  movimientos_producto_origen  movimiento_producto[]     @relation("movimiento_producto_id_deposito_origenTodeposito")
   stock_insumo_deposito        stock_insumo_deposito[]
+  stock_producto_deposito      stock_producto_deposito[]
   lote_prod                    lote_prod[]
   pedidos                      pedidos[]
+  lotes_origen                 lotes[]                   @relation("lotes_deposito_origen")
+  lotes_destino                lotes[]                   @relation("lotes_deposito_destino")
+  ajuste_stock                 ajuste_stock[]
 
   @@index([id_estado], map: "fk_deposito_estado")
 }
@@ -278,6 +376,7 @@ model insumo {
   requerimiento_detalle requerimiento_detalle[]
   stock_insumo_deposito stock_insumo_deposito[]
   ajuste_stock          ajuste_stock[]
+  item_lote             item_lote[]
 
   @@index([id_estado], map: "fk_insumo_estado")
   @@index([id_unidad_medida], map: "fk_insumo_unidad_medida")
@@ -294,17 +393,23 @@ model item_control_autoelevador {
   @@index([id_control_autoelevador], map: "fk_item_control_autoelevador_control")
 }
 
+// Exactamente uno de id_producto/id_insumo va completo (se valida en
+// el service, mismo criterio que ajuste_stock). Antes era texto libre
+// sin vínculo real a inventario; ahora referencia stock real para que
+// LotesService.aprobar pueda trasladarlo entre depósitos.
 model item_lote {
-  id_item_lote       Int           @id @default(autoincrement())
-  descripcion_item   String        @db.VarChar(200)
-  id_unidad_medida   Int
-  cantidad_item_lote Decimal       @db.Decimal(10, 2)
-  id_lote            Int
-  lotes              lotes         @relation(fields: [id_lote], references: [id_lote], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_lote_lote")
-  unidad_medida      unidad_medida @relation(fields: [id_unidad_medida], references: [id_unidad_medida], onUpdate: Restrict, map: "fk_item_lote_unidad_medida")
+  id_item_lote Int        @id @default(autoincrement())
+  id_lote      Int
+  id_producto  Int?
+  id_insumo    Int?
+  cantidad     Decimal    @db.Decimal(10, 2)
+  lotes        lotes      @relation(fields: [id_lote], references: [id_lote], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_lote_lote")
+  productos    productos? @relation(fields: [id_producto], references: [id_producto], onDelete: Restrict, onUpdate: Restrict, map: "fk_item_lote_producto")
+  insumo       insumo?    @relation(fields: [id_insumo], references: [id_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_item_lote_insumo")
 
   @@index([id_lote], map: "fk_item_lote_lote")
-  @@index([id_unidad_medida], map: "fk_item_lote_unidad_medida")
+  @@index([id_producto], map: "fk_item_lote_producto")
+  @@index([id_insumo], map: "fk_item_lote_insumo")
 }
 
 model item_pedido {
@@ -372,6 +477,7 @@ model lineas {
   descripcion_lineas   String                 @db.VarChar(100)
   item_plan_produccion item_plan_produccion[]
   item_prod            item_prod[]
+  pallet               pallet[]
 }
 
 model lote_prod {
@@ -382,6 +488,8 @@ model lote_prod {
   id_deposito     Int
   motivo_rechazo  String?     @db.VarChar(255)
   item_prod       item_prod[]
+  bobina          bobina[]
+  pallet          pallet[]
   estados         estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lote_prod_estado")
   turnos          turnos      @relation(fields: [id_turno], references: [id_turno], onUpdate: Restrict, map: "fk_lote_prod_turno")
   deposito        deposito    @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_lote_prod_deposito")
@@ -391,25 +499,115 @@ model lote_prod {
   @@index([id_deposito], map: "fk_lote_prod_deposito")
 }
 
+model tipo_bobina {
+  id_tipo_bobina Int      @id @default(autoincrement())
+  descripcion    String   @db.VarChar(100)
+  bobina         bobina[]
+}
+
+// Una fila por rollo físico producido (a diferencia de item_prod, que
+// es cantidad agregada): cada bobina se imprime con su propio rótulo +
+// QR con estos mismos datos. Vive dentro de un lote_prod de Producción
+// Baradero (fecha+turno, se va cargando hasta que se cierra), pero el
+// modelo no fuerza la planta — technically cualquier lote_prod podría
+// tener bobinas si hiciera falta más adelante.
+model bobina {
+  id_bobina         Int         @id @default(autoincrement())
+  // Identificador visible/de negocio: prefijo de 2 letras + 4 dígitos
+  // (ej. "AA0001"), lo arma BobinaService.siguienteNumero a partir de
+  // bobina_secuencia — nunca lo escribe el operario a mano.
+  numero_bobina     String      @unique(map: "uq_bobina_numero_bobina") @db.VarChar(6)
+  id_lote           Int
+  id_tipo_bobina    Int
+  id_producto       Int
+  peso              Decimal     @db.Decimal(10, 2)
+  gramaje           Decimal     @db.Decimal(10, 2)
+  id_usuario        Int
+  fecha_elaboracion DateTime    @default(now())
+  lote_prod         lote_prod   @relation(fields: [id_lote], references: [id_lote], onDelete: Cascade, onUpdate: Restrict, map: "fk_bobina_lote")
+  tipo_bobina       tipo_bobina @relation(fields: [id_tipo_bobina], references: [id_tipo_bobina], onUpdate: Restrict, map: "fk_bobina_tipo_bobina")
+  productos         productos   @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_bobina_producto")
+  usuarios          usuarios    @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_bobina_usuario")
+
+  @@index([id_lote], map: "fk_bobina_lote")
+  @@index([id_tipo_bobina], map: "fk_bobina_tipo_bobina")
+  @@index([id_producto], map: "fk_bobina_producto")
+  @@index([id_usuario], map: "fk_bobina_usuario")
+}
+
+// Fila única (id=1) que lleva la numeración global de bobinas: prefijo
+// de 2 letras + contador de 4 dígitos. Al pasar de 9999 se incrementa
+// el prefijo (AA -> AB -> ... -> AZ -> BA...) y el contador vuelve a 1.
+// UPDATE sobre esta fila toma lock de fila en InnoDB, así que sirve
+// para serializar altas concurrentes de bobina sin pisarse.
+model bobina_secuencia {
+  id      Int    @id
+  prefijo String @db.VarChar(2)
+  numero  Int
+}
+
+// Una fila por pallet físico cargado por el operario de Producción
+// Caseros (a diferencia de item_prod, que sigue siendo cantidad
+// agregada cargada a mano por el Jefe). numero_lote es un código de
+// trazabilidad, no un serial único por fila: se arma en
+// PalletService.numeroLote como fecha(DDMMAA)-código_producto, así que
+// se repite en todos los pallets del mismo producto del mismo día a
+// propósito (identifica el lote de fabricación, no la unidad física).
+model pallet {
+  id_pallet         Int       @id @default(autoincrement())
+  numero_lote       String    @db.VarChar(20)
+  id_lote           Int
+  id_producto       Int
+  id_lineas         Int
+  cantidad_bolsones Int
+  id_usuario        Int
+  fecha_elaboracion DateTime  @default(now())
+  lote_prod         lote_prod @relation(fields: [id_lote], references: [id_lote], onDelete: Cascade, onUpdate: Restrict, map: "fk_pallet_lote")
+  productos         productos @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_pallet_producto")
+  lineas            lineas    @relation(fields: [id_lineas], references: [id_lineas], onUpdate: Restrict, map: "fk_pallet_lineas")
+  usuarios          usuarios  @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pallet_usuario")
+
+  @@index([id_lote], map: "fk_pallet_lote")
+  @@index([id_producto], map: "fk_pallet_producto")
+  @@index([id_lineas], map: "fk_pallet_lineas")
+  @@index([id_usuario], map: "fk_pallet_usuario")
+}
+
+// Lote interplanta: traslado de productos/insumos entre depósitos de
+// logística de distinta planta (Baradero <-> Caseros). Editable
+// mientras está "Pendiente"; al despachar pasa a "Pendiente de
+// aprobación" y la revisa el Jefe de Logística de la planta DESTINO
+// (mismo patrón que lote_prod, pero acá "la misma planta" se valida
+// contra el depósito destino, no contra uno solo). id_deposito_origen
+// e id_deposito_destino quedan opcionales a nivel de columna porque el
+// modelo es compartido con otros tipo_lote que no los necesiten, pero
+// LotesService los exige (y distintos entre sí) para tipo "Interplanta".
 model lotes {
-  id_lote       Int         @id @default(autoincrement())
-  fecha_lote    DateTime    @db.Date
-  id_chofer     Int
-  id_camion     Int
-  id_tipo_lote  Int
-  id_estado     Int
-  observaciones String?     @db.VarChar(255)
-  motivo        String?     @db.VarChar(255)
-  item_lote     item_lote[]
-  camion        camion      @relation(fields: [id_camion], references: [id_camion], onUpdate: Restrict, map: "fk_lotes_camion")
-  chofer        chofer      @relation(fields: [id_chofer], references: [id_chofer], onUpdate: Restrict, map: "fk_lotes_chofer")
-  estados       estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lotes_estado")
-  tipo_lote     tipo_lote   @relation(fields: [id_tipo_lote], references: [id_tipo_lote], onUpdate: Restrict, map: "fk_lotes_tipo_lote")
+  id_lote             Int         @id @default(autoincrement())
+  fecha_lote          DateTime    @db.Date
+  id_chofer           Int
+  id_camion           Int
+  id_tipo_lote        Int
+  id_estado           Int
+  id_deposito_origen  Int?
+  id_deposito_destino Int?
+  fecha_despacho      DateTime?   @db.Date
+  observaciones       String?     @db.VarChar(255)
+  motivo_rechazo      String?     @db.VarChar(255)
+  item_lote           item_lote[]
+  camion              camion      @relation(fields: [id_camion], references: [id_camion], onUpdate: Restrict, map: "fk_lotes_camion")
+  chofer              chofer      @relation(fields: [id_chofer], references: [id_chofer], onUpdate: Restrict, map: "fk_lotes_chofer")
+  estados             estados     @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_lotes_estado")
+  tipo_lote           tipo_lote   @relation(fields: [id_tipo_lote], references: [id_tipo_lote], onUpdate: Restrict, map: "fk_lotes_tipo_lote")
+  deposito_origen     deposito?   @relation("lotes_deposito_origen", fields: [id_deposito_origen], references: [id_deposito], onUpdate: Restrict, map: "fk_lotes_deposito_origen")
+  deposito_destino    deposito?   @relation("lotes_deposito_destino", fields: [id_deposito_destino], references: [id_deposito], onUpdate: Restrict, map: "fk_lotes_deposito_destino")
 
   @@index([id_camion], map: "fk_lotes_camion")
   @@index([id_chofer], map: "fk_lotes_chofer")
   @@index([id_estado], map: "fk_lotes_estado")
   @@index([id_tipo_lote], map: "fk_lotes_tipo_lote")
+  @@index([id_deposito_origen], map: "fk_lotes_deposito_origen")
+  @@index([id_deposito_destino], map: "fk_lotes_deposito_destino")
 }
 
 model movimiento_cuenta_corriente {
@@ -419,8 +617,20 @@ model movimiento_cuenta_corriente {
   id_tipo_documento     Int
   saldo_resultante      Decimal          @db.Decimal(10, 2)
   id_cuenta_corriente   Int
+  // Exactamente uno de estos cuatro va completo, según el tipo de
+  // documento que generó el movimiento (ver DocumentosService). No hay
+  // constraint de base para "exactamente uno de cuatro" en MySQL, se
+  // valida en el service, igual que ajuste_stock con insumo/producto.
+  id_factura            Int?             @unique
+  id_recibo             Int?             @unique
+  id_nota_credito       Int?             @unique
+  id_nota_debito        Int?             @unique
   cuenta_corriente      cuenta_corriente @relation(fields: [id_cuenta_corriente], references: [id_cuenta_corriente], onUpdate: Restrict, map: "fk_movimiento_cta_cte_cuenta")
   tipo_documento        tipo_documento   @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onUpdate: Restrict, map: "fk_movimiento_cta_cte_tipo_doc")
+  factura               factura?         @relation(fields: [id_factura], references: [id_factura], onDelete: Restrict, onUpdate: Restrict, map: "fk_movimiento_cta_cte_factura")
+  recibo                recibo?          @relation(fields: [id_recibo], references: [id_recibo], onDelete: Restrict, onUpdate: Restrict, map: "fk_movimiento_cta_cte_recibo")
+  nota_credito          nota_credito?    @relation(fields: [id_nota_credito], references: [id_nota_credito], onDelete: Restrict, onUpdate: Restrict, map: "fk_movimiento_cta_cte_nota_credito")
+  nota_debito           nota_debito?     @relation(fields: [id_nota_debito], references: [id_nota_debito], onDelete: Restrict, onUpdate: Restrict, map: "fk_movimiento_cta_cte_nota_debito")
 
   @@index([id_cuenta_corriente], map: "fk_movimiento_cta_cte_cuenta")
   @@index([id_tipo_documento], map: "fk_movimiento_cta_cte_tipo_doc")
@@ -499,30 +709,39 @@ model pedido_insumos {
 }
 
 model pedidos {
-  id_pedido          Int              @id @default(autoincrement())
-  id_cliente         Int
-  fecha_carga        DateTime         @db.Date
-  fecha_prometido    DateTime?        @db.Date
-  id_estado          Int
-  id_usuario         Int
+  id_pedido                Int              @id @default(autoincrement())
+  id_cliente               Int
+  fecha_carga              DateTime         @db.Date
+  fecha_prometido          DateTime?        @db.Date
+  id_estado                Int
+  id_usuario               Int
   // Se completan recién al despachar (ver PedidosService.despachar):
   // depósito de logística de donde salió la mercadería (según el sector
   // del usuario que despacha), cantidad de copias del remito elegida en
   // ese momento, fecha real de despacho, y el PDF generado.
-  id_deposito        Int?
-  cantidad_copias    Int?
-  fecha_despacho     DateTime?        @db.Date
-  id_archivo_remito  Int?             @unique
+  id_deposito              Int?
+  cantidad_copias          Int?
+  fecha_despacho           DateTime?        @db.Date
+  id_archivo_remito        Int?             @unique
   // Motivo al anular desde "Cargado", o número de nota de débito al
   // anular desde "Facturado" (ver PedidosService.anular).
-  motivo_anulacion   String?          @db.VarChar(255)
-  nro_nota_debito    String?          @db.VarChar(100)
-  item_pedido        item_pedido[]
-  clientes           clientes         @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_pedidos_cliente")
-  estados            estados          @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedidos_estado")
-  usuarios           usuarios         @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedidos_usuario")
-  deposito           deposito?        @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_pedidos_deposito")
-  archivo_remito     archivo_adjunto? @relation(fields: [id_archivo_remito], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_pedidos_archivo_remito")
+  motivo_anulacion         String?          @db.VarChar(255)
+  nro_nota_debito          String?          @db.VarChar(100)
+  // Planificador de Entregas (Caseros): fecha interna que el Jefe de
+  // Logística/Comercial le asigna al pedido para organizar la salida
+  // — distinta de fecha_prometido (lo que se le dijo al cliente) y de
+  // fecha_despacho (cuándo salió realmente). orden_planificador es el
+  // desempate manual (arrastrar columna) dentro de un mismo
+  // fecha_prometido; ver PlanificadorEntregasService.
+  fecha_salida_planificada DateTime?        @db.Date
+  orden_planificador       Int?
+  item_pedido              item_pedido[]
+  clientes                 clientes         @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_pedidos_cliente")
+  estados                  estados          @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedidos_estado")
+  usuarios                 usuarios         @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedidos_usuario")
+  deposito                 deposito?        @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_pedidos_deposito")
+  archivo_remito           archivo_adjunto? @relation(fields: [id_archivo_remito], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_pedidos_archivo_remito")
+  factura                  factura?
 
   @@index([id_cliente], map: "fk_pedidos_cliente")
   @@index([id_estado], map: "fk_pedidos_estado")
@@ -536,12 +755,20 @@ model permisos {
   rol_permisos   rol_permisos[]
 }
 
+// Cabecera de la semana (fecha_inicio_semana siempre un lunes, ver
+// PlanProduccionService). Se crea sola la primera vez que se carga
+// algo en esa semana (item o día no laborable) — no hay un alta manual
+// de "plan" como tal, ver PlanProduccionService.obtenerOCrearPlan.
+// id_estado queda del diseño original (siempre "Activo" en la
+// práctica); el concepto real de "anular" ahora es por día, ver
+// dia_no_laborable.
 model plan_produccion {
   id_plan_produccion   Int                    @id @default(autoincrement())
   id_usuario           Int
   fecha_inicio_semana  DateTime               @db.Date
   id_estado            Int
   item_plan_produccion item_plan_produccion[]
+  dia_no_laborable     dia_no_laborable[]
   estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_plan_produccion_estado")
   usuarios             usuarios               @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_plan_produccion_usuario")
 
@@ -549,31 +776,49 @@ model plan_produccion {
   @@index([id_usuario], map: "fk_plan_produccion_usuario")
 }
 
+// Un día (lunes a viernes) marcado como no laborable (feriado, día de
+// limpieza, etc.) dentro de la semana de un plan: ese día no admite
+// item_plan_produccion (se valida en el service, no acá). fecha es
+// única globalmente — un día no puede estar marcado dos veces.
+model dia_no_laborable {
+  id_dia_no_laborable Int             @id @default(autoincrement())
+  id_plan_produccion  Int
+  fecha               DateTime        @unique(map: "uq_dia_no_laborable_fecha") @db.Date
+  motivo              String          @db.VarChar(255)
+  plan_produccion     plan_produccion @relation(fields: [id_plan_produccion], references: [id_plan_produccion], onDelete: Cascade, onUpdate: Restrict, map: "fk_dia_no_laborable_plan")
+
+  @@index([id_plan_produccion], map: "fk_dia_no_laborable_plan")
+}
+
 model productos {
-  id_producto          Int                    @id @default(autoincrement())
-  codigo_producto      String                 @db.VarChar(50)
-  descripcion_producto String                 @db.VarChar(200)
-  bolsones_por_pallet  Int?
-  peso_por_bolson      Decimal?               @db.Decimal(10, 2)
-  precio_venta         Decimal                @db.Decimal(10, 2)
-  stock_actual         Int                    @default(0)
-  stock_minimo         Int                    @default(0)
-  id_estado            Int
-  id_archivo_adjunto   Int?
-  id_tipo_producto     Int?
-  item_pedido          item_pedido[]
-  item_plan_produccion item_plan_produccion[]
-  item_prod            item_prod[]
-  movimiento_producto  movimiento_producto[]
-  estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_productos_estado")
+  id_producto             Int                       @id @default(autoincrement())
+  codigo_producto         String                    @db.VarChar(50)
+  descripcion_producto    String                    @db.VarChar(200)
+  bolsones_por_pallet     Int?
+  peso_por_bolson         Decimal?                  @db.Decimal(10, 2)
+  precio_venta            Decimal                   @db.Decimal(10, 2)
+  stock_actual            Int                       @default(0)
+  stock_minimo            Int                       @default(0)
+  id_estado               Int
+  id_archivo_adjunto      Int?
+  id_tipo_producto        Int?
+  item_pedido             item_pedido[]
+  item_plan_produccion    item_plan_produccion[]
+  item_prod               item_prod[]
+  movimiento_producto     movimiento_producto[]
+  estados                 estados                   @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_productos_estado")
   // A diferencia de compra/cotizacion (Restrict), acá es SetNull: la foto
   // de un producto se reemplaza/borra sueltamente desde el formulario
   // (sube/borra el archivo_adjunto antes de guardar el producto), así que
   // el borrado del archivo no puede quedar bloqueado por esta FK.
-  archivo_adjunto      archivo_adjunto?       @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_productos_archivo_adjunto")
-  tipo_producto        tipo_producto?         @relation(fields: [id_tipo_producto], references: [id_tipo_producto], onUpdate: Restrict, map: "fk_productos_tipo_producto")
-  receta               receta[]
-  ajuste_stock         ajuste_stock[]
+  archivo_adjunto         archivo_adjunto?          @relation(fields: [id_archivo_adjunto], references: [id_archivo_adjunto], onDelete: SetNull, onUpdate: Restrict, map: "fk_productos_archivo_adjunto")
+  tipo_producto           tipo_producto?            @relation(fields: [id_tipo_producto], references: [id_tipo_producto], onUpdate: Restrict, map: "fk_productos_tipo_producto")
+  receta                  receta[]
+  ajuste_stock            ajuste_stock[]
+  item_lote               item_lote[]
+  stock_producto_deposito stock_producto_deposito[]
+  bobina                  bobina[]
+  pallet                  pallet[]
 
   @@index([id_estado], map: "fk_productos_estado")
   @@index([id_archivo_adjunto], map: "fk_productos_archivo_adjunto")
@@ -703,8 +948,30 @@ model roles {
 model sectores {
   id_sector    Int        @id @default(autoincrement())
   nombreSector String     @db.VarChar(100)
+  // A qué planta pertenece este sector (null para los que no son de
+  // ninguna planta en particular, ej. Administracion/Comercial). No se
+  // infiere de nombreSector — ver PlantaLookupService.
+  planta       Planta?
   usuarios     usuarios[]
   reclamos     reclamos[]
+}
+
+// Únicas dos plantas de la empresa. Es un enum (no una tabla) a
+// propósito: código como LoteProdService.assertMismaPlanta compara
+// contra estos valores, así que tienen que ser estables — a diferencia
+// de nombreSector/nombre_deposito, que son solo el rótulo visible y se
+// pueden renombrar libremente sin romper nada.
+enum Planta {
+  CASEROS
+  BARADERO
+}
+
+// Clasifica un depósito como de logística (mercadería terminada, lista
+// para despachar) o de producción (planta, insumos/consumo). Mismo
+// criterio que Planta: enum estable, no un nombre parseado.
+enum RolDeposito {
+  LOGISTICA
+  PRODUCCION
 }
 
 model service_autoelevador {
@@ -727,6 +994,22 @@ model stock_insumo_deposito {
 
   @@unique([id_insumo, id_deposito], map: "uq_insumo_deposito")
   @@index([id_deposito], map: "fk_stock_insumo_dep_deposito")
+}
+
+// Desglose de stock de productos terminados por depósito (antes solo
+// existía para insumos). productos.stock_actual sigue siendo el total
+// cacheado; esta tabla es la que hace falta para saber cuánto hay en
+// cada planta, y la que LotesService.aprobar mueve en un interplanta.
+model stock_producto_deposito {
+  id_stock_producto_deposito Int       @id @default(autoincrement())
+  id_producto                Int
+  id_deposito                Int
+  cantidad                   Int       @default(0)
+  deposito                   deposito  @relation(fields: [id_deposito], references: [id_deposito], onUpdate: Restrict, map: "fk_stock_producto_dep_deposito")
+  productos                  productos @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_stock_producto_dep_producto")
+
+  @@unique([id_producto, id_deposito], map: "uq_producto_deposito")
+  @@index([id_deposito], map: "fk_stock_producto_dep_deposito")
 }
 
 model tipo_documento {
@@ -796,10 +1079,9 @@ model turnos {
 }
 
 model unidad_medida {
-  id_unidad_medida     Int         @id @default(autoincrement())
-  nombre_unidad_medida String      @db.VarChar(50)
+  id_unidad_medida     Int      @id @default(autoincrement())
+  nombre_unidad_medida String   @db.VarChar(50)
   insumo               insumo[]
-  item_lote            item_lote[]
 }
 
 model usuario_roles {
@@ -828,6 +1110,8 @@ model usuarios {
   requerimiento        requerimiento[]
   usuario_roles        usuario_roles[]
   ajuste_stock         ajuste_stock[]
+  bobina               bobina[]
+  pallet               pallet[]
   estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_usuarios_estado")
   sectores             sectores               @relation(fields: [id_sector], references: [id_sector], onUpdate: Restrict, map: "fk_usuarios_sector")
 

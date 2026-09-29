@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TableModule } from 'primeng/table';
@@ -9,7 +9,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
-import { DatePickerModule } from 'primeng/datepicker';
+import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ClientesApiService } from '../../../core/api/clientes-api.service';
@@ -17,20 +17,32 @@ import { DireccionesApiService } from '../../../core/api/direcciones-api.service
 import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { CuentaCorrienteApiService } from '../../../core/api/cuenta-corriente-api.service';
 import { MovimientosCtaCteApiService } from '../../../core/api/movimientos-cta-cte-api.service';
-import { TipoDocumentoApiService } from '../../../core/api/tipo-documento-api.service';
+import { DocumentosApiService } from '../../../core/api/documentos-api.service';
 import { Cliente } from '../../../core/models/cliente.model';
 import { Estado } from '../../../core/models/estado.model';
 import { CuentaCorriente } from '../../../core/models/cuenta-corriente.model';
 import { MovimientoCuentaCorriente } from '../../../core/models/movimiento-cuenta-corriente.model';
-import { TipoDocumento } from '../../../core/models/tipo-documento.model';
+import { Pedido } from '../../../core/models/pedido.model';
 
 const ESTADOS_CLIENTE = new Set(['Activo', 'Cancelado']);
+
+type TipoDocumentoGenerable = 'factura' | 'recibo' | 'nota_credito' | 'nota_debito';
+
+const TIPOS_DOCUMENTO_GENERABLE: { label: string; value: TipoDocumentoGenerable }[] = [
+  { label: 'Factura', value: 'factura' },
+  { label: 'Recibo de pago', value: 'recibo' },
+  { label: 'Nota de Crédito', value: 'nota_credito' },
+  { label: 'Nota de Débito', value: 'nota_debito' },
+];
+
+const MEDIOS_PAGO = ['Efectivo', 'Transferencia', 'Cheque', 'Tarjeta'];
 
 @Component({
   selector: 'app-clientes-list',
   imports: [
     DatePipe,
     DecimalPipe,
+    FormsModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -38,7 +50,7 @@ const ESTADOS_CLIENTE = new Set(['Activo', 'Cancelado']);
     InputTextModule,
     InputNumberModule,
     SelectModule,
-    DatePickerModule,
+    TextareaModule,
     TooltipModule,
   ],
   templateUrl: './clientes-list.html',
@@ -50,7 +62,7 @@ export class ClientesList implements OnInit {
   private readonly estadosApi = inject(EstadosApiService);
   private readonly cuentaCorrienteApi = inject(CuentaCorrienteApiService);
   private readonly movimientosApi = inject(MovimientosCtaCteApiService);
-  private readonly tipoDocumentoApi = inject(TipoDocumentoApiService);
+  private readonly documentosApi = inject(DocumentosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
@@ -238,18 +250,24 @@ export class ClientesList implements OnInit {
   protected readonly ctaCteSaving = signal(false);
   protected readonly cuentaCorriente = signal<CuentaCorriente | null>(null);
   protected readonly movimientos = signal<MovimientoCuentaCorriente[]>([]);
-  protected readonly tiposDocumento = signal<TipoDocumento[]>([]);
   private clienteActivo: Cliente | null = null;
 
   protected readonly limiteForm = this.fb.nonNullable.group({
     limite_credito: [0, Validators.required],
   });
 
-  protected readonly movimientoForm = this.fb.nonNullable.group({
-    fecha: [null as Date | null, Validators.required],
-    monto: [null as number | null, Validators.required],
-    id_tipo_documento: [null as number | null, Validators.required],
-    saldo_resultante: [null as number | null, Validators.required],
+  protected readonly tiposDocumentoGenerable = TIPOS_DOCUMENTO_GENERABLE;
+  protected readonly mediosPago = MEDIOS_PAGO;
+  protected readonly tipoDocumentoSeleccionado = signal<TipoDocumentoGenerable | null>(null);
+  protected readonly pedidosFacturables = signal<Pedido[]>([]);
+  protected readonly documentoSaving = signal(false);
+
+  protected readonly documentoForm = this.fb.nonNullable.group({
+    id_pedido: [null as number | null],
+    monto: [null as number | null],
+    medio_pago: [''],
+    observaciones: [''],
+    motivo: [''],
   });
 
   openCuentaCorriente(cliente: Cliente): void {
@@ -258,8 +276,9 @@ export class ClientesList implements OnInit {
     this.ctaCteLoading.set(true);
     this.cuentaCorriente.set(null);
     this.movimientos.set([]);
-
-    this.tipoDocumentoApi.list().subscribe({ next: (data) => this.tiposDocumento.set(data) });
+    this.tipoDocumentoSeleccionado.set(null);
+    this.pedidosFacturables.set([]);
+    this.documentoForm.reset({ id_pedido: null, monto: null, medio_pago: '', observaciones: '', motivo: '' });
 
     this.cuentaCorrienteApi.getByCliente(cliente.id_cliente).subscribe({
       next: (cuenta) => {
@@ -333,30 +352,109 @@ export class ClientesList implements OnInit {
       });
   }
 
-  agregarMovimiento(): void {
-    if (!this.clienteActivo || this.movimientoForm.invalid) {
-      return;
-    }
-    const raw = this.movimientoForm.getRawValue();
-    this.ctaCteSaving.set(true);
-    this.movimientosApi
-      .create(this.clienteActivo.id_cliente, {
-        fecha: raw.fecha!.toISOString().slice(0, 10),
-        monto: raw.monto!,
-        id_tipo_documento: raw.id_tipo_documento!,
-        saldo_resultante: raw.saldo_resultante!,
-      })
-      .subscribe({
-        next: () => {
-          this.ctaCteSaving.set(false);
-          this.movimientoForm.reset();
-          this.loadMovimientos(this.clienteActivo!.id_cliente);
-        },
+  // Al elegir el tipo, cada uno pide cosas distintas (ver template): se
+  // limpian los campos que no aplican para no arrastrar valores de un
+  // tipo a otro, y si es Factura se traen los pedidos Pendientes del
+  // cliente para elegir a cuál corresponde.
+  seleccionarTipoDocumento(tipo: TipoDocumentoGenerable): void {
+    this.tipoDocumentoSeleccionado.set(tipo);
+    this.documentoForm.reset({ id_pedido: null, monto: null, medio_pago: '', observaciones: '', motivo: '' });
+    if (tipo === 'factura' && this.clienteActivo) {
+      this.documentosApi.pedidosFacturables(this.clienteActivo.id_cliente).subscribe({
+        next: (pedidos) => this.pedidosFacturables.set(pedidos),
         error: () => {
-          this.ctaCteSaving.set(false);
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo agregar el movimiento' });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los pedidos pendientes' });
         },
       });
+    }
+  }
+
+  protected documentoValido(): boolean {
+    const raw = this.documentoForm.getRawValue();
+    switch (this.tipoDocumentoSeleccionado()) {
+      case 'factura':
+        return raw.id_pedido != null;
+      case 'recibo':
+        return !!raw.monto && raw.monto > 0 && !!raw.medio_pago;
+      case 'nota_credito':
+      case 'nota_debito':
+        return !!raw.monto && raw.monto > 0 && !!raw.motivo;
+      default:
+        return false;
+    }
+  }
+
+  generarDocumento(): void {
+    const tipo = this.tipoDocumentoSeleccionado();
+    if (!this.clienteActivo || !tipo || !this.documentoValido() || this.documentoSaving()) {
+      return;
+    }
+    const idCliente = this.clienteActivo.id_cliente;
+    const raw = this.documentoForm.getRawValue();
+
+    this.documentoSaving.set(true);
+    const request$ =
+      tipo === 'factura'
+        ? this.documentosApi.generarFactura(idCliente, { id_pedido: raw.id_pedido! })
+        : tipo === 'recibo'
+          ? this.documentosApi.generarRecibo(idCliente, {
+              monto: raw.monto!,
+              medio_pago: raw.medio_pago!,
+              ...(raw.observaciones ? { observaciones: raw.observaciones } : {}),
+            })
+          : tipo === 'nota_credito'
+            ? this.documentosApi.generarNotaCredito(idCliente, { monto: raw.monto!, motivo: raw.motivo! })
+            : this.documentosApi.generarNotaDebito(idCliente, { monto: raw.monto!, motivo: raw.motivo! });
+
+    request$.subscribe({
+      next: (pdf) => {
+        this.documentoSaving.set(false);
+        window.open(URL.createObjectURL(pdf), '_blank');
+        this.messageService.add({ severity: 'success', summary: 'Generado', detail: 'El documento se generó correctamente' });
+        this.seleccionarTipoDocumento(tipo);
+        this.loadMovimientos(idCliente);
+        this.cuentaCorrienteApi.getByCliente(idCliente).subscribe({ next: (cuenta) => this.cuentaCorriente.set(cuenta) });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.documentoSaving.set(false);
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo generar el documento';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
+      },
+    });
+  }
+
+  // Solo los movimientos generados a mano (sin documento formal
+  // asociado, de antes de este flujo) se pueden borrar: los que vienen
+  // de un documento son inmutables, borrarlos desincronizaría el saldo
+  // cacheado de la cuenta.
+  protected esMovimientoManual(mov: MovimientoCuentaCorriente): boolean {
+    return !mov.id_factura && !mov.id_recibo && !mov.id_nota_credito && !mov.id_nota_debito;
+  }
+
+  protected puedeVerDocumento(mov: MovimientoCuentaCorriente): boolean {
+    return !this.esMovimientoManual(mov);
+  }
+
+  verDocumentoDeMovimiento(mov: MovimientoCuentaCorriente): void {
+    if (!this.clienteActivo) {
+      return;
+    }
+    const idCliente = this.clienteActivo.id_cliente;
+    const request$ = mov.id_factura
+      ? this.documentosApi.pdfFactura(idCliente, mov.id_factura)
+      : mov.id_recibo
+        ? this.documentosApi.pdfRecibo(idCliente, mov.id_recibo)
+        : mov.id_nota_credito
+          ? this.documentosApi.pdfNotaCredito(idCliente, mov.id_nota_credito)
+          : mov.id_nota_debito
+            ? this.documentosApi.pdfNotaDebito(idCliente, mov.id_nota_debito)
+            : null;
+    request$?.subscribe({
+      next: (pdf) => window.open(URL.createObjectURL(pdf), '_blank'),
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo abrir el documento' });
+      },
+    });
   }
 
   eliminarMovimiento(movimiento: MovimientoCuentaCorriente): void {

@@ -4,12 +4,18 @@
   margin-bottom: 1.5rem;
 }
 
+.clientes__saldo-actual {
+  font-family: var(--font-family-body);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
 .clientes__movimientos-title {
   font-size: 1rem;
   margin-bottom: 0.75rem;
 }
 
-.clientes__movimiento-form {
+.clientes__documento-form {
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--color-border);

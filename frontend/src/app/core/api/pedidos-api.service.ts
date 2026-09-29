@@ -17,10 +17,6 @@ export class PedidosApiService extends CrudApi<Pedido, CreatePedidoDto, UpdatePe
   protected override readonly resourcePath = 'pedidos';
   private readonly actionsBaseUrl = `${environment.apiUrl}/pedidos`;
 
-  facturar(id: number): Observable<Pedido> {
-    return this.http.post<Pedido>(`${this.actionsBaseUrl}/${id}/facturar`, {});
-  }
-
   anular(id: number, dto: AnularPedidoDto): Observable<Pedido> {
     return this.http.post<Pedido>(`${this.actionsBaseUrl}/${id}/anular`, dto);
   }

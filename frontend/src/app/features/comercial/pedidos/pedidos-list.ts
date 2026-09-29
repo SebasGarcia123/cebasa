@@ -85,8 +85,11 @@ export class PedidosList implements OnInit {
     this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
   );
 
-  // Facturar/anular es de Logística, no de quien carga el pedido: se
-  // oculta client-side sin el permiso, la barrera real está en el backend.
+  // Anular (desde Cargado o Facturado) es de Logística, no de quien
+  // carga el pedido: se oculta client-side sin el permiso, la barrera
+  // real está en el backend. Facturar un pedido Pendiente ahora se
+  // hace desde la consulta del cliente (Clientes > Cuenta corriente >
+  // Generar documento), no desde esta pantalla.
   protected readonly puedeFacturar = computed(() => {
     const user = this.authService.currentUser();
     return !!user && (user.es_administrador || user.permisos.includes('comercial.pedidos_facturar'));
@@ -352,27 +355,6 @@ export class PedidosList implements OnInit {
       next: (pdf) => window.open(URL.createObjectURL(pdf), '_blank'),
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo abrir el remito' });
-      },
-    });
-  }
-
-  confirmFacturar(pedido: Pedido): void {
-    this.confirmationService.confirm({
-      header: 'Confirmar facturación',
-      message: `¿Desea facturar el pedido #${pedido.id_pedido}? Esta acción enviará la factura al cliente.`,
-      icon: 'pi pi-check-circle',
-      acceptButtonProps: { label: 'Facturar' },
-      rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },
-      accept: () => {
-        this.api.facturar(pedido.id_pedido).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Facturado', detail: 'El pedido fue facturado' });
-            this.load();
-          },
-          error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo facturar el pedido' });
-          },
-        });
       },
     });
   }

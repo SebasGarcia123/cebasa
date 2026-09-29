@@ -5,6 +5,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
 import { PlantaLookupService } from '../../../prisma/planta-lookup.service.js';
+import { RolDeposito } from '../../../generated/prisma/client.js';
 import { UPLOADS_DIR } from '../../compras/archivo-adjunto/archivo-adjunto.storage.js';
 import { RemitoPdfService } from './remito-pdf.service.js';
 import { CreatePedidoDto } from './dto/create-pedido.dto.js';
@@ -109,20 +110,6 @@ export class PedidosService {
     return this.prisma.pedidos.delete({ where: { id_pedido: id } });
   }
 
-  // Logística (o quien tenga el permiso) marca el pedido como
-  // facturado: recién ahí se puede despachar.
-  async facturar(id: number) {
-    const pedido = await this.findOne(id);
-    if (pedido.estados.nombreEstado !== ESTADO_PENDIENTE) {
-      throw new BadRequestException('Solo se puede facturar un pedido Pendiente');
-    }
-    const idEstadoFacturado = await this.estadosLookup.getId(ESTADO_FACTURADO);
-    return this.prisma.pedidos.update({
-      where: { id_pedido: id },
-      data: { id_estado: idEstadoFacturado },
-    });
-  }
-
   // Anular: motivo si estaba Pendiente, nro de nota de débito si ya
   // estaba Facturado (la nota de débito en sí se emite por fuera del
   // sistema por ahora, acá solo queda la referencia).
@@ -160,27 +147,23 @@ export class PedidosService {
     'No se pudo determinar el depósito de logística automáticamente. Elegilo manualmente.';
 
   // Resuelve el depósito de logística del usuario que despacha, según
-  // el sector al que pertenece ("Logística Baradero"/"Logística
-  // Caseros", o sus variantes "Operario de..."): busca en el nombre
-  // del sector "Baradero" o "Caseros" y lo cruza con el depósito de
-  // logística de esa misma localidad. Devuelve null si no se puede
-  // resolver (ej. un administrador sin sector real asignado), en vez
-  // de tirar error directamente: quien llama decide si hay un
-  // id_deposito elegido a mano como respaldo.
+  // la planta de su sector (columna sectores.planta, ver
+  // PlantaLookupService — no se infiere del nombre del sector), cruzada
+  // con el depósito de esa misma planta marcado como de Logística.
+  // Devuelve null si no se puede resolver (ej. un administrador sin
+  // sector real asignado), en vez de tirar error directamente: quien
+  // llama decide si hay un id_deposito elegido a mano como respaldo.
   private async resolverDepositoDeUsuario(idUsuario: number): Promise<number | null> {
     const usuario = await this.prisma.usuarios.findUnique({
       where: { id_usuario: idUsuario },
       include: { sectores: true },
     });
-    const planta = usuario ? this.plantaLookup.plantaDeSector(usuario.sectores.nombreSector) : null;
+    const planta = usuario ? this.plantaLookup.plantaDeSector(usuario.sectores) : null;
     if (!planta) {
       return null;
     }
 
-    const depositos = await this.prisma.deposito.findMany();
-    const deposito = depositos.find(
-      (d) => d.nombre_deposito.toLowerCase().includes('log') && this.plantaLookup.plantaDeDeposito(d.nombre_deposito) === planta,
-    );
+    const deposito = await this.prisma.deposito.findFirst({ where: { planta, rol_deposito: RolDeposito.LOGISTICA } });
     return deposito?.id_deposito ?? null;
   }
 
@@ -194,7 +177,7 @@ export class PedidosService {
     }
     if (idDepositoElegido) {
       const deposito = await this.prisma.deposito.findUnique({ where: { id_deposito: idDepositoElegido } });
-      if (!deposito || !deposito.nombre_deposito.toLowerCase().includes('log')) {
+      if (!deposito || deposito.rol_deposito !== RolDeposito.LOGISTICA) {
         throw new BadRequestException('Elegí un depósito de logística válido');
       }
       return deposito.id_deposito;
@@ -231,6 +214,13 @@ export class PedidosService {
         this.prisma.productos.update({
           where: { id_producto: item.id_producto },
           data: { stock_actual: { decrement: item.cantidad_bolsones } },
+        }),
+      ),
+      ...pedido.item_pedido.map((item) =>
+        this.prisma.stock_producto_deposito.upsert({
+          where: { id_producto_id_deposito: { id_producto: item.id_producto, id_deposito } },
+          create: { id_producto: item.id_producto, id_deposito, cantidad: -item.cantidad_bolsones },
+          update: { cantidad: { decrement: item.cantidad_bolsones } },
         }),
       ),
       ...pedido.item_pedido.map((item) =>

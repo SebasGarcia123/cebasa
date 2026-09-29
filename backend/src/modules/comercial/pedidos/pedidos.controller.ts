@@ -55,15 +55,13 @@ export class PedidosController {
     return this.pedidosService.remove(id);
   }
 
-  // Facturar/despachar/anular-desde-facturado son responsabilidad de
-  // Logística, no de quien carga el pedido: permiso propio en vez de
+  // Despachar/anular-desde-facturado son responsabilidad de Logística,
+  // no de quien carga el pedido: permiso propio en vez de
   // comercial.editar (mismo criterio que produccion.lotes_aprobar).
-  @RequirePermissions('comercial.pedidos_facturar')
-  @Post(':id/facturar')
-  facturar(@Param('id', ParseIntPipe) id: number) {
-    return this.pedidosService.facturar(id);
-  }
-
+  // Facturar dejó de ser una transición suelta de estado: ahora la
+  // genera Comercial vía POST /clientes/:idCliente/documentos/factura
+  // (ver DocumentosService.generarFactura), que además crea la Factura
+  // y el movimiento en la cuenta corriente en la misma transacción.
   @RequirePermissions('comercial.pedidos_despachar')
   @Post(':id/despachar')
   async despachar(

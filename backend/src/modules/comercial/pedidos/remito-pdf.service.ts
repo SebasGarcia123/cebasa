@@ -1,40 +1,18 @@
-import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
-
-// Datos fijos de la empresa para el encabezado del remito. Es una sola
-// empresa y estos datos prácticamente no cambian, así que no amerita
-// una tabla de configuración editable por ahora.
-const EMPRESA = {
-  razonSocial: 'Celulosa Baradero SA',
-  domicilio: 'Marcelo T. de Alvear 4025, Caseros',
-  telefono: '4025 4025',
-  cuit: '30-64959269-8',
-  iva: 'Responsable Inscripto',
-};
-
-// assets/ vive en la raíz del backend, junto a uploads/ (ver
-// archivo-adjunto.storage.ts, mismo criterio de path relativo).
-const LOGO_PATH = join(
-  fileURLToPath(new URL('.', import.meta.url)),
-  '../../../../assets/logo-celulosa-baradero.png',
-);
+import {
+  FIRMA_DESDE_ABAJO,
+  MARGEN_DER,
+  MARGEN_IZQ,
+  COL_DERECHA_X,
+  formatearFechaAR,
+  renderEncabezadoEmpresa,
+} from '../../../pdf/empresa-pdf.util.js';
 
 const COPIA_LABELS: Record<number, string[]> = {
   2: ['ORIGINAL', 'DUPLICADO'],
   3: ['ORIGINAL', 'DUPLICADO', 'TRIPLICADO'],
 };
-
-const MARGEN_IZQ = 40;
-const MARGEN_DER = 555;
-const COL_DERECHA_X = 350;
-const PT_POR_CM = 28.3465;
-// Firma y aclaración van, por default, a esta distancia del final de
-// la hoja. Si el detalle de mercadería es largo y eso se pisaría con
-// la tabla, se corren más abajo (o a una hoja nueva) — ver el cálculo
-// de yFirma en renderPagina.
-const FIRMA_DESDE_ABAJO = 4 * PT_POR_CM;
 
 // Las bobinas se venden por peso, no por bolsón: se muestran en Kg en
 // vez de Bolsones (mismo criterio en PedidosList del frontend).
@@ -93,35 +71,7 @@ export class RemitoPdfService {
     const numeroRemito = String(pedido.id_pedido).padStart(8, '0');
     const anchoDerecha = MARGEN_DER - COL_DERECHA_X;
 
-    // Logo arriba a la izquierda, y debajo los datos de la empresa,
-    // todos alineados al mismo margen izquierdo que el resto del
-    // documento (cliente, fecha, ítems).
-    const inicioY = doc.y;
-    try {
-      doc.image(LOGO_PATH, MARGEN_IZQ, inicioY, { width: 140 });
-    } catch {
-      // Si por algún motivo no está el archivo del logo, el remito se
-      // sigue generando igual, solo sin la imagen.
-    }
-
-    let ejeY = inicioY + 48;
-    doc.fontSize(13).font('Helvetica-Bold').text(EMPRESA.razonSocial, MARGEN_IZQ, ejeY, { width: 260 });
-    doc.fontSize(9).font('Helvetica');
-    doc.text(EMPRESA.domicilio, MARGEN_IZQ, doc.y, { width: 260 });
-    doc.text(`Tel: ${EMPRESA.telefono}`, MARGEN_IZQ, doc.y, { width: 260 });
-    doc.text(`CUIT: ${EMPRESA.cuit} — IVA: ${EMPRESA.iva}`, MARGEN_IZQ, doc.y, { width: 260 });
-    const finIzquierda = doc.y;
-
-    // Título del remito arriba a la derecha, arrancando a la misma
-    // altura que el logo.
-    doc.fontSize(18).font('Helvetica-Bold').text('REMITO', COL_DERECHA_X, inicioY, { width: anchoDerecha, align: 'right' });
-    doc.fontSize(11).font('Helvetica-Bold').text(`N° ${numeroRemito}`, COL_DERECHA_X, doc.y, { width: anchoDerecha, align: 'right' });
-    doc.fontSize(10).font('Helvetica-Bold').text(copiaLabel, COL_DERECHA_X, doc.y, { width: anchoDerecha, align: 'right' });
-    const finDerecha = doc.y;
-
-    ejeY = Math.max(finIzquierda, finDerecha) + 12;
-    doc.moveTo(MARGEN_IZQ, ejeY).lineTo(MARGEN_DER, ejeY).stroke();
-    ejeY += 16;
+    let ejeY = renderEncabezadoEmpresa(doc, 'REMITO', numeroRemito, copiaLabel);
 
     const cliente = pedido.clientes;
     const direccion = cliente.direcciones;
@@ -139,7 +89,7 @@ export class RemitoPdfService {
     }
 
     const fecha = pedido.fecha_despacho ?? pedido.fecha_carga;
-    doc.text(`Fecha de despacho: ${fecha.toLocaleDateString('es-AR')}`, MARGEN_IZQ, doc.y + 8);
+    doc.text(`Fecha de despacho: ${formatearFechaAR(fecha)}`, MARGEN_IZQ, doc.y + 8);
 
     ejeY = doc.y + 20;
     const colX = { codigo: MARGEN_IZQ, descripcion: 130, cantidad: 400, pallets: 480 };

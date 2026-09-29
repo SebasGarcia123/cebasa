@@ -7,5 +7,9 @@ export interface MovimientoCuentaCorriente {
   id_tipo_documento: number;
   saldo_resultante: number;
   id_cuenta_corriente: number;
+  id_factura?: number | null;
+  id_recibo?: number | null;
+  id_nota_credito?: number | null;
+  id_nota_debito?: number | null;
   tipo_documento?: TipoDocumento;
 }

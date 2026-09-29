@@ -181,6 +181,10 @@
         />
       </form>
 
+      <div class="clientes__saldo-actual">
+        Saldo actual: <strong>{{ cuentaCorriente()!.saldo_actual | number: '1.2-2' }}</strong>
+      </div>
+
       <h3 class="clientes__movimientos-title">Movimientos</h3>
       <p-table [value]="movimientos()" dataKey="id_movimiento_cta_cte">
         <ng-template #header>
@@ -194,18 +198,29 @@
         </ng-template>
         <ng-template #body let-mov>
           <tr>
-            <td>{{ mov.fecha | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ mov.fecha | date: 'dd/MM/yyyy':'UTC' }}</td>
             <td>{{ mov.tipo_documento?.descripcion || '—' }}</td>
             <td>{{ mov.monto | number: '1.2-2' }}</td>
             <td>{{ mov.saldo_resultante | number: '1.2-2' }}</td>
             <td>
               <div class="page__actions">
-                <p-button
-                  icon="pi pi-trash"
-                  [text]="true"
-                  severity="danger"
-                  (onClick)="eliminarMovimiento(mov)"
-                />
+                @if (puedeVerDocumento(mov)) {
+                  <p-button
+                    icon="pi pi-file-pdf"
+                    [text]="true"
+                    (onClick)="verDocumentoDeMovimiento(mov)"
+                    pTooltip="Ver documento"
+                  />
+                }
+                @if (esMovimientoManual(mov)) {
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    severity="danger"
+                    (onClick)="eliminarMovimiento(mov)"
+                    pTooltip="Eliminar"
+                  />
+                }
               </div>
             </td>
           </tr>
@@ -217,60 +232,101 @@
         </ng-template>
       </p-table>
 
+      <h3 class="clientes__movimientos-title">Generar documento</h3>
       <form
-        [formGroup]="movimientoForm"
-        (ngSubmit)="agregarMovimiento()"
-        class="page__form clientes__movimiento-form"
+        [formGroup]="documentoForm"
+        (ngSubmit)="generarDocumento()"
+        class="page__form clientes__documento-form"
       >
         <div class="page__field">
-          <label for="mov_fecha">Fecha</label>
-          <p-datepicker
-            inputId="mov_fecha"
-            formControlName="fecha"
-            dateFormat="dd/mm/yy"
-            [showIcon]="true"
-          />
-        </div>
-        <div class="page__field">
-          <label for="mov_tipo_documento">Tipo de documento</label>
+          <label for="doc_tipo">Tipo de documento</label>
           <p-select
-            inputId="mov_tipo_documento"
-            formControlName="id_tipo_documento"
-            [options]="tiposDocumento()"
-            optionLabel="descripcion"
-            optionValue="id_tipo_documento"
-            placeholder="Seleccionar"
+            inputId="doc_tipo"
+            [ngModel]="tipoDocumentoSeleccionado()"
+            [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="seleccionarTipoDocumento($event)"
+            [options]="tiposDocumentoGenerable"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Elegir tipo"
             [appendTo]="'body'"
           />
         </div>
-        <div class="page__field">
-          <label for="mov_monto">Monto</label>
-          <p-inputNumber
-            inputId="mov_monto"
-            formControlName="monto"
-            mode="currency"
-            currency="ARS"
-            locale="es-AR"
-          />
-        </div>
-        <div class="page__field">
-          <label for="mov_saldo">Saldo resultante</label>
-          <p-inputNumber
-            inputId="mov_saldo"
-            formControlName="saldo_resultante"
-            mode="currency"
-            currency="ARS"
-            locale="es-AR"
-          />
-        </div>
-        <div class="page__form-actions">
-          <p-button
-            type="submit"
-            label="Agregar movimiento"
-            [loading]="ctaCteSaving()"
-            [disabled]="movimientoForm.invalid"
-          />
-        </div>
+
+        @switch (tipoDocumentoSeleccionado()) {
+          @case ('factura') {
+            <div class="page__field">
+              <label for="doc_pedido">Pedido a facturar</label>
+              <p-select
+                inputId="doc_pedido"
+                formControlName="id_pedido"
+                [options]="pedidosFacturables()"
+                optionLabel="id_pedido"
+                optionValue="id_pedido"
+                placeholder="Seleccionar pedido pendiente"
+                [appendTo]="'body'"
+              >
+                <ng-template let-pedido #item>
+                  #{{ pedido.id_pedido }} — {{ pedido.fecha_carga | date: 'dd/MM/yyyy':'UTC' }}
+                </ng-template>
+              </p-select>
+              @if (pedidosFacturables().length === 0) {
+                <small>Este cliente no tiene pedidos Pendientes para facturar.</small>
+              }
+            </div>
+          }
+          @case ('recibo') {
+            <div class="page__field">
+              <label for="doc_monto">Monto</label>
+              <p-inputNumber inputId="doc_monto" formControlName="monto" mode="currency" currency="ARS" locale="es-AR" />
+            </div>
+            <div class="page__field">
+              <label for="doc_medio_pago">Medio de pago</label>
+              <p-select
+                inputId="doc_medio_pago"
+                formControlName="medio_pago"
+                [options]="mediosPago"
+                placeholder="Seleccionar"
+                [appendTo]="'body'"
+              />
+            </div>
+            <div class="page__field">
+              <label for="doc_observaciones">Observaciones (opcional)</label>
+              <textarea id="doc_observaciones" pTextarea formControlName="observaciones" rows="2"></textarea>
+            </div>
+          }
+          @case ('nota_credito') {
+            <div class="page__field">
+              <label for="doc_monto_nc">Monto</label>
+              <p-inputNumber inputId="doc_monto_nc" formControlName="monto" mode="currency" currency="ARS" locale="es-AR" />
+            </div>
+            <div class="page__field">
+              <label for="doc_motivo_nc">Motivo</label>
+              <textarea id="doc_motivo_nc" pTextarea formControlName="motivo" rows="2"></textarea>
+            </div>
+          }
+          @case ('nota_debito') {
+            <div class="page__field">
+              <label for="doc_monto_nd">Monto</label>
+              <p-inputNumber inputId="doc_monto_nd" formControlName="monto" mode="currency" currency="ARS" locale="es-AR" />
+            </div>
+            <div class="page__field">
+              <label for="doc_motivo_nd">Motivo</label>
+              <textarea id="doc_motivo_nd" pTextarea formControlName="motivo" rows="2"></textarea>
+            </div>
+          }
+        }
+
+        @if (tipoDocumentoSeleccionado()) {
+          <div class="page__form-actions">
+            <p-button
+              type="submit"
+              label="Generar documento"
+              [loading]="documentoSaving()"
+              [disabled]="!documentoValido()"
+            />
+          </div>
+        }
       </form>
     }
   </p-dialog>

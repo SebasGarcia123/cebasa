@@ -5,6 +5,7 @@ export interface EmailMessage {
   to: string;
   subject: string;
   html: string;
+  attachments?: { filename: string; content: Buffer }[];
 }
 
 // Envío de avisos (OC generada, enviada al proveedor, etc.). Sin las
@@ -45,6 +46,7 @@ export class EmailService {
         to: message.to,
         subject: message.subject,
         html: message.html,
+        attachments: message.attachments,
       });
     } catch (error) {
       // Un email que no sale no puede tirar abajo la operación que lo

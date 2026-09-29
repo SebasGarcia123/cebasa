@@ -11,18 +11,34 @@
     />
   </div>
 
-  <p-iconfield class="stock__buscador">
-    <p-inputicon styleClass="pi pi-search" />
-    <input
-      id="busqueda_stock"
-      type="text"
-      pInputText
-      aria-label="Buscar por código o descripción"
-      [ngModel]="busqueda()"
-      (ngModelChange)="busqueda.set($event)"
-      placeholder="Buscar por código o descripción"
-    />
-  </p-iconfield>
+  <div class="stock__filtros">
+    <p-iconfield class="stock__buscador">
+      <p-inputicon styleClass="pi pi-search" />
+      <input
+        id="busqueda_stock"
+        type="text"
+        pInputText
+        aria-label="Buscar por código o descripción"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        placeholder="Buscar por código o descripción"
+      />
+    </p-iconfield>
+
+    <div class="page__field stock__deposito-field">
+      <label for="stock_deposito">Depósito</label>
+      <p-select
+        inputId="stock_deposito"
+        [ngModel]="depositoSeleccionado()"
+        (ngModelChange)="cambiarDeposito($event)"
+        [options]="opcionesDeposito()"
+        optionLabel="nombre_deposito"
+        optionValue="id_deposito"
+      />
+    </div>
+
+    <p-button icon="pi pi-file-excel" label="Exportar Excel" [outlined]="true" (onClick)="exportarExcel()" />
+  </div>
 
   <p-table [value]="filasFiltradas()" [loading]="loading()" dataKey="id">
     <ng-template #header>
@@ -42,12 +58,19 @@
         </td>
         <td>
           <div class="page__actions">
-            @if (puedeAjustar()) {
+            @if (puedeAjustarAhora()) {
               <p-button
                 icon="pi pi-pencil"
                 [text]="true"
                 (onClick)="abrirAjuste(fila)"
                 pTooltip="Ajustar stock"
+              />
+            } @else if (puedeAjustar()) {
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                [disabled]="true"
+                pTooltip="Elegí un depósito puntual para ajustar"
               />
             }
           </div>
@@ -74,6 +97,9 @@
       <form [formGroup]="ajusteForm" (ngSubmit)="guardarAjuste()" class="page__form">
         <p class="stock__item-info">
           <strong>{{ fila.codigo }}</strong> — {{ fila.descripcion }}
+        </p>
+        <p class="stock__item-info">
+          Depósito: <strong>{{ nombreDepositoSeleccionado() }}</strong>
         </p>
         <p class="stock__item-info">
           Cantidad actual: <strong>{{ fila.stock_actual }}</strong>

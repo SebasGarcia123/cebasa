@@ -1,5 +1,18 @@
+.stock__filtros {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
 .stock__buscador {
   max-width: 320px;
+}
+
+.stock__deposito-field {
+  min-width: 220px;
+  margin-bottom: 0;
 }
 
 .stock__cantidad--bajo {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { StockService } from './stock.service.js';
 import { AjustarStockDto } from './dto/ajustar-stock.dto.js';
@@ -16,13 +16,13 @@ export class StockController {
   constructor(private readonly stockService: StockService) {}
 
   @Get('insumos')
-  findInsumos() {
-    return this.stockService.findInsumos();
+  findInsumos(@Query('idDeposito') idDeposito?: string) {
+    return this.stockService.findInsumos(idDeposito ? Number(idDeposito) : undefined);
   }
 
   @Get('productos')
-  findProductos() {
-    return this.stockService.findProductos();
+  findProductos(@Query('idDeposito') idDeposito?: string) {
+    return this.stockService.findProductos(idDeposito ? Number(idDeposito) : undefined);
   }
 
   @RequirePermissions('stock.ajustar')

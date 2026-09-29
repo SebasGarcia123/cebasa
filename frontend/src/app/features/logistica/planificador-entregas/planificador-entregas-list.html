@@ -1,0 +1,109 @@
+<div class="page planificador">
+  <div class="page__header">
+    <h1>Planificador de Entregas</h1>
+  </div>
+
+  <p class="planificador__ayuda">
+    Solo pedidos activos de Caseros (los despachados desaparecen). Botón derecho sobre el nombre del pedido para
+    asignar la fecha de salida.
+    @if (puedeEditar()) {
+      Arrastrá una columna para priorizar un pedido sobre otro dentro de la misma fecha prometida.
+    }
+  </p>
+
+  <div class="planificador__leyenda">
+    <span class="planificador__chip" [style.background]="'#c8e6c9'">Alcanza todo</span>
+    <span class="planificador__chip" [style.background]="'#fff9c4'">Alcanza parcial</span>
+    <span class="planificador__chip" [style.background]="'#ffcdd2'">Falta fabricar</span>
+    <span class="planificador__chip" [style.background]="'#a5d6a7'">Fecha de salida asignada</span>
+  </div>
+
+  <div class="planificador__tabla-wrap">
+    <p-table
+      [value]="productos()"
+      [columns]="columnas()"
+      [loading]="loading()"
+      [reorderableColumns]="puedeEditar()"
+      (onColReorder)="onColReorder($event)"
+      dataKey="id_producto"
+      [scrollable]="true"
+      scrollHeight="70vh"
+      class="planificador__tabla"
+    >
+      <ng-template #header let-columns>
+        <tr>
+          <th pFrozenColumn class="planificador__col-producto">Producto</th>
+          @for (col of columns; track col.id_pedido) {
+            <th
+              pReorderableColumn
+              [style.background]="fondoHeader(col)"
+              (contextmenu)="onContextMenu($event, col)"
+              class="planificador__col-pedido"
+            >
+              {{ col.nombre_cli }}
+              <span class="planificador__pedido-num">#{{ col.id_pedido }}</span>
+            </th>
+          }
+        </tr>
+        <tr>
+          <th pFrozenColumn class="planificador__col-producto"></th>
+          @for (col of columns; track col.id_pedido) {
+            <th [style.background]="fondoHeader(col)" class="planificador__col-fecha">
+              @if (col.fecha_salida_planificada) {
+                {{ col.fecha_salida_planificada | date: 'dd/MM/yyyy':'UTC' }}
+              }
+            </th>
+          }
+        </tr>
+      </ng-template>
+      <ng-template #body let-producto let-columns="columns">
+        <tr>
+          <td pFrozenColumn class="planificador__col-producto">
+            <strong>{{ producto.codigo_producto }}</strong> — {{ producto.descripcion_producto }}
+            <div class="planificador__stock">Stock: {{ producto.stock }}</div>
+          </td>
+          @for (col of columns; track col.id_pedido) {
+            <td [style.background]="fondoCelda(col, producto)" class="planificador__celda">
+              {{ itemDe(col, producto)?.cantidad_bolsones ?? '' }}
+            </td>
+          }
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td>No hay productos para mostrar.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  @if (columnas().length === 0 && !loading()) {
+    <p class="planificador__vacio">No hay pedidos activos para planificar.</p>
+  }
+</div>
+
+<p-contextMenu #cm [model]="menuItems" appendTo="body" />
+
+<p-dialog
+  [visible]="fechaDialogVisible()"
+  (visibleChange)="fechaDialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '360px' }"
+  header="Asignar fecha de salida"
+>
+  <div class="page__field">
+    <label for="pe_fecha_salida">Fecha de salida</label>
+    <p-datepicker
+      inputId="pe_fecha_salida"
+      [ngModel]="fechaSeleccionada()"
+      (ngModelChange)="fechaSeleccionada.set($event)"
+      dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      appendTo="body"
+    />
+  </div>
+  <div class="page__form-actions">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarFecha()" />
+    <p-button label="Confirmar" [loading]="guardandoFecha()" [disabled]="!fechaSeleccionada()" (onClick)="confirmarFecha()" />
+  </div>
+</p-dialog>

@@ -5,6 +5,7 @@ import { TransporteModule } from './transporte/transporte.module.js';
 import { LotesModule } from './lotes/lotes.module.js';
 import { AutoelevadoresModule } from './autoelevadores/autoelevadores.module.js';
 import { ControlesAutoelevadorModule } from './controles-autoelevador/controles.module.js';
+import { PlanificadorEntregasModule } from './planificador-entregas/planificador-entregas.module.js';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ControlesAutoelevadorModule } from './controles-autoelevador/controles.
     LotesModule,
     AutoelevadoresModule,
     ControlesAutoelevadorModule,
+    PlanificadorEntregasModule,
   ],
 })
 export class LogisticaModule {}

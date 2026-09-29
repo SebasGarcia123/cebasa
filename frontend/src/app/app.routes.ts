@@ -139,6 +139,30 @@ export const routes: Routes = [
           import('./features/produccion/lotes-prod/lotes-prod-list').then((m) => m.LotesProdList),
       },
       {
+        path: 'produccion/operario-caseros',
+        loadComponent: () =>
+          import('./features/produccion/operario-caseros/operario-caseros-list').then(
+            (m) => m.OperarioCaserosList,
+          ),
+      },
+      {
+        path: 'produccion/tipo-bobina',
+        loadComponent: () =>
+          import('./features/produccion/tipo-bobina/tipo-bobina-list').then((m) => m.TipoBobinaList),
+      },
+      {
+        path: 'produccion/lotes-baradero',
+        loadComponent: () =>
+          import('./features/produccion/lotes-baradero/lotes-baradero-list').then((m) => m.LotesBaraderoList),
+      },
+      {
+        path: 'produccion/operario-baradero',
+        loadComponent: () =>
+          import('./features/produccion/operario-baradero/operario-baradero-list').then(
+            (m) => m.OperarioBaraderoList,
+          ),
+      },
+      {
         path: 'logistica/fletero',
         loadComponent: () => import('./features/logistica/fletero/fletero-list').then((m) => m.FleteroList),
       },
@@ -179,6 +203,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/logistica/despacho-pedidos/despacho-pedidos-list').then(
             (m) => m.DespachoPedidosList,
+          ),
+      },
+      {
+        path: 'logistica/planificador-entregas',
+        loadComponent: () =>
+          import('./features/logistica/planificador-entregas/planificador-entregas-list').then(
+            (m) => m.PlanificadorEntregasList,
           ),
       },
       {

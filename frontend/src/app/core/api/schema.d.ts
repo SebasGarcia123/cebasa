@@ -500,6 +500,150 @@ export interface paths {
         patch: operations["MovimientosCuentaCorrienteController_update"];
         trace?: never;
     };
+    "/clientes/{idCliente}/documentos/facturables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentosController_pedidosFacturables"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/factura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentosController_generarFactura"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/recibo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentosController_generarRecibo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/nota-credito": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentosController_generarNotaCredito"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/nota-debito": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentosController_generarNotaDebito"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/factura/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentosController_pdfFactura"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/recibo/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentosController_pdfRecibo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/nota-credito/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentosController_pdfNotaCredito"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/nota-debito/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentosController_pdfNotaDebito"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/pedidos": {
         parameters: {
             query?: never;
@@ -530,22 +674,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["PedidosController_update"];
-        trace?: never;
-    };
-    "/pedidos/{id}/facturar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["PedidosController_facturar"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/pedidos/{id}/despachar": {
@@ -1124,6 +1252,22 @@ export interface paths {
         patch: operations["LoteProdController_update"];
         trace?: never;
     };
+    "/lotes-prod/{id}/cerrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LoteProdController_cerrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/lotes-prod/{id}/aprobar": {
         parameters: {
             query?: never;
@@ -1188,6 +1332,102 @@ export interface paths {
         patch: operations["ItemProdController_update"];
         trace?: never;
     };
+    "/lotes-prod/{idLote}/bobinas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BobinaController_findAll"];
+        put?: never;
+        post: operations["BobinaController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes-prod/{idLote}/bobinas/{idBobina}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["BobinaController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes-prod/{idLote}/bobinas/{idBobina}/rotulo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BobinaController_rotulo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes-prod/{idLote}/pallets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PalletController_findAll"];
+        put?: never;
+        post: operations["PalletController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes-prod/{idLote}/pallets/{idPallet}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["PalletController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes-prod/{idLote}/pallets/{idPallet}/rotulo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PalletController_rotulo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/movimientos-insumo": {
         parameters: {
             query?: never;
@@ -1250,6 +1490,38 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["MovimientoProductoController_update"];
+        trace?: never;
+    };
+    "/tipo-bobina": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TipoBobinaController_findAll"];
+        put?: never;
+        post: operations["TipoBobinaController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tipo-bobina/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TipoBobinaController_findOne"];
+        put?: never;
+        post?: never;
+        delete: operations["TipoBobinaController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["TipoBobinaController_update"];
         trace?: never;
     };
     "/fletero": {
@@ -1442,6 +1714,70 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["LotesController_update"];
+        trace?: never;
+    };
+    "/lotes/{id}/despachar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LotesController_despachar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes/{id}/aprobar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LotesController_aprobar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes/{id}/rechazar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LotesController_rechazar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lotes/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LotesController_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/lotes/{idLote}/items": {
@@ -2020,46 +2356,30 @@ export interface paths {
         patch: operations["ItemPedidoInsumoController_update"];
         trace?: never;
     };
-    "/planes-produccion": {
+    "/planes-produccion/semana": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["PlanProduccionController_findAll"];
+        get: operations["PlanProduccionController_obtenerSemana"];
         put?: never;
-        post: operations["PlanProduccionController_create"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/planes-produccion/{id}": {
+    "/planes-produccion/items": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["PlanProduccionController_findOne"];
-        put?: never;
-        post?: never;
-        delete: operations["PlanProduccionController_remove"];
-        options?: never;
-        head?: never;
-        patch: operations["PlanProduccionController_update"];
-        trace?: never;
-    };
-    "/planes-produccion/{idPlan}/items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ItemPlanProduccionController_findAll"];
+        get?: never;
         put?: never;
         post: operations["ItemPlanProduccionController_create"];
         delete?: never;
@@ -2068,20 +2388,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/planes-produccion/{idPlan}/items/{idItem}": {
+    "/planes-produccion/items/{idItem}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["ItemPlanProduccionController_findOne"];
+        get?: never;
         put?: never;
         post?: never;
         delete: operations["ItemPlanProduccionController_remove"];
         options?: never;
         head?: never;
         patch: operations["ItemPlanProduccionController_update"];
+        trace?: never;
+    };
+    "/planes-produccion/dias-no-laborables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DiaNoLaborableController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/planes-produccion/dias-no-laborables/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["DiaNoLaborableController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/stock/insumos": {
@@ -2223,6 +2575,18 @@ export interface components {
             saldo_resultante: number;
         };
         UpdateMovimientoCuentaCorrienteDto: Record<string, never>;
+        CreateFacturaDto: {
+            id_pedido: number;
+        };
+        CreateReciboDto: {
+            monto: number;
+            medio_pago: string;
+            observaciones?: string;
+        };
+        CreateNotaDto: {
+            monto: number;
+            motivo: string;
+        };
         CreatePedidoDto: {
             id_cliente: number;
             fecha_carga: string;
@@ -2340,7 +2704,7 @@ export interface components {
         CreateLoteProdDto: {
             id_turno: number;
             fecha_lote_prod: string;
-            id_deposito: number;
+            id_deposito?: number;
         };
         UpdateLoteProdDto: Record<string, never>;
         RechazarLoteProdDto: {
@@ -2352,6 +2716,17 @@ export interface components {
             id_lineas: number;
         };
         UpdateItemProdDto: Record<string, never>;
+        CreateBobinaDto: {
+            id_tipo_bobina: number;
+            id_producto: number;
+            peso: number;
+            gramaje: number;
+        };
+        CreatePalletDto: {
+            id_producto: number;
+            id_lineas: number;
+            cantidad_bolsones: number;
+        };
         CreateMovimientoInsumoDto: {
             id_insumo: number;
             id_tipo_movimiento: number;
@@ -2379,6 +2754,10 @@ export interface components {
         UpdateMovimientoProductoDto: {
             id_estado?: number;
         };
+        CreateTipoBobinaDto: {
+            descripcion: string;
+        };
+        UpdateTipoBobinaDto: Record<string, never>;
         CreateFleteroDto: {
             nombre_fletero: string;
             cuit?: string;
@@ -2423,16 +2802,18 @@ export interface components {
             id_chofer: number;
             id_camion: number;
             id_tipo_lote: number;
+            id_deposito_origen?: number;
+            id_deposito_destino?: number;
             observaciones?: string;
-            motivo?: string;
         };
-        UpdateLoteDto: {
-            id_estado?: number;
+        UpdateLoteDto: Record<string, never>;
+        RechazarLoteDto: {
+            motivo_rechazo: string;
         };
         CreateItemLoteDto: {
-            descripcion_item: string;
-            id_unidad_medida: number;
-            cantidad_item_lote: number;
+            id_producto?: number;
+            id_insumo?: number;
+            cantidad: number;
         };
         UpdateItemLoteDto: Record<string, never>;
         CreateAutoelevadorDto: {
@@ -2542,22 +2923,25 @@ export interface components {
             cantidad_abastecida?: number;
         };
         UpdateItemPedidoInsumoDto: Record<string, never>;
-        CreatePlanProduccionDto: {
-            id_usuario: number;
-            fecha_inicio_semana: string;
-        };
-        UpdatePlanProduccionDto: {
-            id_estado?: number;
-        };
         CreateItemPlanProduccionDto: {
+            fecha: string;
             id_lineas: number;
             id_producto: number;
             id_turno: number;
-            fecha: string;
             cantidad: number;
         };
-        UpdateItemPlanProduccionDto: Record<string, never>;
+        UpdateItemPlanProduccionDto: {
+            id_lineas?: number;
+            id_producto?: number;
+            id_turno?: number;
+            cantidad?: number;
+        };
+        CreateDiaNoLaborableDto: {
+            fecha: string;
+            motivo: string;
+        };
         AjustarStockDto: {
+            id_deposito: number;
             cantidad_nueva: number;
             motivo: string;
         };
@@ -3911,6 +4295,197 @@ export interface operations {
             };
         };
     };
+    DocumentosController_pedidosFacturables: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_generarFactura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFacturaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_generarRecibo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateReciboDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_generarNotaCredito: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateNotaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_generarNotaDebito: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateNotaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_pdfFactura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_pdfRecibo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_pdfNotaCredito: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentosController_pdfNotaDebito: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PedidosController_findAll: {
         parameters: {
             query?: never;
@@ -4007,25 +4582,6 @@ export interface operations {
         };
         responses: {
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PedidosController_facturar: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5679,6 +6235,25 @@ export interface operations {
             };
         };
     };
+    LoteProdController_cerrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     LoteProdController_aprobar: {
         parameters: {
             query?: never;
@@ -5826,6 +6401,178 @@ export interface operations {
                 "application/json": components["schemas"]["UpdateItemProdDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BobinaController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    BobinaController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBobinaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    BobinaController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+                idBobina: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BobinaController_rotulo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+                idBobina: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PalletController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    PalletController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePalletDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    PalletController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+                idPallet: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PalletController_rotulo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idLote: number;
+                idPallet: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -6030,6 +6777,107 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateMovimientoProductoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoBobinaController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    TipoBobinaController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTipoBobinaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoBobinaController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoBobinaController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TipoBobinaController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTipoBobinaDto"];
             };
         };
         responses: {
@@ -6667,6 +7515,88 @@ export interface operations {
             };
         };
     };
+    LotesController_despachar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LotesController_aprobar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    LotesController_rechazar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RechazarLoteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LotesController_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ItemLoteController_findAll: {
         parameters: {
             query?: never;
@@ -6707,7 +7637,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };
@@ -6773,7 +7705,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };
@@ -8379,9 +9313,11 @@ export interface operations {
             };
         };
     };
-    PlanProduccionController_findAll: {
+    PlanProduccionController_obtenerSemana: {
         parameters: {
-            query?: never;
+            query: {
+                fecha: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8392,114 +9328,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    PlanProduccionController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePlanProduccionDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content?: never;
-            };
-        };
-    };
-    PlanProduccionController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    PlanProduccionController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlanProduccionController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdatePlanProduccionDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ItemPlanProduccionController_findAll: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                idPlan: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
             };
         };
     };
@@ -8507,9 +9336,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                idPlan: number;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
@@ -8519,26 +9346,6 @@ export interface operations {
         };
         responses: {
             201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ItemPlanProduccionController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                idPlan: number;
-                idItem: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8553,7 +9360,6 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                idPlan: number;
                 idItem: number;
             };
             cookie?: never;
@@ -8573,7 +9379,6 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                idPlan: number;
                 idItem: number;
             };
             cookie?: never;
@@ -8588,13 +9393,57 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    DiaNoLaborableController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDiaNoLaborableDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DiaNoLaborableController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
                 content?: never;
             };
         };
     };
     StockController_findInsumos: {
         parameters: {
-            query?: never;
+            query?: {
+                idDeposito?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8605,15 +9454,15 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>;
-                };
+                content?: never;
             };
         };
     };
     StockController_findProductos: {
         parameters: {
-            query?: never;
+            query?: {
+                idDeposito?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8624,9 +9473,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>;
-                };
+                content?: never;
             };
         };
     };

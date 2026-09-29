@@ -1,0 +1,60 @@
+.planificador__ayuda {
+  font-family: var(--font-family-body);
+  color: var(--color-text-muted, #666);
+  margin-bottom: 0.75rem;
+}
+
+.planificador__leyenda {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.planificador__chip {
+  font-family: var(--font-family-body);
+  font-size: 0.85rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  color: #333;
+}
+
+.planificador__tabla-wrap {
+  overflow-x: auto;
+}
+
+.planificador__col-producto {
+  min-width: 260px;
+  max-width: 260px;
+}
+
+.planificador__col-pedido,
+.planificador__col-fecha {
+  min-width: 130px;
+  text-align: center;
+}
+
+.planificador__pedido-num {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #666);
+}
+
+.planificador__stock {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.planificador__celda {
+  text-align: center;
+  font-weight: 600;
+}
+
+.planificador__vacio {
+  font-family: var(--font-family-body);
+  color: var(--color-text-muted, #666);
+  background: var(--color-surface-alt, #f4f4f4);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+}

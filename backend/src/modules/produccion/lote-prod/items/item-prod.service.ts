@@ -3,7 +3,7 @@ import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { CreateItemProdDto } from './dto/create-item-prod.dto.js';
 import { UpdateItemProdDto } from './dto/update-item-prod.dto.js';
 
-const ESTADO_APROBADO = 'Aprobado';
+const ESTADOS_EDITABLES = new Set(['Pendiente', 'Rechazado']);
 
 @Injectable()
 export class ItemProdService {
@@ -52,8 +52,10 @@ export class ItemProdService {
     return this.prisma.item_prod.delete({ where: { id_item: idItem } });
   }
 
-  // El stock ya se sumó cuando Logística aprobó el lote: modificar sus
-  // ítems después dejaría el stock desalineado con lo que dice el lote.
+  // Editable mientras está abierto (Pendiente) o Rechazado. Una vez
+  // cerrado (Pendiente de aprobación) queda en manos de Logística, y
+  // aprobado ya sumó el stock: modificar los ítems después lo dejaría
+  // desalineado con lo que dice el lote.
   private async assertLoteEditable(idLote: number): Promise<void> {
     const lote = await this.prisma.lote_prod.findUnique({
       where: { id_lote: idLote },
@@ -62,8 +64,8 @@ export class ItemProdService {
     if (!lote) {
       throw new NotFoundException(`Lote de producción ${idLote} no encontrado`);
     }
-    if (lote.estados.nombreEstado === ESTADO_APROBADO) {
-      throw new BadRequestException('No se pueden modificar los ítems de un lote de producción ya aprobado');
+    if (!ESTADOS_EDITABLES.has(lote.estados.nombreEstado)) {
+      throw new BadRequestException('Los ítems solo se pueden modificar mientras el lote está abierto o rechazado');
     }
   }
 }

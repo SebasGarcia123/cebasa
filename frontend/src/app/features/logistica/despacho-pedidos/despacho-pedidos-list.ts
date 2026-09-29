@@ -52,7 +52,7 @@ export class DespachoPedidosList implements OnInit {
   // Solo depósitos de logística (no los de producción) para el
   // selector manual de respaldo.
   protected readonly depositosLogistica = computed(() =>
-    this.depositos().filter((d) => d.nombre_deposito.toLowerCase().includes('log')),
+    this.depositos().filter((d) => d.rol_deposito === 'LOGISTICA'),
   );
 
   protected readonly desde = signal<Date | null>(null);

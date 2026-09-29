@@ -1,0 +1,141 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Lotes de Producción Baradero</h1>
+    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="lotes()" [loading]="loading()" dataKey="id_lote" [paginator]="true" [rows]="10">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Turno</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-lote>
+      <tr>
+        <td>{{ lote.id_lote }}</td>
+        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy':'UTC' }}</td>
+        <td>{{ lote.turnos?.descripcion_turnos || '—' }}</td>
+        <td>
+          {{ lote.estados?.nombreEstado || '—' }}
+          @if (lote.estados?.nombreEstado === 'Rechazado' && lote.motivo_rechazo) {
+            <p-button icon="pi pi-info-circle" [text]="true" [rounded]="true" pTooltip="{{ lote.motivo_rechazo }}" />
+          }
+        </td>
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-list" [text]="true" (onClick)="openDetalle(lote)" pTooltip="Ver bobinas" />
+            @if (puedeCerrar(lote)) {
+              <p-button icon="pi pi-lock" [text]="true" (onClick)="confirmCerrar(lote)" pTooltip="Cerrar turno" />
+            }
+            @if (puedeEliminar(lote)) {
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (onClick)="confirmDelete(lote)"
+                pTooltip="Eliminar"
+              />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay lotes cargados todavía.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    header="Nuevo lote"
+  >
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="page__form">
+      <div class="page__field">
+        <label for="id_turno">Turno</label>
+        <p-select
+          inputId="id_turno"
+          formControlName="id_turno"
+          [options]="turnos()"
+          optionLabel="descripcion_turnos"
+          optionValue="id_turno"
+          placeholder="Seleccionar turno"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="fecha_lote_prod">Fecha</label>
+        <p-datepicker
+          inputId="fecha_lote_prod"
+          formControlName="fecha_lote_prod"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeDialog()" />
+        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="detalleDialogVisible()"
+    (visibleChange)="detalleDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '640px' }"
+    header="Bobinas del lote"
+  >
+    @if (loteActivo(); as lote) {
+      @if (lote.estados?.nombreEstado === 'Rechazado' && lote.motivo_rechazo) {
+        <p class="lotes-baradero__motivo-rechazo">
+          <strong>Motivo del rechazo:</strong> {{ lote.motivo_rechazo }}
+        </p>
+      }
+
+      <p-table [value]="bobinas()" [loading]="bobinasLoading()" dataKey="id_bobina">
+        <ng-template #header>
+          <tr>
+            <th scope="col">N°</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Producto</th>
+            <th scope="col">Peso (kg)</th>
+            <th scope="col">Gramaje</th>
+            <th scope="col">Operario</th>
+            <th scope="col" style="width: 4rem"></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-bobina>
+          <tr>
+            <td>{{ bobina.numero_bobina }}</td>
+            <td>{{ bobina.tipo_bobina?.descripcion || '—' }}</td>
+            <td>{{ bobina.productos?.codigo_producto }} — {{ bobina.productos?.descripcion_producto }}</td>
+            <td>{{ bobina.peso | number: '1.2-2' }}</td>
+            <td>{{ bobina.gramaje | number: '1.2-2' }}</td>
+            <td>{{ bobina.usuarios?.nombre_usuario || '—' }}</td>
+            <td>
+              <p-button icon="pi pi-file-pdf" [text]="true" (onClick)="verRotulo(bobina)" pTooltip="Ver rótulo" />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="7">
+              Todavía no se generaron bobinas en este lote (se cargan desde la pantalla del Operario).
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </p-dialog>
+</div>

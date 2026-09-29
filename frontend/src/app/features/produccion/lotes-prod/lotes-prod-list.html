@@ -18,7 +18,7 @@
     <ng-template #body let-lote>
       <tr>
         <td>{{ lote.id_lote }}</td>
-        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy':'UTC' }}</td>
         <td>{{ lote.turnos?.descripcion_turnos || '—' }}</td>
         <td>{{ lote.deposito?.nombre_deposito || '—' }}</td>
         <td>{{ lote.estados?.nombreEstado || '—' }}</td>
@@ -32,6 +32,9 @@
                 severity="danger"
                 (onClick)="confirmDelete(lote)"
               />
+            }
+            @if (puedeCerrar(lote)) {
+              <p-button icon="pi pi-lock" [text]="true" (onClick)="confirmCerrar(lote)" pTooltip="Cerrar turno" />
             }
           </div>
         </td>
@@ -80,19 +83,6 @@
             formControlName="fecha_lote_prod"
             dateFormat="dd/mm/yy"
             [showIcon]="true"
-          />
-        </div>
-
-        <div class="page__field lotes-prod__field--turno">
-          <label for="id_deposito">Depósito</label>
-          <p-select
-            inputId="id_deposito"
-            formControlName="id_deposito"
-            [options]="depositosProduccion()"
-            optionLabel="nombre_deposito"
-            optionValue="id_deposito"
-            placeholder="Seleccionar depósito"
-            [appendTo]="'body'"
           />
         </div>
       </div>

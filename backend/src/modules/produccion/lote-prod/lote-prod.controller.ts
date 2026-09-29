@@ -24,8 +24,8 @@ export class LoteProdController {
 
   @RequirePermissions('produccion.editar')
   @Post()
-  create(@Body() dto: CreateLoteProdDto) {
-    return this.loteProdService.create(dto);
+  create(@Body() dto: CreateLoteProdDto, @CurrentUser() user: JwtPayload) {
+    return this.loteProdService.create(dto, user);
   }
 
   @RequirePermissions('produccion.ver')
@@ -53,6 +53,12 @@ export class LoteProdController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.loteProdService.remove(id);
+  }
+
+  @RequirePermissions('produccion.editar')
+  @Post(':id/cerrar')
+  cerrar(@Param('id', ParseIntPipe) id: number) {
+    return this.loteProdService.cerrar(id);
   }
 
   // Aprobar/rechazar es tarea de Logística, no de quien carga el lote:

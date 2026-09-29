@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   FormArray,
   FormBuilder,
@@ -30,8 +31,16 @@ import { Producto } from '../../../core/models/producto.model';
 import { Linea } from '../../../core/models/linea.model';
 import { Deposito } from '../../../core/models/deposito.model';
 
+const ESTADO_ABIERTO = 'Pendiente';
 const ESTADO_APROBADO = 'Aprobado';
 const ESTADO_RECHAZADO = 'Rechazado';
+// El backend deriva el depósito del sector del usuario y lo prioriza
+// siempre que pueda resolverlo (ver LoteProdService.resolverDepositoDeCreacion),
+// así que esto no es una elección real — es solo el valor de respaldo
+// para administradores, cuyo sector no tiene planta asociada y que si
+// no, se quedan sin poder crear ningún lote.
+const PLANTA_RESPALDO = 'CASEROS';
+const ROL_DEPOSITO_RESPALDO = 'PRODUCCION';
 
 type ItemProdForm = FormGroup<{
   id_item: FormControl<number | null>;
@@ -88,17 +97,9 @@ export class LotesProdList implements OnInit {
     this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
   );
 
-  // El lote solo puede cargarse contra un depósito de planta (no uno de
-  // logística): se filtra por nombre, ya que no hay un flag específico
-  // en el catálogo de depósitos para distinguirlos.
-  protected readonly depositosProduccion = computed(() =>
-    this.depositos().filter((d) => d.nombre_deposito.toLowerCase().includes('produc')),
-  );
-
   protected readonly form = this.fb.nonNullable.group({
     id_turno: [null as number | null, Validators.required],
     fecha_lote_prod: [null as Date | null, Validators.required],
-    id_deposito: [null as number | null, Validators.required],
   });
 
   // Los ítems se arman en memoria (una fila por producto, con cálculo
@@ -219,19 +220,26 @@ export class LotesProdList implements OnInit {
     return this.itemsFormArray.controls.reduce((acc, fila) => acc + (fila.controls.cantidad_pallets.value ?? 0), 0);
   }
 
-  // No se puede editar un lote ya aprobado: el stock que generó ya
-  // quedó asentado, y el backend lo rechaza igual (ver LoteProdService).
+  // Editable solo mientras está abierto o rechazado; una vez cerrado
+  // (enviado a Logística) o aprobado, no se toca más (ver LoteProdService).
   protected puedeEditar(lote: LoteProd): boolean {
-    return lote.estados?.nombreEstado !== ESTADO_APROBADO;
+    return lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO;
   }
 
+  protected puedeCerrar(lote: LoteProd): boolean {
+    return lote.estados?.nombreEstado === ESTADO_ABIERTO;
+  }
+
+  // El lote puede arrancar sin productos cargados a mano: el operario
+  // los va a ir sumando como pallets desde su propia pantalla (ver
+  // OperarioCaserosList). Por eso no se empuja ninguna fila vacía acá
+  // — si el Jefe quiere cargar algo a mano igual puede con "+".
   openCreate(): void {
     this.editingId.set(null);
     this.motivoRechazo.set(null);
     this.itemsOriginales = [];
     this.form.reset();
     this.itemsFormArray.clear();
-    this.itemsFormArray.push(this.crearFilaItem());
     this.dialogVisible.set(true);
   }
 
@@ -241,7 +249,6 @@ export class LotesProdList implements OnInit {
     this.form.setValue({
       id_turno: lote.id_turno,
       fecha_lote_prod: new Date(lote.fecha_lote_prod),
-      id_deposito: lote.id_deposito,
     });
     this.itemsFormArray.clear();
     this.itemsOriginales = [];
@@ -252,9 +259,6 @@ export class LotesProdList implements OnInit {
       next: (items) => {
         this.itemsOriginales = items;
         items.forEach((item) => this.itemsFormArray.push(this.crearFilaItem(item)));
-        if (this.itemsFormArray.length === 0) {
-          this.itemsFormArray.push(this.crearFilaItem());
-        }
         this.itemsLoading.set(false);
       },
       error: () => {
@@ -272,27 +276,28 @@ export class LotesProdList implements OnInit {
     if (this.form.invalid || this.itemsFormArray.invalid || this.saving()) {
       return;
     }
-    if (this.itemsFormArray.length === 0) {
-      this.messageService.add({ severity: 'warn', summary: 'Faltan productos', detail: 'Agregá al menos un producto al lote' });
-      return;
-    }
 
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const headerDto = {
       id_turno: raw.id_turno!,
       fecha_lote_prod: raw.fecha_lote_prod!.toISOString().slice(0, 10),
-      id_deposito: raw.id_deposito!,
     };
 
     const id = this.editingId();
     if (id) {
+      // El depósito no se manda al editar: ya quedó fijado al crear el
+      // lote y no debe cambiar (update() lo pisaría sin la protección
+      // por sector que sí tiene create()).
       this.api.update(id, headerDto).subscribe({
         next: () => this.guardarItems(id),
         error: () => this.onGuardarError(),
       });
     } else {
-      this.api.create(headerDto).subscribe({
+      const idDepositoRespaldo = this.depositos().find(
+        (d) => d.planta === PLANTA_RESPALDO && d.rol_deposito === ROL_DEPOSITO_RESPALDO,
+      )?.id_deposito;
+      this.api.create({ ...headerDto, id_deposito: idDepositoRespaldo }).subscribe({
         next: (lote) => this.guardarItems(lote.id_lote),
         error: () => this.onGuardarError(),
       });
@@ -333,6 +338,28 @@ export class LotesProdList implements OnInit {
   private onGuardarError(): void {
     this.saving.set(false);
     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
+  }
+
+  confirmCerrar(lote: LoteProd): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar cierre',
+      message: `¿Cerrar el lote #${lote.id_lote}? Una vez cerrado no se puede editar hasta que Logística lo revise.`,
+      icon: 'pi pi-lock',
+      acceptButtonProps: { label: 'Cerrar' },
+      rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },
+      accept: () => {
+        this.api.cerrar(lote.id_lote).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Cerrado', detail: 'El lote fue enviado a Logística' });
+            this.load();
+          },
+          error: (error: HttpErrorResponse) => {
+            const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo cerrar el lote';
+            this.messageService.add({ severity: 'error', summary: 'Error', detail });
+          },
+        });
+      },
+    });
   }
 
   confirmDelete(lote: LoteProd): void {

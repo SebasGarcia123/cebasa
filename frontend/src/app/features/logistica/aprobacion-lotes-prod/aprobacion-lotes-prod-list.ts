@@ -85,6 +85,10 @@ export class AprobacionLotesProdList implements OnInit {
     }, 0);
   }
 
+  protected totalPesoBobinas(lote: LoteProd): number {
+    return (lote.bobina ?? []).reduce((acc, bobina) => acc + Number(bobina.peso), 0);
+  }
+
   ver(lote: LoteProd): void {
     this.rechazando.set(false);
     this.rechazoForm.reset();

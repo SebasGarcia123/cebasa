@@ -1,25 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import type { Planta } from '../generated/prisma/client.js';
 
-// Baradero y Caseros son las dos plantas de la empresa. No hay un
-// campo dedicado para "planta" en sectores ni depósitos todavía: se
-// infiere del nombre (ej. "Logística Caseros", "Producción Baradero"),
-// igual que ya se hacía en PedidosService antes de esta extracción.
-export type Planta = 'caseros' | 'baradero';
+export type { Planta };
 
+// Baradero y Caseros son las dos plantas de la empresa. La planta de
+// un sector o un depósito vive en su propia columna (enum Planta, ver
+// schema.prisma) — no se infiere del nombre visible, que es solo el
+// rótulo que puede editar cualquiera desde el ABM correspondiente sin
+// que se rompa nada acá.
 @Injectable()
 export class PlantaLookupService {
-  private extraerPlanta(nombre: string): Planta | null {
-    const lower = nombre.toLowerCase();
-    if (lower.includes('caseros')) return 'caseros';
-    if (lower.includes('baradero')) return 'baradero';
-    return null;
+  plantaDeSector(sector: { planta: Planta | null }): Planta | null {
+    return sector.planta;
   }
 
-  plantaDeSector(nombreSector: string): Planta | null {
-    return this.extraerPlanta(nombreSector);
-  }
-
-  plantaDeDeposito(nombreDeposito: string): Planta | null {
-    return this.extraerPlanta(nombreDeposito);
+  plantaDeDeposito(deposito: { planta: Planta | null }): Planta | null {
+    return deposito.planta;
   }
 }

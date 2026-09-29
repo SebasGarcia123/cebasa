@@ -2,6 +2,7 @@ import { Estado } from './estado.model';
 import { Turno } from './turno.model';
 import { ItemProd } from './item-prod.model';
 import { Deposito } from './deposito.model';
+import { Bobina } from './bobina.model';
 
 export interface LoteProd {
   id_lote: number;
@@ -14,4 +15,5 @@ export interface LoteProd {
   estados?: Estado;
   deposito?: Deposito;
   item_prod?: ItemProd[];
+  bobina?: Bobina[];
 }

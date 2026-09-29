@@ -1,0 +1,188 @@
+<div class="page operario">
+  <div class="page__header">
+    <h1>Producción Baradero</h1>
+  </div>
+
+  <p class="operario__ayuda">Elegí el lote activo para cargarle las bobinas que vas generando.</p>
+
+  <p-table [value]="lotesActivos()" [loading]="loading()" dataKey="id_lote" class="operario__tabla">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Turno</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 10rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-lote>
+      <tr>
+        <td>{{ lote.id_lote }}</td>
+        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy':'UTC' }}</td>
+        <td>{{ lote.turnos?.descripcion_turnos || '—' }}</td>
+        <td>{{ lote.estados?.nombreEstado || '—' }}</td>
+        <td>
+          <p-button label="Abrir" icon="pi pi-arrow-right" iconPos="right" (onClick)="abrirLote(lote)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">
+          No hay lotes activos ahora mismo. Pedile al Jefe de Producción que abra uno.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="detalleVisible()"
+    (visibleChange)="detalleVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '900px' }"
+    [header]="'Lote #' + (loteActivo()?.id_lote ?? '')"
+  >
+    @if (loteActivo(); as lote) {
+      @if (lote.estados?.nombreEstado === 'Rechazado' && lote.motivo_rechazo) {
+        <p class="operario__motivo-rechazo">
+          <strong>Motivo del rechazo:</strong> {{ lote.motivo_rechazo }}
+        </p>
+      }
+
+      <p-button
+        label="+ Nueva bobina"
+        class="operario__boton-nueva"
+        [style]="{ width: '100%' }"
+        (onClick)="abrirForm()"
+      />
+
+      @if (resumenPorTipo().length > 0) {
+        <div class="operario__resumen">
+          @for (fila of resumenPorTipo(); track fila.descripcion) {
+            <div class="operario__resumen-fila">
+              <span class="operario__resumen-tipo">{{ fila.descripcion }}</span>
+              <span>{{ fila.cantidad }} bobina{{ fila.cantidad === 1 ? '' : 's' }}</span>
+              <span>{{ fila.kilos | number: '1.2-2' }} kg</span>
+            </div>
+          }
+          <div class="operario__resumen-fila operario__resumen-fila--total">
+            <span class="operario__resumen-tipo">Total</span>
+            <span>{{ bobinas().length }} bobina{{ bobinas().length === 1 ? '' : 's' }}</span>
+            <span>{{ totalKilos() | number: '1.2-2' }} kg</span>
+          </div>
+        </div>
+      }
+
+      <p-table [value]="bobinas()" [loading]="bobinasLoading()" dataKey="id_bobina" class="operario__tabla">
+        <ng-template #header>
+          <tr>
+            <th scope="col">N°</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Producto</th>
+            <th scope="col">Kg</th>
+            <th scope="col">Gramaje</th>
+            <th scope="col" style="width: 6rem"></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-bobina>
+          <tr>
+            <td>{{ bobina.numero_bobina }}</td>
+            <td>{{ bobina.tipo_bobina?.descripcion || '—' }}</td>
+            <td>{{ bobina.productos?.codigo_producto }}</td>
+            <td>{{ bobina.peso | number: '1.2-2' }}</td>
+            <td>{{ bobina.gramaje | number: '1.2-2' }}</td>
+            <td>
+              <div class="page__actions">
+                <p-button icon="pi pi-file-pdf" [text]="true" (onClick)="verRotulo(bobina)" pTooltip="Ver rótulo" />
+                <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="eliminarBobina(bobina)" />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6">Todavía no cargaste ninguna bobina en este lote.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </p-dialog>
+
+  <p-dialog
+    [visible]="formVisible()"
+    (visibleChange)="formVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    header="Nueva bobina"
+  >
+    <form [formGroup]="bobinaForm" (ngSubmit)="generarBobina()" class="page__form operario__form">
+      <div class="operario__form-info">
+        <span><strong>Fecha:</strong> {{ hoy | date: 'dd/MM/yyyy' }}</span>
+        <span><strong>Operario:</strong> {{ nombreOperario() }}</span>
+      </div>
+
+      <div class="page__field">
+        <label for="op_bobina_tipo">Tipo de bobina</label>
+        <p-select
+          inputId="op_bobina_tipo"
+          formControlName="id_tipo_bobina"
+          [options]="tiposBobina()"
+          optionLabel="descripcion"
+          optionValue="id_tipo_bobina"
+          placeholder="Seleccionar tipo"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="op_bobina_producto">Producto</label>
+        <p-select
+          inputId="op_bobina_producto"
+          formControlName="id_producto"
+          [options]="productosBobina()"
+          optionLabel="descripcion_producto"
+          optionValue="id_producto"
+          [filter]="true"
+          filterBy="descripcion_producto,codigo_producto"
+          placeholder="Buscar producto"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="op_bobina_producto_codigo">Código de producto</label>
+        <p-select
+          inputId="op_bobina_producto_codigo"
+          formControlName="id_producto_codigo"
+          [options]="productosBobina()"
+          optionLabel="codigo_producto"
+          optionValue="id_producto"
+          [filter]="true"
+          filterBy="codigo_producto,descripcion_producto"
+          placeholder="Buscar código"
+          [appendTo]="'body'"
+        />
+      </div>
+
+      <div class="page__field">
+        <label for="op_bobina_peso">Peso (kg)</label>
+        <p-inputNumber inputId="op_bobina_peso" formControlName="peso" [min]="0.01" [minFractionDigits]="2" />
+      </div>
+
+      <div class="page__field">
+        <label for="op_bobina_gramaje">Gramaje (g/m²)</label>
+        <p-inputNumber inputId="op_bobina_gramaje" formControlName="gramaje" [min]="0.01" [minFractionDigits]="2" />
+      </div>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelarForm()" />
+        <p-button
+          type="submit"
+          label="Generar e imprimir rótulo"
+          [loading]="bobinaSaving()"
+          [disabled]="bobinaForm.invalid"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

@@ -17,6 +17,10 @@ export class LoteProdApiService extends CrudApi<LoteProd, CreateLoteProdDto, Upd
   protected override readonly resourcePath = 'lotes-prod';
   private readonly actionsBaseUrl = `${environment.apiUrl}/lotes-prod`;
 
+  cerrar(id: number): Observable<LoteProd> {
+    return this.http.post<LoteProd>(`${this.actionsBaseUrl}/${id}/cerrar`, {});
+  }
+
   aprobar(id: number): Observable<LoteProd> {
     return this.http.post<LoteProd>(`${this.actionsBaseUrl}/${id}/aprobar`, {});
   }

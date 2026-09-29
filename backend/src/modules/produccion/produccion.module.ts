@@ -10,6 +10,7 @@ import { RecetaModule } from './receta/receta.module.js';
 import { LoteProdModule } from './lote-prod/lote-prod.module.js';
 import { MovimientoInsumoModule } from './movimiento-insumo/movimiento-insumo.module.js';
 import { MovimientoProductoModule } from './movimiento-producto/movimiento-producto.module.js';
+import { TipoBobinaModule } from './tipo-bobina/tipo-bobina.module.js';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MovimientoProductoModule } from './movimiento-producto/movimiento-produ
     LoteProdModule,
     MovimientoInsumoModule,
     MovimientoProductoModule,
+    TipoBobinaModule,
   ],
 })
 export class ProduccionModule {}

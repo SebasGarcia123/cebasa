@@ -16,7 +16,7 @@
     <ng-template #body let-lote>
       <tr>
         <td>{{ lote.id_lote }}</td>
-        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy':'UTC' }}</td>
         <td>{{ lote.turnos?.descripcion_turnos || '—' }}</td>
         <td>{{ lote.deposito?.nombre_deposito || '—' }}</td>
         <td>
@@ -44,7 +44,7 @@
       <div class="aprobacion-lotes__header-fields">
         <div class="page__field">
           <label>Fecha</label>
-          <span>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ lote.fecha_lote_prod | date: 'dd/MM/yyyy':'UTC' }}</span>
         </div>
         <div class="page__field">
           <label>Turno</label>
@@ -56,33 +56,57 @@
         </div>
       </div>
 
-      <p-table [value]="lote.item_prod || []" dataKey="id_item" class="aprobacion-lotes__items-table">
-        <ng-template #header>
-          <tr>
-            <th scope="col">Línea</th>
-            <th scope="col">Código</th>
-            <th scope="col">Producto</th>
-            <th scope="col" style="width: 6.5rem">Bolsones</th>
-            <th scope="col" style="width: 6.5rem">Pallets</th>
-          </tr>
-        </ng-template>
-        <ng-template #body let-item>
-          <tr>
-            <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
-            <td>{{ item.productos?.codigo_producto || '—' }}</td>
-            <td>{{ item.productos?.descripcion_producto || '—' }}</td>
-            <td>{{ item.cantidad }}</td>
-            <td>{{ item.productos?.bolsones_por_pallet ? (item.cantidad / item.productos.bolsones_por_pallet | number: '1.0-2') : '—' }}</td>
-          </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="5">Este lote no tiene productos cargados.</td>
-          </tr>
-        </ng-template>
-      </p-table>
+      @if (lote.item_prod?.length) {
+        <p-table [value]="lote.item_prod || []" dataKey="id_item" class="aprobacion-lotes__items-table">
+          <ng-template #header>
+            <tr>
+              <th scope="col">Línea</th>
+              <th scope="col">Código</th>
+              <th scope="col">Producto</th>
+              <th scope="col" style="width: 6.5rem">Bolsones</th>
+              <th scope="col" style="width: 6.5rem">Pallets</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item>
+            <tr>
+              <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
+              <td>{{ item.productos?.codigo_producto || '—' }}</td>
+              <td>{{ item.productos?.descripcion_producto || '—' }}</td>
+              <td>{{ item.cantidad }}</td>
+              <td>{{ item.productos?.bolsones_por_pallet ? (item.cantidad / item.productos.bolsones_por_pallet | number: '1.0-2') : '—' }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
 
-      <div class="aprobacion-lotes__total-pallets">Total de pallets: <strong>{{ totalPallets(lote) }}</strong></div>
+        <div class="aprobacion-lotes__total-pallets">Total de pallets: <strong>{{ totalPallets(lote) }}</strong></div>
+      }
+
+      @if (lote.bobina?.length) {
+        <p-table [value]="lote.bobina || []" dataKey="id_bobina" class="aprobacion-lotes__items-table">
+          <ng-template #header>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Producto</th>
+              <th scope="col" style="width: 6.5rem">Peso (kg)</th>
+              <th scope="col" style="width: 6.5rem">Gramaje</th>
+              <th scope="col">Operario</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-bobina>
+            <tr>
+              <td>{{ bobina.tipo_bobina?.descripcion || '—' }}</td>
+              <td>{{ bobina.productos?.codigo_producto }} — {{ bobina.productos?.descripcion_producto }}</td>
+              <td>{{ bobina.peso | number: '1.2-2' }}</td>
+              <td>{{ bobina.gramaje | number: '1.2-2' }}</td>
+              <td>{{ bobina.usuarios?.nombre_usuario || '—' }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <div class="aprobacion-lotes__total-pallets">
+          Peso total: <strong>{{ totalPesoBobinas(lote) | number: '1.2-2' }} kg</strong>
+        </div>
+      }
 
       @if (puedeAprobar()) {
         @if (rechazando()) {

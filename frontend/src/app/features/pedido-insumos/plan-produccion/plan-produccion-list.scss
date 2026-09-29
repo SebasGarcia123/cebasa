@@ -1,5 +1,67 @@
-.plan-produccion__item-form {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+.plan-prod__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.plan-prod__rango {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-family-body);
+}
+
+.plan-prod__vacio {
+  font-family: var(--font-family-body);
+  color: var(--color-text-muted, #666);
+  background: var(--color-surface-alt, #f4f4f4);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.plan-prod__dia {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.plan-prod__dia--no-laborable {
+  background: var(--color-surface-alt, #f4f4f4);
+  opacity: 0.75;
+}
+
+.plan-prod__dia-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.plan-prod__no-laborable-leyenda {
+  font-family: var(--font-family-body);
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+  margin: 0.5rem 0;
+}
+
+.plan-prod__tabla {
+  ::ng-deep .p-select,
+  ::ng-deep .p-inputnumber {
+    width: 100%;
+  }
+}
+
+.plan-prod__guardar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }

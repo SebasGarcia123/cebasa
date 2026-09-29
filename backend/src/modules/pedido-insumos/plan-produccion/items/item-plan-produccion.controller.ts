@@ -1,64 +1,36 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { ItemPlanProduccionService } from './item-plan-produccion.service.js';
 import { CreateItemPlanProduccionDto } from './dto/create-item-plan-produccion.dto.js';
 import { UpdateItemPlanProduccionDto } from './dto/update-item-plan-produccion.dto.js';
 import { ApiTags } from '@nestjs/swagger';
 import { RequirePermissions } from '../../../../auth/decorators/permissions.decorator.js';
+import { CurrentUser } from '../../../../auth/decorators/current-user.decorator.js';
+import type { JwtPayload } from '../../../../auth/types/jwt-payload.interface.js';
 
+// Rutas planas (no anidadas bajo un id de plan): el plan de la semana
+// se resuelve solo a partir de la fecha del ítem, el cliente nunca
+// necesita conocer/mandar un id_plan_produccion (ver
+// PlanProduccionService.obtenerOCrearPlan).
 @ApiTags('Plan Produccion - Items')
-@Controller('planes-produccion/:idPlan/items')
+@Controller('planes-produccion/items')
 export class ItemPlanProduccionController {
   constructor(private readonly itemService: ItemPlanProduccionService) {}
 
-  @RequirePermissions('pedido_insumos.ver')
-  @Get()
-  findAll(@Param('idPlan', ParseIntPipe) idPlan: number) {
-    return this.itemService.findAllForPlan(idPlan);
-  }
-
-  @RequirePermissions('pedido_insumos.editar')
+  @RequirePermissions('produccion.editar')
   @Post()
-  create(
-    @Param('idPlan', ParseIntPipe) idPlan: number,
-    @Body() dto: CreateItemPlanProduccionDto,
-  ) {
-    return this.itemService.create(idPlan, dto);
+  create(@Body() dto: CreateItemPlanProduccionDto, @CurrentUser() user: JwtPayload) {
+    return this.itemService.create(dto, user.sub);
   }
 
-  @RequirePermissions('pedido_insumos.ver')
-  @Get(':idItem')
-  findOne(
-    @Param('idPlan', ParseIntPipe) idPlan: number,
-    @Param('idItem', ParseIntPipe) idItem: number,
-  ) {
-    return this.itemService.findOne(idPlan, idItem);
-  }
-
-  @RequirePermissions('pedido_insumos.editar')
+  @RequirePermissions('produccion.editar')
   @Patch(':idItem')
-  update(
-    @Param('idPlan', ParseIntPipe) idPlan: number,
-    @Param('idItem', ParseIntPipe) idItem: number,
-    @Body() dto: UpdateItemPlanProduccionDto,
-  ) {
-    return this.itemService.update(idPlan, idItem, dto);
+  update(@Param('idItem', ParseIntPipe) idItem: number, @Body() dto: UpdateItemPlanProduccionDto) {
+    return this.itemService.update(idItem, dto);
   }
 
-  @RequirePermissions('pedido_insumos.editar')
+  @RequirePermissions('produccion.editar')
   @Delete(':idItem')
-  remove(
-    @Param('idPlan', ParseIntPipe) idPlan: number,
-    @Param('idItem', ParseIntPipe) idItem: number,
-  ) {
-    return this.itemService.remove(idPlan, idItem);
+  remove(@Param('idItem', ParseIntPipe) idItem: number) {
+    return this.itemService.remove(idItem);
   }
 }

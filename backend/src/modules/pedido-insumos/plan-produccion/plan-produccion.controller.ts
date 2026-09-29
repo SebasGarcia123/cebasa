@@ -1,16 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { PlanProduccionService } from './plan-produccion.service.js';
-import { CreatePlanProduccionDto } from './dto/create-plan-produccion.dto.js';
-import { UpdatePlanProduccionDto } from './dto/update-plan-produccion.dto.js';
 import { ApiTags } from '@nestjs/swagger';
 import { RequirePermissions } from '../../../auth/decorators/permissions.decorator.js';
 
@@ -19,36 +8,14 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class PlanProduccionController {
   constructor(private readonly planProduccionService: PlanProduccionService) {}
 
-  @RequirePermissions('pedido_insumos.editar')
-  @Post()
-  create(@Body() dto: CreatePlanProduccionDto) {
-    return this.planProduccionService.create(dto);
-  }
-
+  // ?fecha=YYYY-MM-DD: cualquier fecha de la semana que se quiere ver
+  // (no hace falta que sea un lunes, el service lo resuelve).
   @RequirePermissions('pedido_insumos.ver')
-  @Get()
-  findAll() {
-    return this.planProduccionService.findAll();
-  }
-
-  @RequirePermissions('pedido_insumos.ver')
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.planProduccionService.findOne(id);
-  }
-
-  @RequirePermissions('pedido_insumos.editar')
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdatePlanProduccionDto,
-  ) {
-    return this.planProduccionService.update(id, dto);
-  }
-
-  @RequirePermissions('pedido_insumos.editar')
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.planProduccionService.remove(id);
+  @Get('semana')
+  obtenerSemana(@Query('fecha') fecha: string) {
+    if (!fecha || Number.isNaN(Date.parse(fecha))) {
+      throw new BadRequestException('Falta una fecha válida (?fecha=YYYY-MM-DD)');
+    }
+    return this.planProduccionService.obtenerSemana(new Date(fecha));
   }
 }

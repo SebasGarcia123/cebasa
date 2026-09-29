@@ -4,36 +4,30 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ItemPlanProduccion } from '../models/item-plan-produccion.model';
 
-export interface ItemPlanProduccionDto {
+export interface CreateItemPlanProduccionDto {
+  fecha: string;
   id_lineas: number;
   id_producto: number;
   id_turno: number;
-  fecha: string;
   cantidad: number;
 }
+
+export type UpdateItemPlanProduccionDto = Partial<Omit<CreateItemPlanProduccionDto, 'fecha'>>;
 
 @Injectable({ providedIn: 'root' })
 export class ItemPlanProduccionApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiUrl;
+  private readonly baseUrl = `${environment.apiUrl}/planes-produccion/items`;
 
-  private base(idPlan: number): string {
-    return `${this.baseUrl}/planes-produccion/${idPlan}/items`;
+  create(dto: CreateItemPlanProduccionDto): Observable<ItemPlanProduccion> {
+    return this.http.post<ItemPlanProduccion>(this.baseUrl, dto);
   }
 
-  list(idPlan: number): Observable<ItemPlanProduccion[]> {
-    return this.http.get<ItemPlanProduccion[]>(this.base(idPlan));
+  update(idItem: number, dto: UpdateItemPlanProduccionDto): Observable<ItemPlanProduccion> {
+    return this.http.patch<ItemPlanProduccion>(`${this.baseUrl}/${idItem}`, dto);
   }
 
-  create(idPlan: number, dto: ItemPlanProduccionDto): Observable<ItemPlanProduccion> {
-    return this.http.post<ItemPlanProduccion>(this.base(idPlan), dto);
-  }
-
-  update(idPlan: number, idItem: number, dto: Partial<ItemPlanProduccionDto>): Observable<ItemPlanProduccion> {
-    return this.http.patch<ItemPlanProduccion>(`${this.base(idPlan)}/${idItem}`, dto);
-  }
-
-  remove(idPlan: number, idItem: number): Observable<void> {
-    return this.http.delete<void>(`${this.base(idPlan)}/${idItem}`);
+  remove(idItem: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${idItem}`);
   }
 }

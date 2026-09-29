@@ -1,11 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EstadosLookupService } from '../../../prisma/estados-lookup.service.js';
-import { CreatePlanProduccionDto } from './dto/create-plan-produccion.dto.js';
-import { UpdatePlanProduccionDto } from './dto/update-plan-produccion.dto.js';
+import { lunesDe, diasDeLaSemana } from './semana.util.js';
 
 const ESTADO_ACTIVO = 'Activo';
-const ESTADOS_PERMITIDOS = new Set(['Activo', 'Anulado']);
+const INCLUDE_SEMANA = {
+  item_plan_produccion: { include: { productos: true, lineas: true, turnos: true } },
+  dia_no_laborable: true,
+} as const;
 
 @Injectable()
 export class PlanProduccionService {
@@ -14,67 +16,45 @@ export class PlanProduccionService {
     private readonly estadosLookup: EstadosLookupService,
   ) {}
 
-  async create(dto: CreatePlanProduccionDto) {
+  // Nunca hay un alta manual de "plan": se crea sola, la primera vez
+  // que alguien carga un ítem o marca un día no laborable en esa
+  // semana. fecha ya viene normalizada al lunes por el caller.
+  async obtenerOCrearPlan(lunes: Date, idUsuario: number) {
+    const existente = await this.prisma.plan_produccion.findFirst({ where: { fecha_inicio_semana: lunes } });
+    if (existente) {
+      return existente;
+    }
     const idEstadoActivo = await this.estadosLookup.getId(ESTADO_ACTIVO);
     return this.prisma.plan_produccion.create({
-      data: {
-        ...dto,
-        id_estado: idEstadoActivo,
-        fecha_inicio_semana: new Date(dto.fecha_inicio_semana),
-      },
+      data: { fecha_inicio_semana: lunes, id_usuario: idUsuario, id_estado: idEstadoActivo },
     });
   }
 
-  findAll() {
-    return this.prisma.plan_produccion.findMany({
-      include: { usuarios: true, estados: true },
+  // Arma la semana (lunes a viernes) para la fecha pedida, con sus
+  // ítems y días no laborables ya agrupados por día. Si todavía no hay
+  // plan_produccion para ese lunes, devuelve la semana igual pero con
+  // existe:false (para que el frontend muestre "aún no hay plan
+  // cargado" en vez de un error).
+  async obtenerSemana(fechaQuery: Date) {
+    const lunes = lunesDe(fechaQuery);
+    const plan = await this.prisma.plan_produccion.findFirst({
+      where: { fecha_inicio_semana: lunes },
+      include: INCLUDE_SEMANA,
     });
-  }
 
-  async findOne(id: number) {
-    const plan = await this.prisma.plan_produccion.findUnique({
-      where: { id_plan_produccion: id },
-      include: {
-        usuarios: true,
-        estados: true,
-        item_plan_produccion: {
-          include: { productos: true, lineas: true, turnos: true },
-        },
-      },
-    });
-    if (!plan) {
-      throw new NotFoundException(`Plan de producción ${id} no encontrado`);
-    }
-    return plan;
-  }
+    const items = plan?.item_plan_produccion ?? [];
+    const diasNoLaborables = plan?.dia_no_laborable ?? [];
 
-  async update(id: number, dto: UpdatePlanProduccionDto) {
-    await this.findOne(id);
+    const dias = diasDeLaSemana(lunes).map((fecha) => ({
+      fecha,
+      no_laborable: diasNoLaborables.find((d) => d.fecha.getTime() === fecha.getTime()) ?? null,
+      items: items.filter((item) => item.fecha.getTime() === fecha.getTime()),
+    }));
 
-    if (dto.id_estado !== undefined) {
-      const estado = await this.prisma.estados.findUnique({
-        where: { id_estado: dto.id_estado },
-      });
-      if (!estado || !ESTADOS_PERMITIDOS.has(estado.nombreEstado)) {
-        throw new BadRequestException('Un plan de producción solo puede estar Activo o Anulado');
-      }
-    }
-
-    return this.prisma.plan_produccion.update({
-      where: { id_plan_produccion: id },
-      data: {
-        ...dto,
-        fecha_inicio_semana: dto.fecha_inicio_semana
-          ? new Date(dto.fecha_inicio_semana)
-          : undefined,
-      },
-    });
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    return this.prisma.plan_produccion.delete({
-      where: { id_plan_produccion: id },
-    });
+    return {
+      fecha_inicio_semana: lunes,
+      existe: !!plan,
+      dias,
+    };
   }
 }

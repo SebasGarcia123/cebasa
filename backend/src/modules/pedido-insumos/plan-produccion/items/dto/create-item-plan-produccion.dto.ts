@@ -1,6 +1,9 @@
 import { IsDateString, IsInt, Min } from 'class-validator';
 
 export class CreateItemPlanProduccionDto {
+  @IsDateString()
+  fecha: string;
+
   @IsInt()
   id_lineas: number;
 
@@ -9,9 +12,6 @@ export class CreateItemPlanProduccionDto {
 
   @IsInt()
   id_turno: number;
-
-  @IsDateString()
-  fecha: string;
 
   @IsInt()
   @Min(1)

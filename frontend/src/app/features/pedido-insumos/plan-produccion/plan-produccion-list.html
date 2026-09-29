@@ -1,221 +1,180 @@
-<div class="page">
+<div class="page plan-prod">
   <div class="page__header">
     <h1>Plan de Producción</h1>
-    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <p-table
-    [value]="planes()"
-    [loading]="loading()"
-    dataKey="id_plan_produccion"
-    [paginator]="true"
-    [rows]="10"
-  >
-    <ng-template #header>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Semana desde</th>
-        <th scope="col">Armó</th>
-        <th scope="col">Estado</th>
-        <th scope="col" style="width: 10rem"></th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-plan>
-      <tr>
-        <td>{{ plan.id_plan_produccion }}</td>
-        <td>{{ plan.fecha_inicio_semana | date: 'dd/MM/yyyy' }}</td>
-        <td>{{ plan.usuarios?.nombre_usuario || '—' }}</td>
-        <td>{{ plan.estados?.nombreEstado || '—' }}</td>
-        <td>
-          <div class="page__actions">
-            <p-button
-              icon="pi pi-list"
-              [text]="true"
-              (onClick)="openItems(plan)"
-              pTooltip="Ítems"
-            />
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(plan)" />
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              (onClick)="confirmDelete(plan)"
-            />
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template #emptymessage>
-      <tr>
-        <td colspan="5">No hay planes cargados todavía.</td>
-      </tr>
-    </ng-template>
-  </p-table>
+  <div class="plan-prod__nav">
+    <p-button icon="pi pi-angle-left" label="Semana anterior" [text]="true" (onClick)="semanaAnterior()" />
+    <div class="plan-prod__rango">
+      <strong>Semana del {{ rangoSemana().desde | date: 'dd/MM/yyyy' }} al {{ rangoSemana().hasta | date: 'dd/MM/yyyy' }}</strong>
+      <p-datepicker
+        [ngModel]="fechaBusqueda()"
+        (ngModelChange)="buscarPorFecha($event)"
+        dateFormat="dd/mm/yy"
+        placeholder="Buscar por fecha"
+        [showIcon]="true"
+        appendTo="body"
+      />
+    </div>
+    <p-button icon="pi pi-angle-right" iconPos="right" label="Semana siguiente" [text]="true" (onClick)="semanaSiguiente()" />
+  </div>
 
-  <p-dialog
-    [visible]="dialogVisible()"
-    (visibleChange)="dialogVisible.set($event)"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-    [header]="editingId() ? 'Editar plan' : 'Nuevo plan'"
-  >
-    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
-      <div class="page__field">
-        <label for="fecha_inicio_semana">Semana desde</label>
-        <p-datepicker
-          inputId="fecha_inicio_semana"
-          formControlName="fecha_inicio_semana"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-        />
-      </div>
+  @if (!loading() && semana() && !semana()!.existe) {
+    <p class="plan-prod__vacio">Aún no hay plan cargado para esta semana.</p>
+  }
 
-      @if (editingId()) {
-        <div class="page__field">
-          <label for="id_estado">Estado</label>
-          <p-select
-            inputId="id_estado"
-            formControlName="id_estado"
-            [options]="estadosPlanProduccion()"
-            optionLabel="nombreEstado"
-            optionValue="id_estado"
-            placeholder="Seleccionar estado"
-            [appendTo]="'body'"
-          />
-        </div>
-      }
-
-      <div class="page__form-actions">
-        <p-button
-          type="button"
-          label="Cancelar"
-          severity="secondary"
-          [outlined]="true"
-          (onClick)="closeDialog()"
-        />
-        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
-      </div>
-    </form>
-  </p-dialog>
-
-  <p-dialog
-    [visible]="itemsDialogVisible()"
-    (visibleChange)="itemsDialogVisible.set($event)"
-    [modal]="true"
-    [style]="{ width: '560px' }"
-    header="Ítems del plan"
-  >
-    <p-table [value]="items()" [loading]="itemsLoading()" dataKey="id_item_plan_produccion">
-      <ng-template #header>
-        <tr>
-          <th scope="col">Fecha</th>
-          <th scope="col">Línea</th>
-          <th scope="col">Turno</th>
-          <th scope="col">Producto</th>
-          <th scope="col">Cantidad</th>
-          <th scope="col" style="width: 6rem"></th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-item>
-        <tr>
-          <td>{{ item.fecha | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
-          <td>{{ item.turnos?.descripcion_turnos || '—' }}</td>
-          <td>{{ item.productos?.descripcion_producto || '—' }}</td>
-          <td>{{ item.cantidad }}</td>
-          <td>
-            <div class="page__actions">
-              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
+  @if (semana(); as s) {
+    @for (dia of s.dias; track dia.fecha; let i = $index) {
+      <div class="plan-prod__dia" [class.plan-prod__dia--no-laborable]="!!dia.no_laborable">
+        <div class="plan-prod__dia-header">
+          <h3>{{ diasSemana[i] }} {{ dia.fecha | date: 'dd/MM/yyyy':'UTC' }}</h3>
+          @if (dia.no_laborable) {
+            @if (diaEditable(dia.fecha)) {
               <p-button
-                icon="pi pi-trash"
+                label="Deshacer"
+                icon="pi pi-undo"
                 [text]="true"
-                severity="danger"
-                (onClick)="removeItem(item)"
+                severity="secondary"
+                (onClick)="deshacerNoLaborable(dia)"
               />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="6">Todavía no hay ítems cargados.</td>
-        </tr>
-      </ng-template>
-    </p-table>
+            }
+          } @else if (diaEditable(dia.fecha) && dia.items.length === 0) {
+            <p-button
+              label="Marcar no laborable"
+              icon="pi pi-ban"
+              [text]="true"
+              severity="secondary"
+              (onClick)="abrirMotivo(dia)"
+            />
+          }
+        </div>
 
-    <form
-      [formGroup]="itemForm"
-      (ngSubmit)="saveItem()"
-      class="page__form plan-produccion__item-form"
-    >
-      <div class="page__field">
-        <label for="item_fecha">Fecha</label>
-        <p-datepicker
-          inputId="item_fecha"
-          formControlName="fecha"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-        />
-      </div>
-      <div class="page__field">
-        <label for="item_lineas">Línea</label>
-        <p-select
-          inputId="item_lineas"
-          formControlName="id_lineas"
-          [options]="lineas()"
-          optionLabel="descripcion_lineas"
-          optionValue="id_lineas"
-          placeholder="Seleccionar línea"
-          [appendTo]="'body'"
-        />
-      </div>
-      <div class="page__field">
-        <label for="item_turno">Turno</label>
-        <p-select
-          inputId="item_turno"
-          formControlName="id_turno"
-          [options]="turnos()"
-          optionLabel="descripcion_turnos"
-          optionValue="id_turno"
-          placeholder="Seleccionar turno"
-          [appendTo]="'body'"
-        />
-      </div>
-      <div class="page__field">
-        <label for="item_producto">Producto</label>
-        <p-select
-          inputId="item_producto"
-          formControlName="id_producto"
-          [options]="productos()"
-          optionLabel="descripcion_producto"
-          optionValue="id_producto"
-          [filter]="true"
-          filterBy="codigo_producto,descripcion_producto"
-          placeholder="Seleccionar producto"
-          [appendTo]="'body'"
-        />
-      </div>
-      <div class="page__field">
-        <label for="item_cantidad">Cantidad</label>
-        <p-inputNumber inputId="item_cantidad" formControlName="cantidad" [min]="1" />
-      </div>
+        @if (dia.no_laborable) {
+          <p class="plan-prod__no-laborable-leyenda">
+            No laborable — {{ dia.no_laborable.motivo }}
+          </p>
+        } @else {
+          <p-table [value]="filasPorDia[i].controls" dataKey="id_item_plan_produccion" class="plan-prod__tabla">
+            <ng-template #header>
+              <tr>
+                <th scope="col" style="width: 9rem">Turno</th>
+                <th scope="col" style="width: 9rem">Línea</th>
+                <th scope="col" style="width: 8rem">Código</th>
+                <th scope="col">Producto</th>
+                <th scope="col" style="width: 8rem">Cantidad</th>
+                @if (diaEditable(dia.fecha)) {
+                  <th scope="col" style="width: 3rem"></th>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #body let-fila let-filaIndex="rowIndex">
+              <tr [formGroup]="fila">
+                @if (diaEditable(dia.fecha)) {
+                  <td>
+                    <p-select
+                      formControlName="id_turno"
+                      [options]="turnosActivos()"
+                      optionLabel="descripcion_turnos"
+                      optionValue="id_turno"
+                      placeholder="Turno"
+                      appendTo="body"
+                      [style]="{ width: '100%' }"
+                    />
+                  </td>
+                  <td>
+                    <p-select
+                      formControlName="id_lineas"
+                      [options]="lineas()"
+                      optionLabel="descripcion_lineas"
+                      optionValue="id_lineas"
+                      placeholder="Línea"
+                      appendTo="body"
+                      [style]="{ width: '100%' }"
+                    />
+                  </td>
+                  <td>
+                    <p-select
+                      formControlName="id_producto_codigo"
+                      [options]="productosActivos()"
+                      optionLabel="codigo_producto"
+                      optionValue="id_producto"
+                      [filter]="true"
+                      filterBy="codigo_producto,descripcion_producto"
+                      placeholder="Código"
+                      appendTo="body"
+                      [style]="{ width: '100%' }"
+                    />
+                  </td>
+                  <td>
+                    <p-select
+                      formControlName="id_producto"
+                      [options]="productosActivos()"
+                      optionLabel="descripcion_producto"
+                      optionValue="id_producto"
+                      [filter]="true"
+                      filterBy="descripcion_producto,codigo_producto"
+                      placeholder="Producto"
+                      appendTo="body"
+                      [style]="{ width: '100%' }"
+                    />
+                  </td>
+                  <td>
+                    <p-inputNumber formControlName="cantidad" [min]="1" [style]="{ width: '100%' }" />
+                  </td>
+                  <td>
+                    <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="quitarFila(i, filaIndex)" />
+                  </td>
+                } @else {
+                  <td>{{ turnoDe(fila.value.id_turno ?? null)?.descripcion_turnos || '—' }}</td>
+                  <td>{{ lineaDe(fila.value.id_lineas ?? null)?.descripcion_lineas || '—' }}</td>
+                  <td>{{ productoDe(fila.value.id_producto ?? null)?.codigo_producto || '—' }}</td>
+                  <td>{{ productoDe(fila.value.id_producto ?? null)?.descripcion_producto || '—' }}</td>
+                  <td>{{ fila.value.cantidad }}</td>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td [attr.colspan]="diaEditable(dia.fecha) ? 6 : 5">Sin producción cargada este día.</td>
+              </tr>
+            </ng-template>
+          </p-table>
 
-      <div class="page__form-actions">
-        @if (editingItemId()) {
-          <p-button
-            type="button"
-            label="Cancelar edición"
-            severity="secondary"
-            [outlined]="true"
-            (onClick)="cancelItemEdit()"
-          />
+          @if (diaEditable(dia.fecha)) {
+            <p-button label="+ Agregar" icon="pi pi-plus" [text]="true" (onClick)="agregarFila(i)" />
+          }
         }
-        <p-button
-          type="submit"
-          [label]="editingItemId() ? 'Guardar ítem' : 'Agregar ítem'"
-          [loading]="itemsSaving()"
-          [disabled]="itemForm.invalid"
-        />
+      </div>
+    }
+
+    @if (puedeEditar() && haySemanaEditable()) {
+      <div class="plan-prod__guardar">
+        <p-button label="Guardar" icon="pi pi-save" [loading]="guardando()" (onClick)="guardar()" />
+      </div>
+    }
+  }
+
+  <p-dialog
+    [visible]="motivoDialogVisible()"
+    (visibleChange)="motivoDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Marcar día no laborable"
+  >
+    <form [formGroup]="motivoForm" (ngSubmit)="confirmarNoLaborable()" class="page__form">
+      <div class="page__field">
+        <label for="pp_motivo">Motivo</label>
+        <textarea
+          pTextarea
+          id="pp_motivo"
+          formControlName="motivo"
+          rows="3"
+          placeholder="Ej: Feriado nacional, día de limpieza…"
+        ></textarea>
+      </div>
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarMotivo()" />
+        <p-button type="submit" label="Confirmar" [loading]="motivoSaving()" [disabled]="motivoForm.invalid" />
       </div>
     </form>
   </p-dialog>

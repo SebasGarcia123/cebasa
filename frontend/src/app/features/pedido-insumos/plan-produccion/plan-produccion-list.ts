@@ -1,34 +1,72 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { FormArray, FormBuilder, FormGroup, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin, Observable } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { TooltipModule } from 'primeng/tooltip';
+import { TextareaModule } from 'primeng/textarea';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { PlanProduccionApiService } from '../../../core/api/plan-produccion-api.service';
 import { ItemPlanProduccionApiService } from '../../../core/api/item-plan-produccion-api.service';
+import { DiaNoLaborableApiService } from '../../../core/api/dia-no-laborable-api.service';
 import { LineasApiService } from '../../../core/api/lineas-api.service';
 import { ProductosApiService } from '../../../core/api/productos-api.service';
 import { TurnosApiService } from '../../../core/api/turnos-api.service';
-import { EstadosApiService } from '../../../core/api/estados-api.service';
-import { PlanProduccion } from '../../../core/models/plan-produccion.model';
+import { AuthService } from '../../../core/auth/auth.service';
+import { SemanaPlanProduccion, DiaPlanProduccion } from '../../../core/models/semana-plan-produccion.model';
 import { ItemPlanProduccion } from '../../../core/models/item-plan-produccion.model';
 import { Linea } from '../../../core/models/linea.model';
 import { Producto } from '../../../core/models/producto.model';
 import { Turno } from '../../../core/models/turno.model';
-import { Estado } from '../../../core/models/estado.model';
 
-const ESTADOS_PLAN_PRODUCCION = new Set(['Activo', 'Anulado']);
+type ItemForm = FormGroup<{
+  id_item_plan_produccion: FormControl<number | null>;
+  id_lineas: FormControl<number | null>;
+  id_producto: FormControl<number | null>;
+  id_producto_codigo: FormControl<number | null>;
+  id_turno: FormControl<number | null>;
+  cantidad: FormControl<number | null>;
+}>;
 
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
+// Fecha "solo calendario" en formato YYYY-MM-DD, tomada de la hora
+// local del navegador (los usuarios están todos en Argentina, así que
+// la hora local del navegador ya es la hora Argentina que importa acá
+// — no hace falta el ajuste UTC-3 fijo que sí usa el backend, que no
+// puede asumir en qué huso horario corre el server).
+function soloFecha(fecha: Date): string {
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
+function lunesDeLocal(fecha: Date): Date {
+  const dia = fecha.getDay();
+  const diff = dia === 0 ? -6 : 1 - dia;
+  const lunes = new Date(fecha);
+  lunes.setDate(lunes.getDate() + diff);
+  lunes.setHours(0, 0, 0, 0);
+  return lunes;
+}
+
+// El plan de producción se carga por semana (lunes a viernes). Solo el
+// Jefe de Producción (permiso produccion.editar) puede cargar/editar,
+// y solo mientras el día sea hoy o futuro — un día ya pasado, o
+// cualquier otro rol, queda de solo lectura. Marcar un día como no
+// laborable (feriado, limpieza, etc.) es una acción aparte e
+// inmediata, no pasa por el botón Guardar general.
 @Component({
   selector: 'app-plan-produccion-list',
   imports: [
     DatePipe,
+    FormsModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -36,7 +74,7 @@ const ESTADOS_PLAN_PRODUCCION = new Set(['Activo', 'Anulado']);
     SelectModule,
     DatePickerModule,
     InputNumberModule,
-    TooltipModule,
+    TextareaModule,
   ],
   templateUrl: './plan-produccion-list.html',
   styleUrl: './plan-produccion-list.scss',
@@ -44,236 +82,283 @@ const ESTADOS_PLAN_PRODUCCION = new Set(['Activo', 'Anulado']);
 export class PlanProduccionList implements OnInit {
   private readonly api = inject(PlanProduccionApiService);
   private readonly itemsApi = inject(ItemPlanProduccionApiService);
+  private readonly diaNoLaborableApi = inject(DiaNoLaborableApiService);
   private readonly lineasApi = inject(LineasApiService);
   private readonly productosApi = inject(ProductosApiService);
   private readonly turnosApi = inject(TurnosApiService);
-  private readonly estadosApi = inject(EstadosApiService);
+  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
-  protected readonly planes = signal<PlanProduccion[]>([]);
+  protected readonly diasSemana = DIAS_SEMANA;
+
+  protected readonly puedeEditar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.editar'));
+  });
+
+  protected readonly lunesActual = signal<Date>(lunesDeLocal(new Date()));
+  protected readonly fechaBusqueda = signal<Date | null>(null);
+  protected readonly semana = signal<SemanaPlanProduccion | null>(null);
+  protected readonly loading = signal(false);
+  protected readonly guardando = signal(false);
+
   protected readonly lineas = signal<Linea[]>([]);
   protected readonly productos = signal<Producto[]>([]);
   protected readonly turnos = signal<Turno[]>([]);
-  protected readonly estados = signal<Estado[]>([]);
-  protected readonly loading = signal(false);
-  protected readonly saving = signal(false);
-  protected readonly dialogVisible = signal(false);
-  protected readonly editingId = signal<number | null>(null);
-
-  // id_usuario: quien arma el plan. Por ahora se fija a 1 (usuario de
-  // prueba), igual que en el resto de la app.
-  // Al crear no se elige estado: el sistema lo pone en "Activo". El
-  // selector de estado solo se muestra al editar, y restringido a
-  // Activo/Anulado.
-  protected readonly estadosPlanProduccion = computed(() =>
-    this.estados().filter((e) => ESTADOS_PLAN_PRODUCCION.has(e.nombreEstado)),
+  protected readonly productosActivos = computed(() =>
+    this.productos().filter((p) => p.estados?.nombreEstado !== 'Anulado'),
+  );
+  protected readonly turnosActivos = computed(() =>
+    this.turnos().filter((t) => t.estados?.nombreEstado !== 'Anulado'),
   );
 
-  protected readonly form = this.fb.nonNullable.group({
-    fecha_inicio_semana: [null as Date | null, Validators.required],
-    id_estado: [null as number | null],
+  // Un FormArray por día (lunes=0 … viernes=4), con las filas de
+  // producto/línea/turno/cantidad de ese día. Se reconstruyen enteros
+  // cada vez que se carga una semana nueva.
+  protected readonly filasPorDia: FormArray<ItemForm>[] = Array.from({ length: 5 }, () => new FormArray<ItemForm>([]));
+  private originalesPorDia: ItemPlanProduccion[][] = [[], [], [], [], []];
+
+  protected readonly rangoSemana = computed(() => {
+    const lunes = this.lunesActual();
+    const viernes = new Date(lunes);
+    viernes.setDate(viernes.getDate() + 4);
+    return { desde: lunes, hasta: viernes };
   });
 
-  protected readonly itemsDialogVisible = signal(false);
-  protected readonly itemsLoading = signal(false);
-  protected readonly itemsSaving = signal(false);
-  protected readonly items = signal<ItemPlanProduccion[]>([]);
-  protected readonly editingItemId = signal<number | null>(null);
-  private planActivo: PlanProduccion | null = null;
+  protected readonly hoyStr = soloFecha(new Date());
 
-  protected readonly itemForm = this.fb.nonNullable.group({
-    id_lineas: [null as number | null, Validators.required],
-    id_producto: [null as number | null, Validators.required],
-    id_turno: [null as number | null, Validators.required],
-    fecha: [null as Date | null, Validators.required],
-    cantidad: [null as number | null, [Validators.required, Validators.min(1)]],
+  protected readonly motivoDialogVisible = signal(false);
+  protected readonly motivoSaving = signal(false);
+  private diaParaMotivo: DiaPlanProduccion | null = null;
+  protected readonly motivoForm = this.fb.nonNullable.group({
+    motivo: ['', [Validators.required, Validators.maxLength(255)]],
   });
 
   ngOnInit(): void {
-    this.load();
-  }
-
-  private load(): void {
-    this.loading.set(true);
     forkJoin({
-      planes: this.api.list(),
       lineas: this.lineasApi.list(),
       productos: this.productosApi.list(),
       turnos: this.turnosApi.list(),
-      estados: this.estadosApi.list(),
     }).subscribe({
-      next: ({ planes, lineas, productos, turnos, estados }) => {
-        this.planes.set(planes);
+      next: ({ lineas, productos, turnos }) => {
         this.lineas.set(lineas);
         this.productos.set(productos);
         this.turnos.set(turnos);
-        this.estados.set(estados);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los catálogos' });
+      },
+    });
+    this.cargarSemana();
+  }
+
+  private cargarSemana(): void {
+    this.loading.set(true);
+    this.api.semana(soloFecha(this.lunesActual())).subscribe({
+      next: (semana) => {
+        this.semana.set(semana);
+        this.reconstruirFormularios(semana);
         this.loading.set(false);
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el listado' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el plan de producción' });
       },
     });
   }
 
-  openCreate(): void {
-    this.editingId.set(null);
-    this.form.reset();
-    this.dialogVisible.set(true);
-  }
-
-  openEdit(plan: PlanProduccion): void {
-    this.editingId.set(plan.id_plan_produccion);
-    this.form.setValue({
-      fecha_inicio_semana: new Date(plan.fecha_inicio_semana),
-      id_estado: plan.id_estado,
+  private reconstruirFormularios(semana: SemanaPlanProduccion): void {
+    semana.dias.forEach((dia, i) => {
+      const array = this.filasPorDia[i];
+      array.clear();
+      this.originalesPorDia[i] = dia.items;
+      dia.items.forEach((item) => array.push(this.crearFilaItem(item)));
     });
-    this.dialogVisible.set(true);
   }
 
-  closeDialog(): void {
-    this.dialogVisible.set(false);
+  private crearFilaItem(item?: ItemPlanProduccion): ItemForm {
+    const fila: ItemForm = this.fb.group({
+      id_item_plan_produccion: this.fb.control<number | null>(item?.id_item_plan_produccion ?? null),
+      id_lineas: this.fb.control<number | null>(item?.id_lineas ?? null, Validators.required),
+      id_producto: this.fb.control<number | null>(item?.id_producto ?? null, Validators.required),
+      id_producto_codigo: this.fb.control<number | null>(item?.id_producto ?? null),
+      id_turno: this.fb.control<number | null>(item?.id_turno ?? null, Validators.required),
+      cantidad: this.fb.control<number | null>(item?.cantidad ?? null, [Validators.required, Validators.min(1)]),
+    });
+
+    const sincronizarProducto = (idProducto: number | null, origen: 'principal' | 'codigo') => {
+      if (origen === 'principal') {
+        fila.controls.id_producto_codigo.setValue(idProducto, { emitEvent: false });
+      } else {
+        fila.controls.id_producto.setValue(idProducto, { emitEvent: false });
+      }
+    };
+    fila.controls.id_producto.valueChanges.subscribe((v) => sincronizarProducto(v, 'principal'));
+    fila.controls.id_producto_codigo.valueChanges.subscribe((v) => sincronizarProducto(v, 'codigo'));
+
+    return fila;
   }
 
-  save(): void {
-    if (this.form.invalid || this.saving()) {
+  // Editable si hay permiso Y la fecha es hoy o futura. Un día pasado,
+  // o cualquier rol sin produccion.editar, queda de solo lectura.
+  protected diaEditable(fecha: string): boolean {
+    return this.puedeEditar() && fecha.slice(0, 10) >= this.hoyStr;
+  }
+
+  protected turnoDe(id: number | null): Turno | undefined {
+    return id == null ? undefined : this.turnos().find((t) => t.id_turno === id);
+  }
+
+  protected lineaDe(id: number | null): Linea | undefined {
+    return id == null ? undefined : this.lineas().find((l) => l.id_lineas === id);
+  }
+
+  protected productoDe(id: number | null): Producto | undefined {
+    return id == null ? undefined : this.productos().find((p) => p.id_producto === id);
+  }
+
+  // Si toda la semana que se está viendo quedó en el pasado, no tiene
+  // sentido mostrar un botón "Guardar" activo (no habría nada que
+  // guardar aunque se tocara algo — guardar() ya lo ignora por día,
+  // pero mostrar el botón igual sería confuso).
+  protected readonly haySemanaEditable = computed(() => {
+    const semana = this.semana();
+    return !!semana && semana.dias.some((dia) => this.diaEditable(dia.fecha));
+  });
+
+  protected agregarFila(diaIndex: number): void {
+    this.filasPorDia[diaIndex].push(this.crearFilaItem());
+  }
+
+  protected quitarFila(diaIndex: number, filaIndex: number): void {
+    this.filasPorDia[diaIndex].removeAt(filaIndex);
+  }
+
+  protected semanaAnterior(): void {
+    const nueva = new Date(this.lunesActual());
+    nueva.setDate(nueva.getDate() - 7);
+    this.lunesActual.set(nueva);
+    this.cargarSemana();
+  }
+
+  protected semanaSiguiente(): void {
+    const nueva = new Date(this.lunesActual());
+    nueva.setDate(nueva.getDate() + 7);
+    this.lunesActual.set(nueva);
+    this.cargarSemana();
+  }
+
+  protected buscarPorFecha(fecha: Date | null): void {
+    if (!fecha) {
+      return;
+    }
+    this.lunesActual.set(lunesDeLocal(fecha));
+    this.cargarSemana();
+  }
+
+  protected guardar(): void {
+    if (this.guardando()) {
+      return;
+    }
+    if (this.filasPorDia.some((array) => array.invalid)) {
+      this.messageService.add({ severity: 'warn', summary: 'Revisá los campos', detail: 'Hay filas incompletas' });
       return;
     }
 
-    this.saving.set(true);
-    const raw = this.form.getRawValue();
-    const dto = {
-      fecha_inicio_semana: raw.fecha_inicio_semana!.toISOString().slice(0, 10),
-      id_usuario: 1,
-    };
-    const id = this.editingId();
-    const request$ = id ? this.api.update(id, { ...dto, id_estado: raw.id_estado! }) : this.api.create(dto);
+    const operaciones: Observable<unknown>[] = [];
+    const semana = this.semana();
+    this.filasPorDia.forEach((array, i) => {
+      const fecha = semana?.dias[i]?.fecha;
+      if (!fecha || !this.diaEditable(fecha)) {
+        return;
+      }
+      const filas = array.getRawValue();
+      const idsActuales = new Set(
+        filas.map((f) => f.id_item_plan_produccion).filter((id): id is number => id != null),
+      );
+      const aEliminar = this.originalesPorDia[i].filter((item) => !idsActuales.has(item.id_item_plan_produccion));
 
-    request$.subscribe({
+      operaciones.push(
+        ...aEliminar.map((item) => this.itemsApi.remove(item.id_item_plan_produccion)),
+        ...filas.map((fila) => {
+          const dto = { id_lineas: fila.id_lineas!, id_producto: fila.id_producto!, id_turno: fila.id_turno!, cantidad: fila.cantidad! };
+          return fila.id_item_plan_produccion
+            ? this.itemsApi.update(fila.id_item_plan_produccion, dto)
+            : this.itemsApi.create({ ...dto, fecha });
+        }),
+      );
+    });
+
+    if (operaciones.length === 0) {
+      this.messageService.add({ severity: 'info', summary: 'Sin cambios', detail: 'No hay nada nuevo para guardar' });
+      return;
+    }
+
+    this.guardando.set(true);
+    forkJoin(operaciones).subscribe({
       next: () => {
-        this.saving.set(false);
-        this.dialogVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó correctamente' });
-        this.load();
+        this.guardando.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Se guardó el plan de producción' });
+        this.cargarSemana();
       },
-      error: () => {
-        this.saving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar' });
+      error: (error: HttpErrorResponse) => {
+        this.guardando.set(false);
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo guardar';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
+        this.cargarSemana();
       },
     });
   }
 
-  confirmDelete(plan: PlanProduccion): void {
+  protected abrirMotivo(dia: DiaPlanProduccion): void {
+    this.diaParaMotivo = dia;
+    this.motivoForm.reset();
+    this.motivoDialogVisible.set(true);
+  }
+
+  protected cerrarMotivo(): void {
+    this.motivoDialogVisible.set(false);
+  }
+
+  protected confirmarNoLaborable(): void {
+    if (this.motivoForm.invalid || this.motivoSaving() || !this.diaParaMotivo) {
+      return;
+    }
+    this.motivoSaving.set(true);
+    const motivo = this.motivoForm.getRawValue().motivo;
+    this.diaNoLaborableApi.create({ fecha: this.diaParaMotivo.fecha, motivo }).subscribe({
+      next: () => {
+        this.motivoSaving.set(false);
+        this.motivoDialogVisible.set(false);
+        this.cargarSemana();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.motivoSaving.set(false);
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo marcar el día';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
+      },
+    });
+  }
+
+  protected deshacerNoLaborable(dia: DiaPlanProduccion): void {
+    if (!dia.no_laborable) {
+      return;
+    }
     this.confirmationService.confirm({
-      header: 'Confirmar eliminación',
-      message: `¿Eliminar el plan #${plan.id_plan_produccion}?`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { severity: 'danger', label: 'Eliminar' },
+      header: 'Deshacer día no laborable',
+      message: `¿Volver a habilitar ${dia.fecha.slice(0, 10)} para cargar plan de producción?`,
+      icon: 'pi pi-question-circle',
+      acceptButtonProps: { label: 'Deshacer' },
       rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },
-      accept: () => this.remove(plan.id_plan_produccion),
-    });
-  }
-
-  private remove(id: number): void {
-    this.api.remove(id).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Plan eliminado' });
-        this.load();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo eliminar (puede tener datos relacionados)',
+      accept: () => {
+        this.diaNoLaborableApi.remove(dia.no_laborable!.id_dia_no_laborable).subscribe({
+          next: () => this.cargarSemana(),
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo deshacer' });
+          },
         });
-      },
-    });
-  }
-
-  openItems(plan: PlanProduccion): void {
-    this.planActivo = plan;
-    this.editingItemId.set(null);
-    this.itemForm.reset();
-    this.itemsDialogVisible.set(true);
-    this.loadItems();
-  }
-
-  private loadItems(): void {
-    if (!this.planActivo) {
-      return;
-    }
-    this.itemsLoading.set(true);
-    this.itemsApi.list(this.planActivo.id_plan_produccion).subscribe({
-      next: (data) => {
-        this.items.set(data);
-        this.itemsLoading.set(false);
-      },
-      error: () => {
-        this.itemsLoading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los ítems' });
-      },
-    });
-  }
-
-  editItem(item: ItemPlanProduccion): void {
-    this.editingItemId.set(item.id_item_plan_produccion);
-    this.itemForm.setValue({
-      id_lineas: item.id_lineas,
-      id_producto: item.id_producto,
-      id_turno: item.id_turno,
-      fecha: new Date(item.fecha),
-      cantidad: item.cantidad,
-    });
-  }
-
-  cancelItemEdit(): void {
-    this.editingItemId.set(null);
-    this.itemForm.reset();
-  }
-
-  saveItem(): void {
-    if (this.itemForm.invalid || this.itemsSaving() || !this.planActivo) {
-      return;
-    }
-
-    this.itemsSaving.set(true);
-    const raw = this.itemForm.getRawValue();
-    const dto = {
-      id_lineas: raw.id_lineas!,
-      id_producto: raw.id_producto!,
-      id_turno: raw.id_turno!,
-      fecha: raw.fecha!.toISOString().slice(0, 10),
-      cantidad: raw.cantidad!,
-    };
-    const idItem = this.editingItemId();
-    const request$ = idItem
-      ? this.itemsApi.update(this.planActivo.id_plan_produccion, idItem, dto)
-      : this.itemsApi.create(this.planActivo.id_plan_produccion, dto);
-
-    request$.subscribe({
-      next: () => {
-        this.itemsSaving.set(false);
-        this.cancelItemEdit();
-        this.loadItems();
-      },
-      error: () => {
-        this.itemsSaving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el ítem' });
-      },
-    });
-  }
-
-  removeItem(item: ItemPlanProduccion): void {
-    if (!this.planActivo) {
-      return;
-    }
-    this.itemsApi.remove(this.planActivo.id_plan_produccion, item.id_item_plan_produccion).subscribe({
-      next: () => this.loadItems(),
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el ítem' });
       },
     });
   }

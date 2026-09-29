@@ -1,22 +1,17 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  Min,
-  MaxLength,
-} from 'class-validator';
+import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 
+// Exactamente uno de id_producto/id_insumo (se valida en el service,
+// mismo criterio que ajuste_stock).
 export class CreateItemLoteDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(200)
-  descripcion_item: string;
-
+  @IsOptional()
   @IsInt()
-  id_unidad_medida: number;
+  id_producto?: number;
+
+  @IsOptional()
+  @IsInt()
+  id_insumo?: number;
 
   @IsNumber()
-  @Min(0)
-  cantidad_item_lote: number;
+  @Min(0.01)
+  cantidad: number;
 }

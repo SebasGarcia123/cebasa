@@ -3,3 +3,22 @@
   padding-top: 1rem;
   border-top: 1px solid var(--color-border);
 }
+
+.lotes__motivo-rechazo {
+  font-family: var(--font-family-body);
+  font-size: 0.9rem;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.lotes__revision-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}

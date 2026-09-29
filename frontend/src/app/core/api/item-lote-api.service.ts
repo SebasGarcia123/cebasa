@@ -4,10 +4,11 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ItemLote } from '../models/item-lote.model';
 
+// Exactamente uno de id_producto/id_insumo (se valida en el backend).
 export interface ItemLoteDto {
-  descripcion_item: string;
-  id_unidad_medida: number;
-  cantidad_item_lote: number;
+  id_producto?: number;
+  id_insumo?: number;
+  cantidad: number;
 }
 
 @Injectable({ providedIn: 'root' })

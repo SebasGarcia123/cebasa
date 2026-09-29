@@ -1,10 +1,12 @@
-import { UnidadMedida } from './unidad-medida.model';
+import { Producto } from './producto.model';
+import { Insumo } from './insumo.model';
 
 export interface ItemLote {
   id_item_lote: number;
-  descripcion_item: string;
-  id_unidad_medida: number;
-  cantidad_item_lote: number;
   id_lote: number;
-  unidad_medida?: UnidadMedida;
+  id_producto: number | null;
+  id_insumo: number | null;
+  cantidad: number;
+  productos?: Producto | null;
+  insumo?: Insumo | null;
 }

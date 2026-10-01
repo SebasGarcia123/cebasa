@@ -1,7 +1,9 @@
 <div class="page">
   <div class="page__header">
     <h1>Pedido de Insumos</h1>
-    <p-button label="Nuevo pedido" icon="pi pi-plus" (onClick)="abrirNuevo()" />
+    @if (puedeSolicitar()) {
+      <p-button label="Nuevo pedido" icon="pi pi-plus" (onClick)="abrirNuevo()" />
+    }
   </div>
 
   <div class="pedido-insumos__filtros">

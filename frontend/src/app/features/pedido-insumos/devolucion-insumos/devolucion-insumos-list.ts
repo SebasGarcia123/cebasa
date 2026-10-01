@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormArray, FormGroup, FormControl, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -12,6 +12,7 @@ import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { DevolucionInsumosApiService } from '../../../core/api/devolucion-insumos-api.service';
 import { InsumosApiService } from '../../../core/api/insumos-api.service';
 import { LineasApiService } from '../../../core/api/lineas-api.service';
@@ -55,6 +56,12 @@ export class DevolucionInsumosList implements OnInit {
   private readonly lineasApi = inject(LineasApiService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly puedeSolicitar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.devolucion_insumos.solicitar'));
+  });
 
   protected readonly devoluciones = signal<DevolucionInsumos[]>([]);
   protected readonly insumos = signal<Insumo[]>([]);
@@ -118,7 +125,7 @@ export class DevolucionInsumosList implements OnInit {
   }
 
   protected puedeEditar(devolucion: DevolucionInsumos): boolean {
-    return ESTADOS_EDITABLES.has(this.estadoDe(devolucion));
+    return this.puedeSolicitar() && ESTADOS_EDITABLES.has(this.estadoDe(devolucion));
   }
 
   // --- Nuevo / Editar ---

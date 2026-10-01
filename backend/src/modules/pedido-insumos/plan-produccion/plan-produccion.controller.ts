@@ -10,7 +10,7 @@ export class PlanProduccionController {
 
   // ?fecha=YYYY-MM-DD: cualquier fecha de la semana que se quiere ver
   // (no hace falta que sea un lunes, el service lo resuelve).
-  @RequirePermissions('pedido_insumos.ver')
+  @RequirePermissions('produccion.plan_produccion.ver')
   @Get('semana')
   obtenerSemana(@Query('fecha') fecha: string) {
     if (!fecha || Number.isNaN(Date.parse(fecha))) {

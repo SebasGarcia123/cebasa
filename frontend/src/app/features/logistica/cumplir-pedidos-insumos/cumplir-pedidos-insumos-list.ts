@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { PedidoInsumosApiService } from '../../../core/api/pedido-insumos-api.service';
 import { PedidoInsumos } from '../../../core/models/pedido-insumos.model';
 
@@ -35,6 +36,12 @@ export class CumplirPedidosInsumosList implements OnInit {
   private readonly api = inject(PedidoInsumosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly puedeCumplir = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('logistica.pedido_insumos.cumplir'));
+  });
 
   protected readonly pedidos = signal<PedidoInsumos[]>([]);
   protected readonly loading = signal(false);

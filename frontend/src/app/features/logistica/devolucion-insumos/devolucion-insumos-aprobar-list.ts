@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,6 +11,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { DevolucionInsumosApiService } from '../../../core/api/devolucion-insumos-api.service';
 import { DevolucionInsumos } from '../../../core/models/devolucion-insumos.model';
 
@@ -50,6 +51,12 @@ export class DevolucionInsumosAprobarList implements OnInit {
   private readonly api = inject(DevolucionInsumosApiService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly puedeAprobar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('logistica.devolucion_insumos.aprobar'));
+  });
 
   protected readonly devoluciones = signal<DevolucionInsumos[]>([]);
   protected readonly loading = signal(false);
@@ -100,7 +107,7 @@ export class DevolucionInsumosAprobarList implements OnInit {
   }
 
   protected puedeDecidir(devolucion: DevolucionInsumos): boolean {
-    return ESTADOS_ACCIONABLES.has(this.estadoDe(devolucion));
+    return this.puedeAprobar() && ESTADOS_ACCIONABLES.has(this.estadoDe(devolucion));
   }
 
   // --- Ver ---

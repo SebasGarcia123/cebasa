@@ -11,13 +11,13 @@ import type { JwtPayload } from '../../../../auth/types/jwt-payload.interface.js
 export class DiaNoLaborableController {
   constructor(private readonly diaNoLaborableService: DiaNoLaborableService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.plan_produccion.editar')
   @Post()
   create(@Body() dto: CreateDiaNoLaborableDto, @CurrentUser() user: JwtPayload) {
     return this.diaNoLaborableService.create(dto, user.sub);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.plan_produccion.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.diaNoLaborableService.remove(id);

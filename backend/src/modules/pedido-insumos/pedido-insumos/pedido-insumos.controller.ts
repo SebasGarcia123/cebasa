@@ -16,7 +16,7 @@ export class PedidoInsumosController {
   constructor(private readonly pedidoInsumosService: PedidoInsumosService) {}
 
   // Lo carga la Jefatura de Producción.
-  @RequirePermissions('pedido_insumos.solicitar')
+  @RequirePermissions('produccion.pedido_insumos.solicitar')
   @Post()
   create(@Body() dto: CreatePedidoInsumosDto, @CurrentUser() user: JwtPayload) {
     return this.pedidoInsumosService.create(dto, user.sub);
@@ -24,7 +24,7 @@ export class PedidoInsumosController {
 
   // Pantalla de Producción: todos sus pedidos, con filtro de fecha y
   // "ver todos" (si no, oculta Recibidos/Anulados).
-  @RequirePermissions('pedido_insumos.ver')
+  @RequirePermissions('produccion.pedido_insumos.ver')
   @Get()
   findParaProduccion(
     @CurrentUser() user: JwtPayload,
@@ -36,46 +36,48 @@ export class PedidoInsumosController {
   }
 
   // Pantalla de Logística: solo lo que necesita su acción.
-  @RequirePermissions('pedido_insumos.ver')
+  @RequirePermissions('logistica.pedido_insumos.ver')
   @Get('para-logistica')
   findParaLogistica(@CurrentUser() user: JwtPayload) {
     return this.pedidoInsumosService.findParaLogistica(user);
   }
 
-  @RequirePermissions('pedido_insumos.ver')
+  // Lo consultan ambas audiencias (Producción y Logística), cada una ya
+  // filtrada por los endpoints de arriba; una búsqueda puntual por id
+  // no necesita permiso propio, igual que el resto de los catálogos.
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.pedidoInsumosService.findOne(id);
   }
 
-  @RequirePermissions('pedido_insumos.solicitar')
+  @RequirePermissions('produccion.pedido_insumos.solicitar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePedidoInsumosDto) {
     return this.pedidoInsumosService.update(id, dto);
   }
 
-  @RequirePermissions('pedido_insumos.solicitar')
+  @RequirePermissions('produccion.pedido_insumos.solicitar')
   @Post(':id/anular')
   anular(@Param('id', ParseIntPipe) id: number) {
     return this.pedidoInsumosService.anular(id);
   }
 
   // Logística (operario o jefe) carga lo que realmente abasteció.
-  @RequirePermissions('pedido_insumos.cumplir')
+  @RequirePermissions('logistica.pedido_insumos.cumplir')
   @Post(':id/cumplir')
   cumplir(@Param('id', ParseIntPipe) id: number, @Body() dto: CumplirPedidoInsumosDto, @CurrentUser() user: JwtPayload) {
     return this.pedidoInsumosService.cumplir(id, dto, user);
   }
 
   // Producción confirma: mueve el stock de Logística a Producción.
-  @RequirePermissions('pedido_insumos.recibir')
+  @RequirePermissions('produccion.pedido_insumos.recibir')
   @Post(':id/recibir')
   recibir(@Param('id', ParseIntPipe) id: number, @Body() dto: RecibirPedidoInsumosDto) {
     return this.pedidoInsumosService.recibir(id, dto);
   }
 
   // Producción lo devuelve a Logística con un motivo.
-  @RequirePermissions('pedido_insumos.recibir')
+  @RequirePermissions('produccion.pedido_insumos.recibir')
   @Post(':id/para-revisar')
   paraRevisar(@Param('id', ParseIntPipe) id: number, @Body() dto: ParaRevisarPedidoInsumosDto) {
     return this.pedidoInsumosService.paraRevisar(id, dto);

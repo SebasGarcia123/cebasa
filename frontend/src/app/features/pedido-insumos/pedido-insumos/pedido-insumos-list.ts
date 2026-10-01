@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormArray, FormGroup, FormControl, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -14,6 +14,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { PedidoInsumosApiService } from '../../../core/api/pedido-insumos-api.service';
 import { InsumosApiService } from '../../../core/api/insumos-api.service';
 import { LineasApiService } from '../../../core/api/lineas-api.service';
@@ -78,6 +79,16 @@ export class PedidoInsumosList implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly puedeSolicitar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.pedido_insumos.solicitar'));
+  });
+  protected readonly puedeRecibir = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.pedido_insumos.recibir'));
+  });
 
   protected readonly pedidos = signal<PedidoInsumos[]>([]);
   protected readonly insumos = signal<Insumo[]>([]);
@@ -141,11 +152,11 @@ export class PedidoInsumosList implements OnInit {
   }
 
   protected puedeAnular(pedido: PedidoInsumos): boolean {
-    return this.estadoDe(pedido) === ESTADO_PENDIENTE;
+    return this.puedeSolicitar() && this.estadoDe(pedido) === ESTADO_PENDIENTE;
   }
 
   protected puedeDecidir(pedido: PedidoInsumos): boolean {
-    return this.estadoDe(pedido) === ESTADO_CUMPLIDO;
+    return this.puedeRecibir() && this.estadoDe(pedido) === ESTADO_CUMPLIDO;
   }
 
   // --- Nuevo pedido ---

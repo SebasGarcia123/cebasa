@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class ItemPedidoInsumoController {
   constructor(private readonly itemService: ItemPedidoInsumoService) {}
 
-  @RequirePermissions('pedido_insumos.ver')
+  @RequirePermissions('produccion.pedido_insumos.ver')
   @Get()
   findAll(@Param('idPedido', ParseIntPipe) idPedido: number) {
     return this.itemService.findAllForPedido(idPedido);
   }
 
-  @RequirePermissions('pedido_insumos.solicitar')
+  @RequirePermissions('produccion.pedido_insumos.solicitar')
   @Post()
   create(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -34,7 +34,7 @@ export class ItemPedidoInsumoController {
     return this.itemService.create(idPedido, dto);
   }
 
-  @RequirePermissions('pedido_insumos.ver')
+  @RequirePermissions('produccion.pedido_insumos.ver')
   @Get(':idItem')
   findOne(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -43,7 +43,7 @@ export class ItemPedidoInsumoController {
     return this.itemService.findOne(idPedido, idItem);
   }
 
-  @RequirePermissions('pedido_insumos.solicitar')
+  @RequirePermissions('produccion.pedido_insumos.solicitar')
   @Patch(':idItem')
   update(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -53,7 +53,7 @@ export class ItemPedidoInsumoController {
     return this.itemService.update(idPedido, idItem, dto);
   }
 
-  @RequirePermissions('pedido_insumos.solicitar')
+  @RequirePermissions('produccion.pedido_insumos.solicitar')
   @Delete(':idItem')
   remove(
     @Param('idPedido', ParseIntPipe) idPedido: number,

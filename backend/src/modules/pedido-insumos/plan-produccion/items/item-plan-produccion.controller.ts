@@ -16,19 +16,19 @@ import type { JwtPayload } from '../../../../auth/types/jwt-payload.interface.js
 export class ItemPlanProduccionController {
   constructor(private readonly itemService: ItemPlanProduccionService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.plan_produccion.editar')
   @Post()
   create(@Body() dto: CreateItemPlanProduccionDto, @CurrentUser() user: JwtPayload) {
     return this.itemService.create(dto, user.sub);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.plan_produccion.editar')
   @Patch(':idItem')
   update(@Param('idItem', ParseIntPipe) idItem: number, @Body() dto: UpdateItemPlanProduccionDto) {
     return this.itemService.update(idItem, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.plan_produccion.editar')
   @Delete(':idItem')
   remove(@Param('idItem', ParseIntPipe) idItem: number) {
     return this.itemService.remove(idItem);

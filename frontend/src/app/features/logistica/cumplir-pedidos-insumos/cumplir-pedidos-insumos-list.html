@@ -28,7 +28,9 @@
         </td>
         <td>
           <div class="page__actions">
-            <p-button label="Cumplir" icon="pi pi-send" [text]="true" (onClick)="abrirCumplir(pedido)" />
+            @if (puedeCumplir()) {
+              <p-button label="Cumplir" icon="pi pi-send" [text]="true" (onClick)="abrirCumplir(pedido)" />
+            }
           </div>
         </td>
       </tr>

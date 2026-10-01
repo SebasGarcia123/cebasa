@@ -57,7 +57,7 @@ function lunesDeLocal(fecha: Date): Date {
 }
 
 // El plan de producción se carga por semana (lunes a viernes). Solo el
-// Jefe de Producción (permiso produccion.editar) puede cargar/editar,
+// Jefe de Producción (permiso produccion.plan_produccion.editar) puede cargar/editar,
 // y solo mientras el día sea hoy o futuro — un día ya pasado, o
 // cualquier otro rol, queda de solo lectura. Marcar un día como no
 // laborable (feriado, limpieza, etc.) es una acción aparte e
@@ -95,7 +95,7 @@ export class PlanProduccionList implements OnInit {
 
   protected readonly puedeEditar = computed(() => {
     const user = this.authService.currentUser();
-    return !!user && (user.es_administrador || user.permisos.includes('produccion.editar'));
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.plan_produccion.editar'));
   });
 
   protected readonly lunesActual = signal<Date>(lunesDeLocal(new Date()));
@@ -202,7 +202,7 @@ export class PlanProduccionList implements OnInit {
   }
 
   // Editable si hay permiso Y la fecha es hoy o futura. Un día pasado,
-  // o cualquier rol sin produccion.editar, queda de solo lectura.
+  // o cualquier rol sin produccion.plan_produccion.editar, queda de solo lectura.
   protected diaEditable(fecha: string): boolean {
     return this.puedeEditar() && fecha.slice(0, 10) >= this.hoyStr;
   }

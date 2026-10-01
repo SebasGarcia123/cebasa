@@ -1,7 +1,9 @@
 <div class="page">
   <div class="page__header">
     <h1>Devolución de Insumos</h1>
-    <p-button label="Nueva devolución" icon="pi pi-plus" (onClick)="abrirNuevo()" />
+    @if (puedeSolicitar()) {
+      <p-button label="Nueva devolución" icon="pi pi-plus" (onClick)="abrirNuevo()" />
+    }
   </div>
 
   <div class="devolucion-insumos__filtros">

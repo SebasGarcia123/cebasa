@@ -105,19 +105,29 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Compras',
     items: [
-      { label: 'Proveedores', icon: 'pi pi-truck', route: '/compras/proveedores', permission: 'compras.ver' },
-      { label: 'Insumos', icon: 'pi pi-inbox', route: '/compras/insumos', permission: 'produccion.ver' },
+      {
+        label: 'Proveedores',
+        icon: 'pi pi-truck',
+        route: '/compras/proveedores',
+        permission: 'compras.proveedores.editar',
+      },
+      {
+        label: 'Insumos',
+        icon: 'pi pi-inbox',
+        route: '/compras/insumos',
+        permission: 'produccion.insumos.editar',
+      },
       {
         label: 'Requerimientos',
         icon: 'pi pi-file-edit',
         route: '/compras/requerimientos',
-        permission: 'compras.ver',
+        permission: 'compras.requerimientos.ver',
       },
       {
         label: 'Gestión de Compras',
         icon: 'pi pi-shopping-bag',
         route: '/compras/gestion',
-        permission: 'compras.ver',
+        permission: 'compras.gestion.ver',
       },
     ],
   },

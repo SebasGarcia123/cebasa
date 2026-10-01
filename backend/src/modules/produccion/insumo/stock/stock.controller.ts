@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class StockInsumoDepositoController {
   constructor(private readonly stockService: StockInsumoDepositoService) {}
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.insumos.editar')
   @Get()
   findAll(@Param('idInsumo', ParseIntPipe) idInsumo: number) {
     return this.stockService.findAllForInsumo(idInsumo);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.insumos.editar')
   @Post()
   create(
     @Param('idInsumo', ParseIntPipe) idInsumo: number,
@@ -34,7 +34,7 @@ export class StockInsumoDepositoController {
     return this.stockService.create(idInsumo, dto);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.insumos.editar')
   @Get(':idDeposito')
   findOne(
     @Param('idInsumo', ParseIntPipe) idInsumo: number,
@@ -43,7 +43,7 @@ export class StockInsumoDepositoController {
     return this.stockService.findOne(idInsumo, idDeposito);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.insumos.editar')
   @Patch(':idDeposito')
   update(
     @Param('idInsumo', ParseIntPipe) idInsumo: number,
@@ -53,7 +53,7 @@ export class StockInsumoDepositoController {
     return this.stockService.update(idInsumo, idDeposito, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.insumos.editar')
   @Delete(':idDeposito')
   remove(
     @Param('idInsumo', ParseIntPipe) idInsumo: number,

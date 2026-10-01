@@ -19,31 +19,31 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class CompraController {
   constructor(private readonly compraService: CompraService) {}
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Post()
   create(@Body() dto: CreateCompraDto) {
     return this.compraService.create(dto);
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.gestion.ver')
   @Get()
   findAll() {
     return this.compraService.findAll();
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.gestion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.compraService.findOne(id);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCompraDto) {
     return this.compraService.update(id, dto);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.compraService.remove(id);

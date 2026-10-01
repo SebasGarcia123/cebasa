@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class RequerimientoDetalleController {
   constructor(private readonly detalleService: RequerimientoDetalleService) {}
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.requerimientos.ver')
   @Get()
   findAll(@Param('idRequerimiento', ParseIntPipe) idRequerimiento: number) {
     return this.detalleService.findAllForRequerimiento(idRequerimiento);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.requerimientos.cargar')
   @Post()
   create(
     @Param('idRequerimiento', ParseIntPipe) idRequerimiento: number,
@@ -34,7 +34,7 @@ export class RequerimientoDetalleController {
     return this.detalleService.create(idRequerimiento, dto);
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.requerimientos.ver')
   @Get(':idDetalle')
   findOne(
     @Param('idRequerimiento', ParseIntPipe) idRequerimiento: number,
@@ -43,7 +43,7 @@ export class RequerimientoDetalleController {
     return this.detalleService.findOne(idRequerimiento, idDetalle);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.requerimientos.cargar')
   @Patch(':idDetalle')
   update(
     @Param('idRequerimiento', ParseIntPipe) idRequerimiento: number,
@@ -53,7 +53,7 @@ export class RequerimientoDetalleController {
     return this.detalleService.update(idRequerimiento, idDetalle, dto);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.requerimientos.cargar')
   @Delete(':idDetalle')
   remove(
     @Param('idRequerimiento', ParseIntPipe) idRequerimiento: number,

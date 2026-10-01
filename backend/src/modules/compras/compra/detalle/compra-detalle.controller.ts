@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class CompraDetalleController {
   constructor(private readonly detalleService: CompraDetalleService) {}
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.gestion.ver')
   @Get()
   findAll(@Param('idCompra', ParseIntPipe) idCompra: number) {
     return this.detalleService.findAllForCompra(idCompra);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Post()
   create(
     @Param('idCompra', ParseIntPipe) idCompra: number,
@@ -34,7 +34,7 @@ export class CompraDetalleController {
     return this.detalleService.create(idCompra, dto);
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.gestion.ver')
   @Get(':idDetalle')
   findOne(
     @Param('idCompra', ParseIntPipe) idCompra: number,
@@ -43,7 +43,7 @@ export class CompraDetalleController {
     return this.detalleService.findOne(idCompra, idDetalle);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Patch(':idDetalle')
   update(
     @Param('idCompra', ParseIntPipe) idCompra: number,
@@ -53,7 +53,7 @@ export class CompraDetalleController {
     return this.detalleService.update(idCompra, idDetalle, dto);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Delete(':idDetalle')
   remove(
     @Param('idCompra', ParseIntPipe) idCompra: number,

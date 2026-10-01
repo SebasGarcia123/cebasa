@@ -19,25 +19,25 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class CotizacionController {
   constructor(private readonly cotizacionService: CotizacionService) {}
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Post()
   create(@Body() dto: CreateCotizacionDto) {
     return this.cotizacionService.create(dto);
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.gestion.ver')
   @Get()
   findAll() {
     return this.cotizacionService.findAll();
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.gestion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.cotizacionService.findOne(id);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +46,7 @@ export class CotizacionController {
     return this.cotizacionService.update(id, dto);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.gestion.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.cotizacionService.remove(id);

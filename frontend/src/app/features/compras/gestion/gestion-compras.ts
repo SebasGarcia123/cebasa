@@ -13,6 +13,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RequerimientosApiService } from '../../../core/api/requerimientos-api.service';
 import { ComprasApiService } from '../../../core/api/compras-api.service';
 import { ProveedoresApiService } from '../../../core/api/proveedores-api.service';
@@ -60,6 +61,14 @@ export class GestionCompras implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  // Generar la OC, enviarla al proveedor, recibir la mercadería y
+  // anularla son todas la misma capacidad: gestionar órdenes de compra.
+  protected readonly puedeGestionarOc = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('compras.gestionar_oc'));
+  });
 
   protected readonly loading = signal(false);
   protected readonly requerimientos = signal<Requerimiento[]>([]);

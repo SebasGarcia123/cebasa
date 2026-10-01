@@ -19,25 +19,23 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class ProveedorController {
   constructor(private readonly proveedorService: ProveedorService) {}
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.proveedores.editar')
   @Post()
   create(@Body() dto: CreateProveedorDto) {
     return this.proveedorService.create(dto);
   }
 
-  @RequirePermissions('compras.ver')
   @Get()
   findAll() {
     return this.proveedorService.findAll();
   }
 
-  @RequirePermissions('compras.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.proveedorService.findOne(id);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.proveedores.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +44,7 @@ export class ProveedorController {
     return this.proveedorService.update(id, dto);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.proveedores.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.proveedorService.remove(id);

@@ -19,31 +19,29 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class InsumoController {
   constructor(private readonly insumoService: InsumoService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.insumos.editar')
   @Post()
   create(@Body() dto: CreateInsumoDto) {
     return this.insumoService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
   @Get()
   findAll() {
     return this.insumoService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.insumoService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.insumos.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateInsumoDto) {
     return this.insumoService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.insumos.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.insumoService.remove(id);

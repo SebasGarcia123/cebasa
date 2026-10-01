@@ -74,7 +74,7 @@
           <td>{{ requerimiento.estados?.nombreEstado || '—' }}</td>
           <td>
             <div class="page__actions">
-              @if (requerimiento.estados?.nombreEstado === 'Activo') {
+              @if (puedeGestionarOc() && requerimiento.estados?.nombreEstado === 'Activo') {
                 <p-button
                   label="Generar OC"
                   icon="pi pi-file-export"
@@ -293,7 +293,7 @@
       }
 
       <div class="page__form-actions">
-        @if (ocDetalle()?.estados?.nombreEstado === 'Autorizado') {
+        @if (puedeGestionarOc() && ocDetalle()?.estados?.nombreEstado === 'Autorizado') {
           <p-button
             label="Anular"
             severity="danger"
@@ -308,7 +308,7 @@
             (onClick)="enviarProveedor()"
           />
         }
-        @if (ocDetalle()?.estados?.nombreEstado === 'Enviado a Proveedor') {
+        @if (puedeGestionarOc() && ocDetalle()?.estados?.nombreEstado === 'Enviado a Proveedor') {
           <p-button
             label="Anular"
             severity="danger"

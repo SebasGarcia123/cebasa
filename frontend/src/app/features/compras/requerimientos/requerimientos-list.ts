@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -11,6 +11,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RequerimientosApiService } from '../../../core/api/requerimientos-api.service';
 import { RequerimientoDetalleApiService } from '../../../core/api/requerimiento-detalle-api.service';
 import { InsumosApiService } from '../../../core/api/insumos-api.service';
@@ -49,6 +50,12 @@ export class RequerimientosList implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly puedeCargar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('compras.requerimientos.cargar'));
+  });
 
   protected readonly requerimientos = signal<Requerimiento[]>([]);
   protected readonly insumos = signal<Insumo[]>([]);

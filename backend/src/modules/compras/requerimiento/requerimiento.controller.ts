@@ -20,25 +20,25 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class RequerimientoController {
   constructor(private readonly requerimientoService: RequerimientoService) {}
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.requerimientos.cargar')
   @Post()
   create(@Body() dto: CreateRequerimientoDto) {
     return this.requerimientoService.create(dto);
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.requerimientos.ver')
   @Get()
   findAll() {
     return this.requerimientoService.findAll();
   }
 
-  @RequirePermissions('compras.ver')
+  @RequirePermissions('compras.requerimientos.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.requerimientoService.findOne(id);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.requerimientos.cargar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -47,7 +47,7 @@ export class RequerimientoController {
     return this.requerimientoService.update(id, dto);
   }
 
-  @RequirePermissions('compras.editar')
+  @RequirePermissions('compras.requerimientos.cargar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.requerimientoService.remove(id);

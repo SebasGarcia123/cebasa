@@ -1,4 +1,5 @@
 import {
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -7,6 +8,7 @@ import {
   Min,
   MaxLength,
 } from 'class-validator';
+import { TipoPallet } from '../../../../generated/prisma/client.js';
 
 export class CreateProductoDto {
   @IsString()
@@ -22,6 +24,13 @@ export class CreateProductoDto {
   @IsOptional()
   @IsInt()
   bolsones_por_pallet?: number;
+
+  // Define el orden de carga que el sistema le sugiere al clarkista
+  // (ver CargaPedidosService). Los productos que no van en pallet, como
+  // las bobinas, quedan sin clasificar.
+  @IsOptional()
+  @IsEnum(TipoPallet)
+  tipo_pallet?: TipoPallet;
 
   @IsOptional()
   @IsNumber()

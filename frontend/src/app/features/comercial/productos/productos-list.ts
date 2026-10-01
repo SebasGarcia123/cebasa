@@ -18,6 +18,7 @@ import { ArchivoAdjuntoApiService } from '../../../core/api/archivo-adjunto-api.
 import { EstadosApiService } from '../../../core/api/estados-api.service';
 import { TipoProductoApiService } from '../../../core/api/tipo-producto-api.service';
 import { Producto } from '../../../core/models/producto.model';
+import { TipoPallet } from '../../../core/models/carga-pedido.model';
 import { ArchivoAdjunto } from '../../../core/models/archivo-adjunto.model';
 import { Estado } from '../../../core/models/estado.model';
 import { TipoProducto } from '../../../core/models/tipo-producto.model';
@@ -91,10 +92,20 @@ export class ProductosList implements OnInit {
     });
   });
 
+  // Define el orden en que el clarkista sube los pallets al camión
+  // (ver CargaPedidosList). Los productos que no van en pallet, como
+  // las bobinas, quedan sin clasificar.
+  protected readonly tiposPallet: { label: string; value: TipoPallet }[] = [
+    { label: 'Angosto', value: 'ANGOSTO' },
+    { label: 'Ancho y pesado', value: 'ANCHO_PESADO' },
+    { label: 'Ancho y liviano', value: 'ANCHO_LIVIANO' },
+  ];
+
   protected readonly form = this.fb.nonNullable.group({
     codigo_producto: ['', Validators.required],
     descripcion_producto: ['', Validators.required],
     bolsones_por_pallet: [null as number | null],
+    tipo_pallet: [null as TipoPallet | null],
     peso_por_bolson: [null as number | null],
     precio_venta: [null as number | null, Validators.required],
     stock_actual: [0 as number | null],
@@ -141,6 +152,7 @@ export class ProductosList implements OnInit {
       codigo_producto: producto.codigo_producto,
       descripcion_producto: producto.descripcion_producto,
       bolsones_por_pallet: producto.bolsones_por_pallet,
+      tipo_pallet: producto.tipo_pallet,
       // precio_venta y peso_por_bolson son Decimal en la base: Prisma los
       // serializa como string en el JSON, no como number. Si no se
       // convierten acá, un guardado sin tocar esos campos manda el string
@@ -212,6 +224,7 @@ export class ProductosList implements OnInit {
       precio_venta: Number(raw.precio_venta),
       id_archivo_adjunto: foto?.id_archivo_adjunto ?? null,
       ...(raw.bolsones_por_pallet != null ? { bolsones_por_pallet: raw.bolsones_por_pallet } : {}),
+      ...(raw.tipo_pallet != null ? { tipo_pallet: raw.tipo_pallet } : {}),
       ...(raw.peso_por_bolson != null ? { peso_por_bolson: Number(raw.peso_por_bolson) } : {}),
       ...(raw.stock_actual != null ? { stock_actual: raw.stock_actual } : {}),
       ...(raw.stock_minimo != null ? { stock_minimo: raw.stock_minimo } : {}),

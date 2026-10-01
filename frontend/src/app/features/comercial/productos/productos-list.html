@@ -129,6 +129,21 @@
       </div>
 
       <div class="page__field">
+        <label for="tipo_pallet">Tipo de pallet</label>
+        <p-select
+          inputId="tipo_pallet"
+          formControlName="tipo_pallet"
+          [options]="tiposPallet"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Sin clasificar"
+          [showClear]="true"
+          appendTo="body"
+        />
+        <small>Define el orden de carga que el sistema le sugiere al clarkista.</small>
+      </div>
+
+      <div class="page__field">
         <label for="peso_por_bolson">Peso por bolsón (kg)</label>
         <p-inputNumber
           inputId="peso_por_bolson"

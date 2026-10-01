@@ -1,0 +1,239 @@
+<div class="page">
+  @if (pedidoEnCarga(); as pedido) {
+    <!-- ===== Modo carga (tablet) ===== -->
+    <div class="carga__barra">
+      <p-button
+        icon="pi pi-arrow-left"
+        label="Volver"
+        severity="secondary"
+        [outlined]="true"
+        size="large"
+        (onClick)="volverAlListado()"
+      />
+      <div class="carga__barra-info">
+        <span class="carga__pedido">Pedido #{{ pedido.id_pedido }}</span>
+        <span class="carga__cliente">{{ pedido.clientes?.nombre_cli || '—' }}</span>
+      </div>
+      <span class="carga__restantes">{{ totalPendientes() }} pallets por cargar</span>
+    </div>
+
+    @if (tieneSugerencia() && !ladoElegido()) {
+      <!-- Elegir lado del camión -->
+      <div class="carga__lados">
+        <h2>¿Qué lado vas a cargar?</h2>
+        <div class="carga__lados-botones">
+          <button type="button" class="carga__lado" (click)="elegirLado('CONDUCTOR')">
+            <i class="pi pi-truck"></i>
+            <span class="carga__lado-nombre">Lado conductor</span>
+            <span class="carga__lado-detalle">{{ pendientesDe('CONDUCTOR') }} de {{ totalDe('CONDUCTOR') }} pendientes</span>
+          </button>
+          <button type="button" class="carga__lado" (click)="elegirLado('ACOMPANANTE')">
+            <i class="pi pi-truck"></i>
+            <span class="carga__lado-nombre">Lado acompañante</span>
+            <span class="carga__lado-detalle">{{ pendientesDe('ACOMPANANTE') }} de {{ totalDe('ACOMPANANTE') }} pendientes</span>
+          </button>
+        </div>
+      </div>
+    } @else if (siguiente(); as pallet) {
+      <!-- Producto a cargar, en grande -->
+      <div class="carga__actual">
+        <div class="carga__actual-header">
+          @if (tieneSugerencia()) {
+            <span class="carga__paso">
+              Pallet {{ palletsDelLado().length - pendientesDelLado().length + 1 }} de {{ palletsDelLado().length }}
+              — {{ ladoElegido() === 'CONDUCTOR' ? 'lado conductor' : 'lado acompañante' }}
+            </span>
+            <p-button
+              label="Cambiar de lado"
+              icon="pi pi-sync"
+              severity="secondary"
+              [text]="true"
+              (onClick)="elegirLado(ladoElegido() === 'CONDUCTOR' ? 'ACOMPANANTE' : 'CONDUCTOR')"
+            />
+          } @else {
+            <span class="carga__paso">{{ pendientesDelLado().length }} pallets pendientes (sin orden sugerido)</span>
+          }
+        </div>
+
+        <div class="carga__foto">
+          @if (pallet.item_pedido?.productos?.id_archivo_adjunto; as idFoto) {
+            <img [src]="archivoAdjuntoApi.fileUrl(idFoto)" [alt]="pallet.item_pedido?.productos?.descripcion_producto || ''" />
+          } @else {
+            <div class="carga__foto-vacia">
+              <i class="pi pi-image"></i>
+              <span>Sin foto cargada</span>
+            </div>
+          }
+        </div>
+
+        <div class="carga__datos">
+          <span class="carga__codigo">{{ pallet.item_pedido?.productos?.codigo_producto || '—' }}</span>
+          <span class="carga__descripcion">{{ pallet.item_pedido?.productos?.descripcion_producto || '—' }}</span>
+          <span class="carga__tipo">{{ etiquetaTipo(pallet.item_pedido?.productos?.tipo_pallet) }}</span>
+        </div>
+
+        <p-button
+          label="Cargar"
+          icon="pi pi-check"
+          size="large"
+          severity="success"
+          styleClass="carga__boton-cargar"
+          [loading]="cargando()"
+          [disabled]="!puedeCargar()"
+          (onClick)="cargar(pallet)"
+        />
+      </div>
+    } @else {
+      <div class="carga__lado-listo">
+        <i class="pi pi-check-circle"></i>
+        <h2>Este lado está completo</h2>
+        @if (totalPendientes() > 0) {
+          <p>Quedan {{ totalPendientes() }} pallets del otro lado.</p>
+          <p-button
+            label="Cargar el otro lado"
+            icon="pi pi-sync"
+            size="large"
+            (onClick)="elegirLado(ladoElegido() === 'CONDUCTOR' ? 'ACOMPANANTE' : 'CONDUCTOR')"
+          />
+        }
+      </div>
+    }
+  } @else {
+    <!-- ===== Listado del día ===== -->
+    <div class="page__header">
+      <h1>Carga de Pedidos</h1>
+    </div>
+
+    <div class="carga__dia">
+      <div class="page__field">
+        <label for="fecha_carga_dia">Día a cargar</label>
+        <p-datepicker
+          inputId="fecha_carga_dia"
+          [ngModel]="fecha()"
+          (ngModelChange)="onFechaChange($event)"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [inline]="true"
+        />
+      </div>
+
+      <div class="carga__lista">
+        <p-table [value]="pedidos()" [loading]="loading()" dataKey="id_pedido">
+          <ng-template #header>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Pallets</th>
+              <th scope="col" style="width: 17rem"></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-pedido>
+            <tr>
+              <td class="carga__celda-nro">{{ pedido.id_pedido }}</td>
+              <td>{{ pedido.clientes?.nombre_cli || '—' }}</td>
+              <td>
+                {{ pedido.pallets_cargados }} / {{ pedido.total_pallets }}
+                @if (pedido.carga_iniciada && pedido.pallets_cargados < pedido.total_pallets) {
+                  <span class="carga__en-curso">en curso</span>
+                }
+              </td>
+              <td>
+                <div class="page__actions">
+                  <p-button icon="pi pi-eye" [text]="true" size="large" (onClick)="ver(pedido)" pTooltip="Ver pedido" />
+                  @if (puedeCargar()) {
+                    <p-button
+                      [label]="pedido.carga_iniciada ? 'Seguir carga' : 'Comenzar carga'"
+                      icon="pi pi-box"
+                      size="large"
+                      (onClick)="comenzar(pedido)"
+                    />
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="4">No hay pedidos para cargar en el día elegido.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  }
+
+  <p-dialog
+    [visible]="sugerirDialogVisible()"
+    (visibleChange)="sugerirDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '520px' }"
+    header="Orden de carga"
+  >
+    <p class="carga__confirmacion">
+      ¿Querés que te sugiera el orden de carga? Reparte los pallets entre los dos lados del camión y arranca por los
+      anchos y pesados, intercalando los angostos.
+    </p>
+    <div class="page__form-actions">
+      <p-button
+        type="button"
+        label="Cargar sin sugerencia"
+        severity="secondary"
+        [outlined]="true"
+        size="large"
+        (onClick)="iniciar(false)"
+      />
+      <p-button type="button" label="Sí, sugerime el orden" size="large" (onClick)="iniciar(true)" />
+    </div>
+  </p-dialog>
+
+  <p-dialog
+    [visible]="verDialogVisible()"
+    (visibleChange)="verDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '700px' }"
+    header="Pedido"
+  >
+    @if (pedidoAVer(); as pedido) {
+      <div class="carga__ver-header">
+        <div class="page__field">
+          <label>Cliente</label>
+          <span>{{ pedido.clientes?.nombre_cli || '—' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Fecha prometida</label>
+          <span>{{ pedido.fecha_prometido | date: 'dd/MM/yyyy' : 'UTC' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Estado</label>
+          <span>{{ pedido.estados?.nombreEstado || '—' }}</span>
+        </div>
+      </div>
+
+      <p-table [value]="pedido.item_pedido || []" dataKey="id_item_pedido">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Producto</th>
+            <th scope="col" style="width: 9rem">Bolsones</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td>{{ item.productos?.codigo_producto || '—' }}</td>
+            <td>{{ item.productos?.descripcion_producto || '—' }}</td>
+            <td>{{ item.cantidad_bolsones }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="3">Este pedido no tiene productos cargados.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cerrar" severity="secondary" [outlined]="true" (onClick)="cerrarVer()" />
+      </div>
+    }
+  </p-dialog>
+</div>

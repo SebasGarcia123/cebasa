@@ -1,0 +1,227 @@
+// Pantalla de uso en tablet: todo lo que el clarkista toca con guantes
+// va en tamaño grande (botones de 3rem+, foto del producto al ancho de
+// la pantalla, tipografía de 1.25rem para arriba).
+
+.carga__dia {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.carga__lista {
+  flex: 1 1 28rem;
+  min-width: 0;
+}
+
+.carga__celda-nro {
+  font-weight: 600;
+}
+
+.carga__en-curso {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-primary, #0b7);
+}
+
+// --- Modo carga ---
+
+.carga__barra {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.carga__barra-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.carga__pedido {
+  font-family: var(--font-family-body);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.carga__cliente {
+  font-family: var(--font-family-body);
+  font-size: 1.125rem;
+}
+
+.carga__restantes {
+  font-family: var(--font-family-body);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.carga__lados {
+  text-align: center;
+  padding: 2rem 0;
+
+  h2 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.carga__lados-botones {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.carga__lado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 16rem;
+  padding: 2.5rem 2rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface, #fff);
+  cursor: pointer;
+  font-family: var(--font-family-body);
+
+  i {
+    font-size: 3rem;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.carga__lado-nombre {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.carga__lado-detalle {
+  font-size: 1rem;
+}
+
+.carga__actual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.carga__actual-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.carga__paso {
+  font-family: var(--font-family-body);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.carga__foto {
+  width: 100%;
+  max-width: 34rem;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.carga__foto-vacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-family-body);
+
+  i {
+    font-size: 3.5rem;
+    opacity: 0.4;
+  }
+}
+
+.carga__datos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+  font-family: var(--font-family-body);
+}
+
+.carga__codigo {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.carga__descripcion {
+  font-size: 1.375rem;
+}
+
+.carga__tipo {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+:host ::ng-deep .carga__boton-cargar {
+  width: 100%;
+  max-width: 34rem;
+  min-height: 4.5rem;
+  font-size: 1.5rem;
+}
+
+.carga__lado-listo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 0;
+  text-align: center;
+  font-family: var(--font-family-body);
+
+  i {
+    font-size: 4rem;
+    color: var(--p-green-500, #22c55e);
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+}
+
+.carga__confirmacion {
+  font-family: var(--font-family-body);
+  font-size: 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.carga__ver-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  margin-bottom: 1.25rem;
+}

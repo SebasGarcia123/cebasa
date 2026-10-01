@@ -415,15 +415,44 @@ model item_lote {
 }
 
 model item_pedido {
-  id_item_pedido    Int       @id @default(autoincrement())
+  id_item_pedido    Int            @id @default(autoincrement())
   id_producto       Int
   cantidad_bolsones Int
   id_pedido         Int
-  pedidos           pedidos   @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_pedido_pedido")
-  productos         productos @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_item_pedido_producto")
+  pedidos           pedidos        @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_pedido_pedido")
+  productos         productos      @relation(fields: [id_producto], references: [id_producto], onUpdate: Restrict, map: "fk_item_pedido_producto")
+  carga_pallet      carga_pallet[]
 
   @@index([id_pedido], map: "fk_item_pedido_pedido")
   @@index([id_producto], map: "fk_item_pedido_producto")
+}
+
+// Un pallet concreto a subir al camión, materializado cuando el
+// operario de Logística arranca la carga de un pedido (ver
+// CargaPedidosService.iniciar). La cantidad sale de
+// cantidad_bolsones / bolsones_por_pallet del ítem.
+//
+// lado y orden quedan en null si el operario pidió cargar sin
+// sugerencia de orden: en ese caso marca los pallets en el orden que
+// quiera. Con sugerencia, el sistema parte los pallets en mitades (una
+// por lado) y numera el orden dentro de cada lado.
+model carga_pallet {
+  id_carga_pallet Int         @id @default(autoincrement())
+  id_pedido       Int
+  id_item_pedido  Int
+  nro_pallet      Int
+  lado            LadoCamion?
+  orden           Int?
+  cargado         Boolean     @default(false)
+  fecha_carga     DateTime?
+  id_usuario      Int?
+  pedidos         pedidos     @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: Restrict, map: "fk_carga_pallet_pedido")
+  item_pedido     item_pedido @relation(fields: [id_item_pedido], references: [id_item_pedido], onDelete: Cascade, onUpdate: Restrict, map: "fk_carga_pallet_item_pedido")
+  usuarios        usuarios?   @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_carga_pallet_usuario")
+
+  @@index([id_pedido], map: "fk_carga_pallet_pedido")
+  @@index([id_item_pedido], map: "fk_carga_pallet_item_pedido")
+  @@index([id_usuario], map: "fk_carga_pallet_usuario")
 }
 
 model item_pedido_insumo {
@@ -783,6 +812,7 @@ model pedidos {
   fecha_salida_planificada DateTime?        @db.Date
   orden_planificador       Int?
   item_pedido              item_pedido[]
+  carga_pallet             carga_pallet[]
   clientes                 clientes         @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_pedidos_cliente")
   estados                  estados          @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_pedidos_estado")
   usuarios                 usuarios         @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_pedidos_usuario")
@@ -843,6 +873,9 @@ model productos {
   descripcion_producto    String                    @db.VarChar(200)
   bolsones_por_pallet     Int?
   peso_por_bolson         Decimal?                  @db.Decimal(10, 2)
+  // Ver enum TipoPallet: define el orden de carga que el sistema le
+  // sugiere al clarkista.
+  tipo_pallet             TipoPallet?
   precio_venta            Decimal                   @db.Decimal(10, 2)
   stock_actual            Int                       @default(0)
   stock_minimo            Int                       @default(0)
@@ -1021,6 +1054,23 @@ enum RolDeposito {
   PRODUCCION
 }
 
+// Cómo ocupa el pallet el piso del camión. Define el orden de carga
+// sugerido al clarkista: los anchos y pesados van primero (peso
+// adelante), después los anchos y livianos, y los angostos se
+// intercalan entre medio. Null = no aplica (ej. bobinas, que no se
+// cargan en pallet).
+enum TipoPallet {
+  ANGOSTO
+  ANCHO_PESADO
+  ANCHO_LIVIANO
+}
+
+// El camión se carga de a un lado a la vez; el clarkista elige cuál.
+enum LadoCamion {
+  CONDUCTOR
+  ACOMPANANTE
+}
+
 model service_autoelevador {
   id_service_autoelevador Int            @id @default(autoincrement())
   id_autoelevador         Int
@@ -1160,6 +1210,7 @@ model usuarios {
   ajuste_stock         ajuste_stock[]
   bobina               bobina[]
   pallet               pallet[]
+  carga_pallet         carga_pallet[]
   estados              estados                @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_usuarios_estado")
   sectores             sectores               @relation(fields: [id_sector], references: [id_sector], onUpdate: Restrict, map: "fk_usuarios_sector")
 

@@ -15,6 +15,7 @@ import { DespacharPedidoDto } from './dto/despachar-pedido.dto.js';
 
 const ESTADO_PENDIENTE = 'Pendiente';
 const ESTADO_FACTURADO = 'Facturado';
+const ESTADO_CARGADO = 'Cargado';
 const ESTADO_DESPACHADO = 'Despachado';
 const ESTADO_ANULADO = 'Anulado';
 const ESTADO_ACTIVO = 'Activo';
@@ -127,7 +128,9 @@ export class PedidosService {
       });
     }
 
-    if (pedido.estados.nombreEstado === ESTADO_FACTURADO) {
+    // Cargado = ya facturado y además subido al camión, así que se
+    // anula con el mismo criterio que Facturado.
+    if (pedido.estados.nombreEstado === ESTADO_FACTURADO || pedido.estados.nombreEstado === ESTADO_CARGADO) {
       if (!dto.nro_nota_debito) {
         throw new BadRequestException('Hace falta el número de nota de débito para anular un pedido Facturado');
       }
@@ -137,7 +140,7 @@ export class PedidosService {
       });
     }
 
-    throw new BadRequestException('Solo se puede anular un pedido Pendiente o Facturado');
+    throw new BadRequestException('Solo se puede anular un pedido Pendiente, Facturado o Cargado');
   }
 
   // Mensaje fijo para que el frontend lo reconozca y, en vez de mostrar
@@ -191,8 +194,11 @@ export class PedidosService {
   // reimprimirlo después con GET /pedidos/:id/remito).
   async despachar(id: number, dto: DespacharPedidoDto, idUsuario: number): Promise<Buffer> {
     const pedido = await this.findOne(id);
-    if (pedido.estados.nombreEstado !== ESTADO_FACTURADO) {
-      throw new BadRequestException('Solo se puede despachar un pedido Facturado');
+    // Cargado, no Facturado: el pedido primero lo sube al camión el
+    // operario de Logística (ver CargaPedidosService) y recién ahí el
+    // jefe lo puede despachar.
+    if (pedido.estados.nombreEstado !== ESTADO_CARGADO) {
+      throw new BadRequestException('Solo se puede despachar un pedido Cargado (falta subirlo al camión)');
     }
     if (pedido.item_pedido.length === 0) {
       throw new BadRequestException('El pedido no tiene productos cargados');

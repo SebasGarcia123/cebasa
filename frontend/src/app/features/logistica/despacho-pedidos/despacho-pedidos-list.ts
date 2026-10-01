@@ -16,7 +16,7 @@ import { DepositosApiService } from '../../../core/api/depositos-api.service';
 import { Pedido } from '../../../core/models/pedido.model';
 import { Deposito } from '../../../core/models/deposito.model';
 
-const ESTADO_FACTURADO = 'Facturado';
+const ESTADO_CARGADO = 'Cargado';
 const ESTADO_DESPACHADO = 'Despachado';
 // Coincide con PedidosService.DEPOSITO_NO_RESUELTO en el backend: si el
 // error de despachar trae exactamente este texto, en vez de mostrarlo
@@ -124,7 +124,7 @@ export class DespachoPedidosList implements OnInit {
   }
 
   puedeDespachar(pedido: Pedido): boolean {
-    return pedido.estados?.nombreEstado === ESTADO_FACTURADO;
+    return pedido.estados?.nombreEstado === ESTADO_CARGADO;
   }
 
   puedeVerRemito(pedido: Pedido): boolean {

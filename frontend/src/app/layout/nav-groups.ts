@@ -245,6 +245,12 @@ export const NAV_GROUPS: NavGroup[] = [
         permission: 'logistica.lotes_prod.aprobar',
       },
       {
+        label: 'Carga de Pedidos',
+        icon: 'pi pi-box',
+        route: '/logistica/carga-pedidos',
+        permission: 'logistica.carga_pedidos.ver',
+      },
+      {
         label: 'Despacho de Pedidos',
         icon: 'pi pi-truck',
         route: '/logistica/despacho-pedidos',

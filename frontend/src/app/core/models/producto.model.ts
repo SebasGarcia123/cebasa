@@ -7,6 +7,8 @@ export interface Producto {
   codigo_producto: string;
   descripcion_producto: string;
   bolsones_por_pallet: number | null;
+  /** Cómo ocupa el pallet el piso del camión; define el orden de carga sugerido. */
+  tipo_pallet: 'ANGOSTO' | 'ANCHO_PESADO' | 'ANCHO_LIVIANO' | null;
   peso_por_bolson: number | null;
   precio_venta: number;
   stock_actual: number;

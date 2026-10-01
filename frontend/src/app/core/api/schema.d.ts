@@ -1988,6 +1988,70 @@ export interface paths {
         patch: operations["PlanificadorEntregasController_reordenar"];
         trace?: never;
     };
+    "/carga-pedidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CargaPedidosController_findPedidosDelDia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/carga-pedidos/{idPedido}/pallets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CargaPedidosController_listarPallets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/carga-pedidos/{idPedido}/iniciar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CargaPedidosController_iniciar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/carga-pedidos/pallets/{idCargaPallet}/cargar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CargaPedidosController_cargarPallet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/proveedores": {
         parameters: {
             query?: never;
@@ -2820,6 +2884,8 @@ export interface components {
             codigo_producto: string;
             descripcion_producto: string;
             bolsones_por_pallet?: number;
+            /** @enum {string} */
+            tipo_pallet?: "ANGOSTO" | "ANCHO_PESADO" | "ANCHO_LIVIANO";
             peso_por_bolson?: number;
             precio_venta: number;
             stock_actual?: number;
@@ -3057,6 +3123,9 @@ export interface components {
         };
         ReordenarPedidosDto: {
             ordenes: components["schemas"]["OrdenPedidoDto"][];
+        };
+        IniciarCargaDto: {
+            sugerir_orden: boolean;
         };
         CreateProveedorDto: {
             nombre_proveedor: string;
@@ -8445,6 +8514,90 @@ export interface operations {
         };
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CargaPedidosController_findPedidosDelDia: {
+        parameters: {
+            query: {
+                fecha: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CargaPedidosController_listarPallets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idPedido: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    CargaPedidosController_iniciar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idPedido: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IniciarCargaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>[];
+                };
+            };
+        };
+    };
+    CargaPedidosController_cargarPallet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCargaPallet: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

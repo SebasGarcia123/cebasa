@@ -220,6 +220,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'logistica/carga-pedidos',
+        loadComponent: () =>
+          import('./features/logistica/carga-pedidos/carga-pedidos-list').then((m) => m.CargaPedidosList),
+      },
+      {
         path: 'logistica/devolucion-insumos',
         loadComponent: () =>
           import('./features/logistica/devolucion-insumos/devolucion-insumos-aprobar-list').then(

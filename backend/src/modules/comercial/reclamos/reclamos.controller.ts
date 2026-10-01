@@ -36,13 +36,13 @@ export class ReclamosController {
   }
 
   // Un reclamo no se edita ni se elimina: solo se resuelve o se rechaza.
-  @RequirePermissions('comercial.reclamos_resolver')
+  @RequirePermissions('comercial.reclamos.resolver')
   @Post(':id/resolver')
   resolver(@Param('id', ParseIntPipe) id: number, @Body() dto: ResolverReclamoDto) {
     return this.reclamosService.resolver(id, dto);
   }
 
-  @RequirePermissions('comercial.reclamos_resolver')
+  @RequirePermissions('comercial.reclamos.resolver')
   @Post(':id/rechazar')
   rechazar(@Param('id', ParseIntPipe) id: number, @Body() dto: RechazarReclamoDto) {
     return this.reclamosService.rechazar(id, dto);

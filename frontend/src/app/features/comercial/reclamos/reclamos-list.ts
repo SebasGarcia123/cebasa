@@ -53,7 +53,7 @@ export class ReclamosList implements OnInit {
 
   protected readonly puedeResolver = computed(() => {
     const user = this.authService.currentUser();
-    return !!user && (user.es_administrador || user.permisos.includes('comercial.reclamos_resolver'));
+    return !!user && (user.es_administrador || user.permisos.includes('comercial.reclamos.resolver'));
   });
 
   protected readonly reclamos = signal<Reclamo[]>([]);

@@ -62,7 +62,7 @@ export class PedidosController {
   // genera Comercial vía POST /clientes/:idCliente/documentos/factura
   // (ver DocumentosService.generarFactura), que además crea la Factura
   // y el movimiento en la cuenta corriente en la misma transacción.
-  @RequirePermissions('comercial.pedidos_despachar')
+  @RequirePermissions('logistica.pedidos.despachar')
   @Post(':id/despachar')
   async despachar(
     @Param('id', ParseIntPipe) id: number,
@@ -92,8 +92,8 @@ export class PedidosController {
   // Anular con motivo (pedido Pendiente) o nro de nota de débito (pedido
   // Facturado): el permiso requerido depende de en cuál de los dos
   // casos esté, así que se exige el más restrictivo de los dos
-  // (comercial.pedidos_facturar) y PedidosService.anular valida el resto.
-  @RequirePermissions('comercial.pedidos_facturar')
+  // (comercial.pedidos.facturar) y PedidosService.anular valida el resto.
+  @RequirePermissions('comercial.pedidos.facturar')
   @Post(':id/anular')
   anular(@Param('id', ParseIntPipe) id: number, @Body() dto: AnularPedidoDto) {
     return this.pedidosService.anular(id, dto);

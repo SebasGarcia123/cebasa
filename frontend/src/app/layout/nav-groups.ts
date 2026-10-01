@@ -218,7 +218,7 @@ export const NAV_GROUPS: NavGroup[] = [
         label: 'Despacho de Pedidos',
         icon: 'pi pi-truck',
         route: '/logistica/despacho-pedidos',
-        permission: 'comercial.pedidos_despachar',
+        permission: 'logistica.pedidos.despachar',
       },
       {
         label: 'Planificador de Entregas',

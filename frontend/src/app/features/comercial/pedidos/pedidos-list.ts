@@ -92,7 +92,7 @@ export class PedidosList implements OnInit {
   // Generar documento), no desde esta pantalla.
   protected readonly puedeFacturar = computed(() => {
     const user = this.authService.currentUser();
-    return !!user && (user.es_administrador || user.permisos.includes('comercial.pedidos_facturar'));
+    return !!user && (user.es_administrador || user.permisos.includes('comercial.pedidos.facturar'));
   });
 
   protected readonly puedeOperar = computed(() => {

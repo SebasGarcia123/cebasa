@@ -25,31 +25,31 @@ import type { JwtPayload } from '../../../auth/types/jwt-payload.interface.js';
 export class PedidosController {
   constructor(private readonly pedidosService: PedidosService) {}
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.pedidos.editar')
   @Post()
   create(@Body() dto: CreatePedidoDto) {
     return this.pedidosService.create(dto);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.pedidos.ver')
   @Get()
   findAll() {
     return this.pedidosService.findAll();
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.pedidos.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.pedidosService.findOne(id);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.pedidos.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePedidoDto) {
     return this.pedidosService.update(id, dto);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.pedidos.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.pedidosService.remove(id);
@@ -78,7 +78,7 @@ export class PedidosController {
     res.send(pdf);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.pedidos.ver')
   @Get(':id/remito')
   async remito(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const { buffer, nombreArchivo } = await this.pedidosService.obtenerRemito(id);

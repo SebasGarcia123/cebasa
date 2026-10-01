@@ -21,7 +21,7 @@ export class CuentaCorrienteController {
     private readonly cuentaCorrienteService: CuentaCorrienteService,
   ) {}
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post()
   create(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -30,13 +30,13 @@ export class CuentaCorrienteController {
     return this.cuentaCorrienteService.create(idCliente, dto);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get()
   findOne(@Param('idCliente', ParseIntPipe) idCliente: number) {
     return this.cuentaCorrienteService.findByCliente(idCliente);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Patch()
   update(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -45,7 +45,7 @@ export class CuentaCorrienteController {
     return this.cuentaCorrienteService.update(idCliente, dto);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Delete()
   remove(@Param('idCliente', ParseIntPipe) idCliente: number) {
     return this.cuentaCorrienteService.remove(idCliente);

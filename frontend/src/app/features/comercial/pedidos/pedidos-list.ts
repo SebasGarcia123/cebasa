@@ -95,6 +95,11 @@ export class PedidosList implements OnInit {
     return !!user && (user.es_administrador || user.permisos.includes('comercial.pedidos_facturar'));
   });
 
+  protected readonly puedeOperar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('comercial.pedidos.editar'));
+  });
+
   protected readonly saving = signal(false);
   protected readonly itemsLoading = signal(false);
   protected readonly dialogVisible = signal(false);
@@ -219,7 +224,7 @@ export class PedidosList implements OnInit {
   // No se puede editar un pedido una vez facturado (ver
   // PedidosService.assertEditable en el backend).
   protected puedeEditar(pedido: Pedido): boolean {
-    return pedido.estados?.nombreEstado === ESTADO_PENDIENTE;
+    return this.puedeOperar() && pedido.estados?.nombreEstado === ESTADO_PENDIENTE;
   }
 
   protected agregarItem(): void {

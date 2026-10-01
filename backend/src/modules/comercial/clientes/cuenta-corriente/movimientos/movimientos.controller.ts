@@ -21,13 +21,13 @@ export class MovimientosCuentaCorrienteController {
     private readonly movimientosService: MovimientosCuentaCorrienteService,
   ) {}
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get()
   findAll(@Param('idCliente', ParseIntPipe) idCliente: number) {
     return this.movimientosService.findAll(idCliente);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post()
   create(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -36,7 +36,7 @@ export class MovimientosCuentaCorrienteController {
     return this.movimientosService.create(idCliente, dto);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get(':idMovimiento')
   findOne(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -45,7 +45,7 @@ export class MovimientosCuentaCorrienteController {
     return this.movimientosService.findOne(idCliente, idMovimiento);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Patch(':idMovimiento')
   update(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -55,7 +55,7 @@ export class MovimientosCuentaCorrienteController {
     return this.movimientosService.update(idCliente, idMovimiento, dto);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Delete(':idMovimiento')
   remove(
     @Param('idCliente', ParseIntPipe) idCliente: number,

@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class ItemPedidoController {
   constructor(private readonly itemPedidoService: ItemPedidoService) {}
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.pedidos.ver')
   @Get()
   findAll(@Param('idPedido', ParseIntPipe) idPedido: number) {
     return this.itemPedidoService.findAllForPedido(idPedido);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.pedidos.editar')
   @Post()
   create(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -34,7 +34,7 @@ export class ItemPedidoController {
     return this.itemPedidoService.create(idPedido, dto);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.pedidos.ver')
   @Get(':idItem')
   findOne(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -43,7 +43,7 @@ export class ItemPedidoController {
     return this.itemPedidoService.findOne(idPedido, idItem);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.pedidos.editar')
   @Patch(':idItem')
   update(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -53,7 +53,7 @@ export class ItemPedidoController {
     return this.itemPedidoService.update(idPedido, idItem, dto);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.pedidos.editar')
   @Delete(':idItem')
   remove(
     @Param('idPedido', ParseIntPipe) idPedido: number,

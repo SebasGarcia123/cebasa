@@ -58,18 +58,48 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Comercial',
     items: [
-      { label: 'Clientes', icon: 'pi pi-users', route: '/comercial/clientes', permission: 'comercial.ver' },
-      { label: 'Productos', icon: 'pi pi-box', route: '/comercial/productos', permission: 'comercial.ver' },
-      { label: 'Pedidos', icon: 'pi pi-shopping-cart', route: '/comercial/pedidos', permission: 'comercial.ver' },
+      {
+        label: 'Clientes',
+        icon: 'pi pi-users',
+        route: '/comercial/clientes',
+        permission: 'comercial.clientes.editar',
+      },
+      {
+        label: 'Productos',
+        icon: 'pi pi-box',
+        route: '/comercial/productos',
+        permission: 'comercial.productos.editar',
+      },
+      {
+        label: 'Pedidos',
+        icon: 'pi pi-shopping-cart',
+        route: '/comercial/pedidos',
+        permission: 'comercial.pedidos.ver',
+      },
       {
         label: 'Reclamos',
         icon: 'pi pi-exclamation-circle',
         route: '/comercial/reclamos',
-        permission: 'comercial.ver',
+        permission: 'comercial.reclamos.ver',
       },
-      { label: 'Tipo de Impacto', icon: 'pi pi-bolt', route: '/comercial/tipo-impacto', permission: 'comercial.ver' },
-      { label: 'Tipo de Documento', icon: 'pi pi-file', route: '/comercial/tipo-documento', permission: 'comercial.ver' },
-      { label: 'Tipo de Producto', icon: 'pi pi-tags', route: '/comercial/tipo-producto', permission: 'comercial.ver' },
+      {
+        label: 'Tipo de Impacto',
+        icon: 'pi pi-bolt',
+        route: '/comercial/tipo-impacto',
+        permission: 'comercial.tipo_impacto.editar',
+      },
+      {
+        label: 'Tipo de Documento',
+        icon: 'pi pi-file',
+        route: '/comercial/tipo-documento',
+        permission: 'comercial.tipo_documento.editar',
+      },
+      {
+        label: 'Tipo de Producto',
+        icon: 'pi pi-tags',
+        route: '/comercial/tipo-producto',
+        permission: 'comercial.tipo_producto.editar',
+      },
     ],
   },
   {

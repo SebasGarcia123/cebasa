@@ -11,25 +11,25 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class ReclamosController {
   constructor(private readonly reclamosService: ReclamosService) {}
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.reclamos.editar')
   @Post()
   create(@Body() dto: CreateReclamoDto) {
     return this.reclamosService.create(dto);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.reclamos.ver')
   @Get()
   findAll() {
     return this.reclamosService.findAll();
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.reclamos.ver')
   @Get('pendientes/count')
   async countPendientes() {
     return { count: await this.reclamosService.countPendientes() };
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.reclamos.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.reclamosService.findOne(id);

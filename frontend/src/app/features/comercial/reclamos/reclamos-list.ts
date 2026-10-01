@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ReclamosApiService } from '../../../core/api/reclamos-api.service';
 import { ClientesApiService } from '../../../core/api/clientes-api.service';
 import { SectoresApiService } from '../../../core/api/sectores-api.service';
@@ -43,6 +44,17 @@ export class ReclamosList implements OnInit {
   private readonly sectoresApi = inject(SectoresApiService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly puedeEditar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('comercial.reclamos.editar'));
+  });
+
+  protected readonly puedeResolver = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('comercial.reclamos_resolver'));
+  });
 
   protected readonly reclamos = signal<Reclamo[]>([]);
   protected readonly clientes = signal<Cliente[]>([]);

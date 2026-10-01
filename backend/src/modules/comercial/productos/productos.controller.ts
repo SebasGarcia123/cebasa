@@ -19,25 +19,23 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class ProductosController {
   constructor(private readonly productosService: ProductosService) {}
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.productos.editar')
   @Post()
   create(@Body() dto: CreateProductoDto) {
     return this.productosService.create(dto);
   }
 
-  @RequirePermissions('comercial.ver')
   @Get()
   findAll() {
     return this.productosService.findAll();
   }
 
-  @RequirePermissions('comercial.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productosService.findOne(id);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.productos.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +44,7 @@ export class ProductosController {
     return this.productosService.update(id, dto);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.productos.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productosService.remove(id);

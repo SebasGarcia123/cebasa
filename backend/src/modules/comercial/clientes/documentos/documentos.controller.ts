@@ -16,13 +16,13 @@ import { CreateNotaDto } from './dto/create-nota.dto.js';
 export class DocumentosController {
   constructor(private readonly documentosService: DocumentosService) {}
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get('facturables')
   pedidosFacturables(@Param('idCliente', ParseIntPipe) idCliente: number) {
     return this.documentosService.pedidosFacturables(idCliente);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post('factura')
   async generarFactura(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -33,7 +33,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, `factura-${factura.id_factura}.pdf`);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post('recibo')
   async generarRecibo(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -44,7 +44,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, `recibo-${recibo.id_recibo}.pdf`);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post('nota-credito')
   async generarNotaCredito(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -55,7 +55,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, `nota-credito-${id}.pdf`);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post('nota-debito')
   async generarNotaDebito(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -66,7 +66,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, `nota-debito-${id}.pdf`);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get('factura/:id/pdf')
   async pdfFactura(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -77,7 +77,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, nombreArchivo);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get('recibo/:id/pdf')
   async pdfRecibo(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -88,7 +88,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, nombreArchivo);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get('nota-credito/:id/pdf')
   async pdfNotaCredito(
     @Param('idCliente', ParseIntPipe) idCliente: number,
@@ -99,7 +99,7 @@ export class DocumentosController {
     this.enviarPdf(res, buffer, nombreArchivo);
   }
 
-  @RequirePermissions('comercial.ver')
+  @RequirePermissions('comercial.clientes.editar')
   @Get('nota-debito/:id/pdf')
   async pdfNotaDebito(
     @Param('idCliente', ParseIntPipe) idCliente: number,

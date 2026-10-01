@@ -19,31 +19,29 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class ClientesController {
   constructor(private readonly clientesService: ClientesService) {}
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Post()
   create(@Body() dto: CreateClienteDto) {
     return this.clientesService.create(dto);
   }
 
-  @RequirePermissions('comercial.ver')
   @Get()
   findAll() {
     return this.clientesService.findAll();
   }
 
-  @RequirePermissions('comercial.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.clientesService.findOne(id);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateClienteDto) {
     return this.clientesService.update(id, dto);
   }
 
-  @RequirePermissions('comercial.editar')
+  @RequirePermissions('comercial.clientes.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.clientesService.remove(id);

@@ -19,31 +19,31 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class RecetaController {
   constructor(private readonly recetaService: RecetaService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.recetas.editar')
   @Post()
   create(@Body() dto: CreateRecetaDto) {
     return this.recetaService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.recetas.editar')
   @Get()
   findAll() {
     return this.recetaService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.recetas.editar')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.recetaService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.recetas.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRecetaDto) {
     return this.recetaService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.recetas.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.recetaService.remove(id);

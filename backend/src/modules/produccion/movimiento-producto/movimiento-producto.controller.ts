@@ -21,25 +21,25 @@ export class MovimientoProductoController {
     private readonly movimientoProductoService: MovimientoProductoService,
   ) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.movimientos_producto.editar')
   @Post()
   create(@Body() dto: CreateMovimientoProductoDto) {
     return this.movimientoProductoService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.movimientos_producto.editar')
   @Get()
   findAll() {
     return this.movimientoProductoService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.movimientos_producto.editar')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.movimientoProductoService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.movimientos_producto.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -48,7 +48,7 @@ export class MovimientoProductoController {
     return this.movimientoProductoService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.movimientos_producto.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.movimientoProductoService.remove(id);

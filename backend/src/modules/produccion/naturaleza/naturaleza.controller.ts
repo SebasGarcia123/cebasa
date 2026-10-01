@@ -19,25 +19,23 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class NaturalezaController {
   constructor(private readonly naturalezaService: NaturalezaService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.naturaleza.editar')
   @Post()
   create(@Body() dto: CreateNaturalezaDto) {
     return this.naturalezaService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
   @Get()
   findAll() {
     return this.naturalezaService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.naturalezaService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.naturaleza.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +44,7 @@ export class NaturalezaController {
     return this.naturalezaService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.naturaleza.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.naturalezaService.remove(id);

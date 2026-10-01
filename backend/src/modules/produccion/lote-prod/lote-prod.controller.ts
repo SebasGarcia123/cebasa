@@ -22,25 +22,25 @@ import type { JwtPayload } from '../../../auth/types/jwt-payload.interface.js';
 export class LoteProdController {
   constructor(private readonly loteProdService: LoteProdService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lotes_prod.editar')
   @Post()
   create(@Body() dto: CreateLoteProdDto, @CurrentUser() user: JwtPayload) {
     return this.loteProdService.create(dto, user);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get()
   findAll() {
     return this.loteProdService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.loteProdService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lotes_prod.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -49,13 +49,13 @@ export class LoteProdController {
     return this.loteProdService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lotes_prod.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.loteProdService.remove(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lotes_prod.editar')
   @Post(':id/cerrar')
   cerrar(@Param('id', ParseIntPipe) id: number) {
     return this.loteProdService.cerrar(id);

@@ -18,6 +18,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { LoteProdApiService } from '../../../core/api/lote-prod-api.service';
 import { ItemProdApiService } from '../../../core/api/item-prod-api.service';
 import { TurnosApiService } from '../../../core/api/turnos-api.service';
@@ -77,6 +78,14 @@ export class LotesProdList implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  // Abrir, editar y cerrar el lote es tarea del jefe de Producción; el
+  // operario carga las bobinas/pallets desde su propia pantalla.
+  protected readonly puedeOperarLote = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.lotes_prod.editar'));
+  });
 
   protected readonly lotes = signal<LoteProd[]>([]);
   protected readonly turnos = signal<Turno[]>([]);
@@ -223,11 +232,14 @@ export class LotesProdList implements OnInit {
   // Editable solo mientras está abierto o rechazado; una vez cerrado
   // (enviado a Logística) o aprobado, no se toca más (ver LoteProdService).
   protected puedeEditar(lote: LoteProd): boolean {
-    return lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO;
+    return (
+      this.puedeOperarLote() &&
+      (lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO)
+    );
   }
 
   protected puedeCerrar(lote: LoteProd): boolean {
-    return lote.estados?.nombreEstado === ESTADO_ABIERTO;
+    return this.puedeOperarLote() && lote.estados?.nombreEstado === ESTADO_ABIERTO;
   }
 
   // El lote puede arrancar sin productos cargados a mano: el operario

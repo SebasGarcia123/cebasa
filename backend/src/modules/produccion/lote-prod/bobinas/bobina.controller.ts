@@ -12,13 +12,13 @@ import type { JwtPayload } from '../../../../auth/types/jwt-payload.interface.js
 export class BobinaController {
   constructor(private readonly bobinaService: BobinaService) {}
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get()
   findAll(@Param('idLote', ParseIntPipe) idLote: number) {
     return this.bobinaService.findAllForLote(idLote);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Post()
   create(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -28,13 +28,13 @@ export class BobinaController {
     return this.bobinaService.create(idLote, dto, user.sub);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Delete(':idBobina')
   remove(@Param('idLote', ParseIntPipe) idLote: number, @Param('idBobina', ParseIntPipe) idBobina: number) {
     return this.bobinaService.remove(idLote, idBobina);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get(':idBobina/rotulo')
   async rotulo(
     @Param('idLote', ParseIntPipe) idLote: number,

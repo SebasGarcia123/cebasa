@@ -1,7 +1,9 @@
 <div class="page">
   <div class="page__header">
     <h1>Lotes de Producción Baradero</h1>
-    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+    @if (puedeOperarLote()) {
+      <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+    }
   </div>
 
   <p-table [value]="lotes()" [loading]="loading()" dataKey="id_lote" [paginator]="true" [rows]="10">

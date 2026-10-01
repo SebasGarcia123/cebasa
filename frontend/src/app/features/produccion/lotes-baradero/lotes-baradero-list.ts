@@ -10,6 +10,7 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { LoteProdApiService } from '../../../core/api/lote-prod-api.service';
 import { BobinaApiService } from '../../../core/api/bobina-api.service';
 import { TurnosApiService } from '../../../core/api/turnos-api.service';
@@ -57,6 +58,14 @@ export class LotesBaraderoList implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+
+  // Abrir, cerrar y eliminar el lote es tarea del jefe de Producción; el
+  // operario carga las bobinas desde su propia pantalla.
+  protected readonly puedeOperarLote = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('produccion.lotes_prod.editar'));
+  });
 
   protected readonly lotesTodos = signal<LoteProd[]>([]);
   protected readonly lotes = computed(() =>
@@ -103,11 +112,17 @@ export class LotesBaraderoList implements OnInit {
   }
 
   protected puedeCerrar(lote: LoteProd): boolean {
-    return lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO;
+    return (
+      this.puedeOperarLote() &&
+      (lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO)
+    );
   }
 
   protected puedeEliminar(lote: LoteProd): boolean {
-    return lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO;
+    return (
+      this.puedeOperarLote() &&
+      (lote.estados?.nombreEstado === ESTADO_ABIERTO || lote.estados?.nombreEstado === ESTADO_RECHAZADO)
+    );
   }
 
   openCreate(): void {

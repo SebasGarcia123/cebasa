@@ -19,31 +19,29 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class LineasController {
   constructor(private readonly lineasService: LineasService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lineas.editar')
   @Post()
   create(@Body() dto: CreateLineaDto) {
     return this.lineasService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
   @Get()
   findAll() {
     return this.lineasService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.lineasService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lineas.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateLineaDto) {
     return this.lineasService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.lineas.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.lineasService.remove(id);

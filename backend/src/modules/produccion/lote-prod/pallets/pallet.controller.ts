@@ -12,13 +12,13 @@ import type { JwtPayload } from '../../../../auth/types/jwt-payload.interface.js
 export class PalletController {
   constructor(private readonly palletService: PalletService) {}
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get()
   findAll(@Param('idLote', ParseIntPipe) idLote: number) {
     return this.palletService.findAllForLote(idLote);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Post()
   create(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -28,13 +28,13 @@ export class PalletController {
     return this.palletService.create(idLote, dto, user.sub);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Delete(':idPallet')
   remove(@Param('idLote', ParseIntPipe) idLote: number, @Param('idPallet', ParseIntPipe) idPallet: number) {
     return this.palletService.remove(idLote, idPallet);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get(':idPallet/rotulo')
   async rotulo(
     @Param('idLote', ParseIntPipe) idLote: number,

@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class ItemProdController {
   constructor(private readonly itemProdService: ItemProdService) {}
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get()
   findAll(@Param('idLote', ParseIntPipe) idLote: number) {
     return this.itemProdService.findAllForLote(idLote);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Post()
   create(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -34,7 +34,7 @@ export class ItemProdController {
     return this.itemProdService.create(idLote, dto);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.lotes_prod.ver')
   @Get(':idItem')
   findOne(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -43,7 +43,7 @@ export class ItemProdController {
     return this.itemProdService.findOne(idLote, idItem);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Patch(':idItem')
   update(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -53,7 +53,7 @@ export class ItemProdController {
     return this.itemProdService.update(idLote, idItem, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.operario_prod.cargar')
   @Delete(':idItem')
   remove(
     @Param('idLote', ParseIntPipe) idLote: number,

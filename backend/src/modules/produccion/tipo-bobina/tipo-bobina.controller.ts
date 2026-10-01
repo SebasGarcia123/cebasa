@@ -19,31 +19,29 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class TipoBobinaController {
   constructor(private readonly tipoBobinaService: TipoBobinaService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.tipo_bobina.editar')
   @Post()
   create(@Body() dto: CreateTipoBobinaDto) {
     return this.tipoBobinaService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
   @Get()
   findAll() {
     return this.tipoBobinaService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.tipoBobinaService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.tipo_bobina.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTipoBobinaDto) {
     return this.tipoBobinaService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.tipo_bobina.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.tipoBobinaService.remove(id);

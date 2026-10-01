@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class RecetaItemController {
   constructor(private readonly recetaItemService: RecetaItemService) {}
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.recetas.editar')
   @Get()
   findAll(@Param('idReceta', ParseIntPipe) idReceta: number) {
     return this.recetaItemService.findAllForReceta(idReceta);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.recetas.editar')
   @Post()
   create(
     @Param('idReceta', ParseIntPipe) idReceta: number,
@@ -34,7 +34,7 @@ export class RecetaItemController {
     return this.recetaItemService.create(idReceta, dto);
   }
 
-  @RequirePermissions('produccion.ver')
+  @RequirePermissions('produccion.recetas.editar')
   @Get(':idItem')
   findOne(
     @Param('idReceta', ParseIntPipe) idReceta: number,
@@ -43,7 +43,7 @@ export class RecetaItemController {
     return this.recetaItemService.findOne(idReceta, idItem);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.recetas.editar')
   @Patch(':idItem')
   update(
     @Param('idReceta', ParseIntPipe) idReceta: number,
@@ -53,7 +53,7 @@ export class RecetaItemController {
     return this.recetaItemService.update(idReceta, idItem, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.recetas.editar')
   @Delete(':idItem')
   remove(
     @Param('idReceta', ParseIntPipe) idReceta: number,

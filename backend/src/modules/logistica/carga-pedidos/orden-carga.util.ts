@@ -17,33 +17,53 @@ export function palletsDeItem(cantidadBolsones: number, bolsonesPorPallet: numbe
   return Math.ceil(cantidadBolsones / bolsonesPorPallet);
 }
 
-// Reparte los pallets entre los dos lados del camión alternando dentro
-// de cada tipo, así cada lado queda con una mezcla parecida de anchos y
-// angostos (y no un lado todo pesado y el otro todo liviano).
+// Reparte los pallets en mitades: de cada tipo va la mitad a cada lado
+// del camión, y si el tipo es impar el pallet de más va al lado que
+// venga más liviano hasta ese momento. Partir por tipo (y no el total)
+// es lo que equilibra el peso: los anchos pesados quedan mitad y mitad.
+//
+// Ej. 8 anchos pesados + 10 anchos livianos + 10 angostos
+//     => 4 + 5 + 5 de cada lado (14 y 14).
 export function repartirEnMitades(pallets: PalletAArmar[]): Map<LadoCamion, PalletAArmar[]> {
-  const porLado = new Map<LadoCamion, PalletAArmar[]>([
-    [LadoCamion.CONDUCTOR, []],
-    [LadoCamion.ACOMPANANTE, []],
-  ]);
+  const conductor: PalletAArmar[] = [];
+  const acompanante: PalletAArmar[] = [];
 
   for (const tipo of [TipoPallet.ANCHO_PESADO, TipoPallet.ANCHO_LIVIANO, TipoPallet.ANGOSTO]) {
-    pallets
-      .filter((p) => p.tipo === tipo)
-      .forEach((pallet, i) => {
-        const lado = i % 2 === 0 ? LadoCamion.CONDUCTOR : LadoCamion.ACOMPANANTE;
-        porLado.get(lado)!.push(pallet);
-      });
+    const delTipo = pallets.filter((p) => p.tipo === tipo);
+    const mitad = Math.floor(delTipo.length / 2);
+    // El impar va al lado que menos pallets tiene hasta acá, así los
+    // sobrantes de los distintos tipos no se acumulan todos del mismo
+    // lado.
+    const sobraUno = delTipo.length % 2 === 1;
+    const alConductorPrimero = conductor.length <= acompanante.length;
+    const cuantosConductor = mitad + (sobraUno && alConductorPrimero ? 1 : 0);
+
+    conductor.push(...delTipo.slice(0, cuantosConductor));
+    acompanante.push(...delTipo.slice(cuantosConductor));
   }
 
-  return porLado;
+  return new Map<LadoCamion, PalletAArmar[]>([
+    [LadoCamion.CONDUCTOR, conductor],
+    [LadoCamion.ACOMPANANTE, acompanante],
+  ]);
 }
 
-// Orden de carga de un lado: primero los anchos y pesados, después los
-// anchos y livianos (el peso va adelante), y los angostos se intercalan
-// entre medio repartidos de forma pareja según la proporción.
+// Reparte `total` en `grupos` partes lo más parejas posible, de mayor a
+// menor (ej. 9 en 6 grupos => [2,2,2,1,1,1]).
+function tamaniosDeGrupo(total: number, grupos: number): number[] {
+  const base = Math.floor(total / grupos);
+  const resto = total % grupos;
+  return Array.from({ length: grupos }, (_, i) => base + (i < resto ? 1 : 0));
+}
+
+// Orden de carga de un lado: los anchos van primero los pesados y
+// después los livianos (el peso adelante), y los angostos se intercalan
+// entre grupos de anchos, de forma que la fila arranca y termina con un
+// ancho y los angostos quedan repartidos parejos entre medio.
 //
-// Ej. 4 anchos pesados + 2 anchos livianos + 6 angostos:
-//   AP AN AP AN AP AN AP AN AL AN AL AN
+// Ej. un lado con 4 anchos pesados + 5 anchos livianos + 5 angostos
+// (9 anchos, 5 angostos => 6 grupos de anchos de [2,2,2,1,1,1]):
+//   AP AP AN AP AP AN AL AL AN AL AN AL AN AL
 export function ordenarLado(pallets: PalletAArmar[]): PalletAArmar[] {
   const anchos = [
     ...pallets.filter((p) => p.tipo === TipoPallet.ANCHO_PESADO),
@@ -54,19 +74,38 @@ export function ordenarLado(pallets: PalletAArmar[]): PalletAArmar[] {
   if (anchos.length === 0) {
     return angostos;
   }
+  if (angostos.length === 0) {
+    return anchos;
+  }
 
-  // Reparte los angostos en los huecos que quedan después de cada
-  // ancho: base para todos y uno extra a los primeros `resto`.
-  const base = Math.floor(angostos.length / anchos.length);
-  const resto = angostos.length % anchos.length;
+  // Un angosto entre grupo y grupo: con A angostos hacen falta A+1
+  // grupos de anchos para que la fila empiece y termine con ancho. Si
+  // no hay tantos anchos, se usa un grupo por ancho y los angostos que
+  // sobran se amontonan en los huecos (dos angostos ocupan más o menos
+  // lo que un ancho).
+  const grupos = Math.min(angostos.length + 1, anchos.length);
+  const huecos = grupos - 1;
+
+  // Con un solo grupo (hay un único ancho) no hay hueco donde
+  // intercalar: va el ancho primero y los angostos atrás.
+  if (huecos === 0) {
+    return [...anchos, ...angostos];
+  }
+
+  const tamanios = tamaniosDeGrupo(anchos.length, grupos);
+  const angostosPorHueco = tamaniosDeGrupo(angostos.length, huecos);
 
   const orden: PalletAArmar[] = [];
+  let siguienteAncho = 0;
   let siguienteAngosto = 0;
-  anchos.forEach((ancho, i) => {
-    orden.push(ancho);
-    const cuantos = base + (i < resto ? 1 : 0);
-    for (let n = 0; n < cuantos; n++) {
-      orden.push(angostos[siguienteAngosto++]);
+  tamanios.forEach((tamanio, i) => {
+    for (let n = 0; n < tamanio; n++) {
+      orden.push(anchos[siguienteAncho++]);
+    }
+    if (i < huecos) {
+      for (let n = 0; n < angostosPorHueco[i]; n++) {
+        orden.push(angostos[siguienteAngosto++]);
+      }
     }
   });
 

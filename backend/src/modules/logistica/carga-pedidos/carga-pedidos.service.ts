@@ -14,8 +14,10 @@ const INCLUDE_PALLET = {
 
 // Pantalla del operario de Logística (clarkista), pensada para tablet:
 // elige un día, ve los pedidos a cargar, y el sistema le sugiere en qué
-// orden subir los pallets al camión. Cuando están todos cargados el
-// pedido pasa a "Cargado" y queda listo para que el jefe lo despache.
+// orden subir los pallets al camión (ver orden-carga.util.ts: mitades
+// por lado y anchos intercalados con angostos). Cuando están todos
+// cargados el pedido pasa a "Cargado" y queda listo para que el jefe lo
+// despache.
 @Injectable()
 export class CargaPedidosService {
   constructor(

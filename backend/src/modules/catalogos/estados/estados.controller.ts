@@ -19,12 +19,15 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class EstadosController {
   constructor(private readonly estadosService: EstadosService) {}
 
-  @RequirePermissions('catalogos.editar')
+  @RequirePermissions('catalogos.estados.editar')
   @Post()
   create(@Body() dto: CreateEstadoDto) {
     return this.estadosService.create(dto);
   }
 
+  // Sin permiso: Estados es un catálogo compartido, lo consultan como
+  // referencia (combo de estado) decenas de pantallas de todos los
+  // sectores, no solo el ABM de Estados.
   @Get()
   findAll() {
     return this.estadosService.findAll();
@@ -35,13 +38,13 @@ export class EstadosController {
     return this.estadosService.findOne(id);
   }
 
-  @RequirePermissions('catalogos.editar')
+  @RequirePermissions('catalogos.estados.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateEstadoDto) {
     return this.estadosService.update(id, dto);
   }
 
-  @RequirePermissions('catalogos.editar')
+  @RequirePermissions('catalogos.estados.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.estadosService.remove(id);

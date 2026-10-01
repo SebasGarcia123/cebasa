@@ -19,25 +19,25 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class UnidadMedidaController {
   constructor(private readonly unidadMedidaService: UnidadMedidaService) {}
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.unidad_medida.editar')
   @Post()
   create(@Body() dto: CreateUnidadMedidaDto) {
     return this.unidadMedidaService.create(dto);
   }
 
-  @RequirePermissions('produccion.ver')
+  // Sin permiso: lo consulta como referencia (combo de unidad) el
+  // formulario de Insumos, no solo el ABM de Unidad de Medida.
   @Get()
   findAll() {
     return this.unidadMedidaService.findAll();
   }
 
-  @RequirePermissions('produccion.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.unidadMedidaService.findOne(id);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.unidad_medida.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +46,7 @@ export class UnidadMedidaController {
     return this.unidadMedidaService.update(id, dto);
   }
 
-  @RequirePermissions('produccion.editar')
+  @RequirePermissions('produccion.unidad_medida.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.unidadMedidaService.remove(id);

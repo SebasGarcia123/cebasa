@@ -19,12 +19,14 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class SectoresController {
   constructor(private readonly sectoresService: SectoresService) {}
 
-  @RequirePermissions('catalogos.editar')
+  @RequirePermissions('catalogos.sectores.editar')
   @Post()
   create(@Body() dto: CreateSectorDto) {
     return this.sectoresService.create(dto);
   }
 
+  // Sin permiso: lo consultan como referencia (combo de sector) otras
+  // pantallas, como el ABM de Usuarios.
   @Get()
   findAll() {
     return this.sectoresService.findAll();
@@ -35,13 +37,13 @@ export class SectoresController {
     return this.sectoresService.findOne(id);
   }
 
-  @RequirePermissions('catalogos.editar')
+  @RequirePermissions('catalogos.sectores.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateSectorDto) {
     return this.sectoresService.update(id, dto);
   }
 
-  @RequirePermissions('catalogos.editar')
+  @RequirePermissions('catalogos.sectores.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.sectoresService.remove(id);

@@ -35,13 +35,23 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Catálogos',
     items: [
-      { label: 'Estados', icon: 'pi pi-flag', route: '/catalogos/estados' },
-      { label: 'Sectores', icon: 'pi pi-sitemap', route: '/catalogos/sectores' },
+      {
+        label: 'Estados',
+        icon: 'pi pi-flag',
+        route: '/catalogos/estados',
+        permission: 'catalogos.estados.editar',
+      },
+      {
+        label: 'Sectores',
+        icon: 'pi pi-sitemap',
+        route: '/catalogos/sectores',
+        permission: 'catalogos.sectores.editar',
+      },
       {
         label: 'Unidad de Medida',
         icon: 'pi pi-arrows-h',
         route: '/catalogos/unidad-medida',
-        permission: 'produccion.ver',
+        permission: 'produccion.unidad_medida.editar',
       },
     ],
   },

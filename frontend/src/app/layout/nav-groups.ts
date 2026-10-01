@@ -27,10 +27,9 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Stock',
     items: [
-      // Sin permission: el stock es de consulta libre para toda la
-      // organización (el ajuste en sí queda protegido por stock.ajustar
-      // en el backend, y el lápiz se oculta client-side sin ese permiso).
-      { label: 'Stock', icon: 'pi pi-warehouse', route: '/stock' },
+      // El ajuste en sí queda protegido aparte por stock.ajustar (el
+      // lápiz se oculta client-side sin ese permiso).
+      { label: 'Stock', icon: 'pi pi-warehouse', route: '/stock', permission: 'stock.ver' },
     ],
   },
   {

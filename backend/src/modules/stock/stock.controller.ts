@@ -6,20 +6,20 @@ import { RequirePermissions } from '../../auth/decorators/permissions.decorator.
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js';
 import type { JwtPayload } from '../../auth/types/jwt-payload.interface.js';
 
-// Sin @RequirePermissions en los GET: el stock es de consulta libre para
-// cualquier usuario autenticado (transparente para toda la organización).
-// Solo el ajuste (POST) exige stock.ajustar, pensado para que Logística
-// lo tenga sin necesitar producción.editar ni comercial.editar completos.
+// El ajuste (POST) exige stock.ajustar, pensado para que Logística lo
+// tenga sin necesitar producción.editar ni comercial.editar completos.
 @ApiTags('Stock')
 @Controller('stock')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
 
+  @RequirePermissions('stock.ver')
   @Get('insumos')
   findInsumos(@Query('idDeposito') idDeposito?: string) {
     return this.stockService.findInsumos(idDeposito ? Number(idDeposito) : undefined);
   }
 
+  @RequirePermissions('stock.ver')
   @Get('productos')
   findProductos(@Query('idDeposito') idDeposito?: string) {
     return this.stockService.findProductos(idDeposito ? Number(idDeposito) : undefined);

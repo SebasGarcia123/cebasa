@@ -57,7 +57,7 @@ export class PedidosController {
 
   // Despachar/anular-desde-facturado son responsabilidad de Logística,
   // no de quien carga el pedido: permiso propio en vez de
-  // comercial.editar (mismo criterio que produccion.lotes_aprobar).
+  // comercial.editar (mismo criterio que logistica.lotes_prod.aprobar).
   // Facturar dejó de ser una transición suelta de estado: ahora la
   // genera Comercial vía POST /clientes/:idCliente/documentos/factura
   // (ver DocumentosService.generarFactura), que además crea la Factura

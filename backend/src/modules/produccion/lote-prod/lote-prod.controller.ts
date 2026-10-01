@@ -63,13 +63,13 @@ export class LoteProdController {
 
   // Aprobar/rechazar es tarea de Logística, no de quien carga el lote:
   // permiso propio en vez de reusar produccion.editar.
-  @RequirePermissions('produccion.lotes_aprobar')
+  @RequirePermissions('logistica.lotes_prod.aprobar')
   @Post(':id/aprobar')
   aprobar(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {
     return this.loteProdService.aprobar(id, user);
   }
 
-  @RequirePermissions('produccion.lotes_aprobar')
+  @RequirePermissions('logistica.lotes_prod.aprobar')
   @Post(':id/rechazar')
   rechazar(
     @Param('id', ParseIntPipe) id: number,

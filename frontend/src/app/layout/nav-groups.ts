@@ -242,7 +242,7 @@ export const NAV_GROUPS: NavGroup[] = [
         label: 'Aprobación de Lotes de Producción',
         icon: 'pi pi-verified',
         route: '/logistica/aprobacion-lotes-prod',
-        permission: 'produccion.lotes_aprobar',
+        permission: 'logistica.lotes_prod.aprobar',
       },
       {
         label: 'Despacho de Pedidos',

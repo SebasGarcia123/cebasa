@@ -66,7 +66,7 @@ export class LotesController {
 
   // Aprobar/rechazar es tarea del Jefe de Logística de la planta
   // destino, no de quien carga el lote: permiso propio en vez de
-  // logistica.editar (mismo criterio que produccion.lotes_aprobar).
+  // logistica.editar (mismo criterio que logistica.lotes_prod.aprobar).
   @RequirePermissions('logistica.lotes.aprobar')
   @Post(':id/aprobar')
   aprobar(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {

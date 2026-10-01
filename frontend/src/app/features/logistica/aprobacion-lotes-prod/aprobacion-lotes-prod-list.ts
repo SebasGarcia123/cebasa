@@ -48,7 +48,7 @@ export class AprobacionLotesProdList implements OnInit {
   // el usuario no tiene el permiso, la barrera real está en el backend.
   protected readonly puedeAprobar = computed(() => {
     const user = this.authService.currentUser();
-    return !!user && (user.es_administrador || user.permisos.includes('produccion.lotes_aprobar'));
+    return !!user && (user.es_administrador || user.permisos.includes('logistica.lotes_prod.aprobar'));
   });
 
   protected readonly verDialogVisible = signal(false);

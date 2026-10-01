@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class ItemControlController {
   constructor(private readonly itemControlService: ItemControlService) {}
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Get()
   findAll(@Param('idControl', ParseIntPipe) idControl: number) {
     return this.itemControlService.findAllForControl(idControl);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Post()
   create(
     @Param('idControl', ParseIntPipe) idControl: number,
@@ -34,7 +34,7 @@ export class ItemControlController {
     return this.itemControlService.create(idControl, dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Get(':idItem')
   findOne(
     @Param('idControl', ParseIntPipe) idControl: number,
@@ -43,7 +43,7 @@ export class ItemControlController {
     return this.itemControlService.findOne(idControl, idItem);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Patch(':idItem')
   update(
     @Param('idControl', ParseIntPipe) idControl: number,
@@ -53,7 +53,7 @@ export class ItemControlController {
     return this.itemControlService.update(idControl, idItem, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Delete(':idItem')
   remove(
     @Param('idControl', ParseIntPipe) idControl: number,

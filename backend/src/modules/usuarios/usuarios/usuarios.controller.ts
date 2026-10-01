@@ -19,31 +19,31 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Post()
   create(@Body() dto: CreateUsuarioDto) {
     return this.usuariosService.create(dto);
   }
 
-  @RequirePermissions('usuarios.ver')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Get()
   findAll() {
     return this.usuariosService.findAll();
   }
 
-  @RequirePermissions('usuarios.ver')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usuariosService.findOne(id);
   }
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUsuarioDto) {
     return this.usuariosService.update(id, dto);
   }
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usuariosService.remove(id);

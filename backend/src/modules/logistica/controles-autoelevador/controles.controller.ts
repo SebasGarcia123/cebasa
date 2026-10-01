@@ -21,25 +21,25 @@ export class ControlesAutoelevadorController {
     private readonly controlesService: ControlesAutoelevadorService,
   ) {}
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Post()
   create(@Body() dto: CreateControlAutoelevadorDto) {
     return this.controlesService.create(dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Get()
   findAll() {
     return this.controlesService.findAll();
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.controlesService.findOne(id);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -48,7 +48,7 @@ export class ControlesAutoelevadorController {
     return this.controlesService.update(id, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.control_autoelevador.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.controlesService.remove(id);

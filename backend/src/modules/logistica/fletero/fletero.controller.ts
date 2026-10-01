@@ -19,31 +19,31 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class FleteroController {
   constructor(private readonly fleteroService: FleteroService) {}
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.fleteros.editar')
   @Post()
   create(@Body() dto: CreateFleteroDto) {
     return this.fleteroService.create(dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.fleteros.editar')
   @Get()
   findAll() {
     return this.fleteroService.findAll();
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.fleteros.editar')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.fleteroService.findOne(id);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.fleteros.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateFleteroDto) {
     return this.fleteroService.update(id, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.fleteros.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.fleteroService.remove(id);

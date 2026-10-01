@@ -19,31 +19,29 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class PermisosController {
   constructor(private readonly permisosService: PermisosService) {}
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.permisos.editar')
   @Post()
   create(@Body() dto: CreatePermisoDto) {
     return this.permisosService.create(dto);
   }
 
-  @RequirePermissions('usuarios.ver')
   @Get()
   findAll() {
     return this.permisosService.findAll();
   }
 
-  @RequirePermissions('usuarios.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.permisosService.findOne(id);
   }
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.permisos.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePermisoDto) {
     return this.permisosService.update(id, dto);
   }
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.permisos.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.permisosService.remove(id);

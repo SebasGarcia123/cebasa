@@ -19,25 +19,23 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class TipoLoteController {
   constructor(private readonly tipoLoteService: TipoLoteService) {}
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.tipo_lote.editar')
   @Post()
   create(@Body() dto: CreateTipoLoteDto) {
     return this.tipoLoteService.create(dto);
   }
 
-  @RequirePermissions('logistica.ver')
   @Get()
   findAll() {
     return this.tipoLoteService.findAll();
   }
 
-  @RequirePermissions('logistica.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.tipoLoteService.findOne(id);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.tipo_lote.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +44,7 @@ export class TipoLoteController {
     return this.tipoLoteService.update(id, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.tipo_lote.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.tipoLoteService.remove(id);

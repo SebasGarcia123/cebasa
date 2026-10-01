@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class ChoferController {
   constructor(private readonly choferService: ChoferService) {}
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.transporte.editar')
   @Get()
   findAll(@Param('idTransporte', ParseIntPipe) idTransporte: number) {
     return this.choferService.findAllForTransporte(idTransporte);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.transporte.editar')
   @Post()
   create(
     @Param('idTransporte', ParseIntPipe) idTransporte: number,
@@ -34,7 +34,7 @@ export class ChoferController {
     return this.choferService.create(idTransporte, dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.transporte.editar')
   @Get(':idChofer')
   findOne(
     @Param('idTransporte', ParseIntPipe) idTransporte: number,
@@ -43,7 +43,7 @@ export class ChoferController {
     return this.choferService.findOne(idTransporte, idChofer);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.transporte.editar')
   @Patch(':idChofer')
   update(
     @Param('idTransporte', ParseIntPipe) idTransporte: number,
@@ -53,7 +53,7 @@ export class ChoferController {
     return this.choferService.update(idTransporte, idChofer, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.transporte.editar')
   @Delete(':idChofer')
   remove(
     @Param('idTransporte', ParseIntPipe) idTransporte: number,

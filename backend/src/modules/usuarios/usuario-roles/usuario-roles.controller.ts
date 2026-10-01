@@ -15,13 +15,13 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class UsuarioRolesController {
   constructor(private readonly usuarioRolesService: UsuarioRolesService) {}
 
-  @RequirePermissions('usuarios.ver')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Get()
   findAll(@Param('idUsuario', ParseIntPipe) idUsuario: number) {
     return this.usuarioRolesService.findAllForUsuario(idUsuario);
   }
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Post(':idRol')
   assign(
     @Param('idUsuario', ParseIntPipe) idUsuario: number,
@@ -30,7 +30,7 @@ export class UsuarioRolesController {
     return this.usuarioRolesService.assign(idUsuario, idRol);
   }
 
-  @RequirePermissions('usuarios.administrar')
+  @RequirePermissions('usuarios.usuarios.editar')
   @Delete(':idRol')
   remove(
     @Param('idUsuario', ParseIntPipe) idUsuario: number,

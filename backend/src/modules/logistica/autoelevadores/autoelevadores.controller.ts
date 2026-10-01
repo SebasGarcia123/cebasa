@@ -19,25 +19,23 @@ import { RequirePermissions } from '../../../auth/decorators/permissions.decorat
 export class AutoelevadoresController {
   constructor(private readonly autoelevadoresService: AutoelevadoresService) {}
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Post()
   create(@Body() dto: CreateAutoelevadorDto) {
     return this.autoelevadoresService.create(dto);
   }
 
-  @RequirePermissions('logistica.ver')
   @Get()
   findAll() {
     return this.autoelevadoresService.findAll();
   }
 
-  @RequirePermissions('logistica.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.autoelevadoresService.findOne(id);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -46,7 +44,7 @@ export class AutoelevadoresController {
     return this.autoelevadoresService.update(id, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.autoelevadoresService.remove(id);

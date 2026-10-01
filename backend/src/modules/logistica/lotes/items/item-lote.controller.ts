@@ -19,13 +19,13 @@ import { RequirePermissions } from '../../../../auth/decorators/permissions.deco
 export class ItemLoteController {
   constructor(private readonly itemLoteService: ItemLoteService) {}
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.lotes.ver')
   @Get()
   findAll(@Param('idLote', ParseIntPipe) idLote: number) {
     return this.itemLoteService.findAllForLote(idLote);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Post()
   create(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -34,7 +34,7 @@ export class ItemLoteController {
     return this.itemLoteService.create(idLote, dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.lotes.ver')
   @Get(':idItem')
   findOne(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -43,7 +43,7 @@ export class ItemLoteController {
     return this.itemLoteService.findOne(idLote, idItem);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Patch(':idItem')
   update(
     @Param('idLote', ParseIntPipe) idLote: number,
@@ -53,7 +53,7 @@ export class ItemLoteController {
     return this.itemLoteService.update(idLote, idItem, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Delete(':idItem')
   remove(
     @Param('idLote', ParseIntPipe) idLote: number,

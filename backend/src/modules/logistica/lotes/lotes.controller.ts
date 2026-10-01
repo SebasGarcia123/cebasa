@@ -28,37 +28,37 @@ export class LotesController {
     private readonly pdfService: LoteInterplantaPdfService,
   ) {}
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Post()
   create(@Body() dto: CreateLoteDto) {
     return this.lotesService.create(dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.lotes.ver')
   @Get()
   findAll() {
     return this.lotesService.findAll();
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.lotes.ver')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.lotesService.findOne(id);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateLoteDto) {
     return this.lotesService.update(id, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.lotesService.remove(id);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.lotes.editar')
   @Post(':id/despachar')
   despachar(@Param('id', ParseIntPipe) id: number) {
     return this.lotesService.despachar(id);
@@ -67,13 +67,13 @@ export class LotesController {
   // Aprobar/rechazar es tarea del Jefe de Logística de la planta
   // destino, no de quien carga el lote: permiso propio en vez de
   // logistica.editar (mismo criterio que produccion.lotes_aprobar).
-  @RequirePermissions('logistica.lotes_aprobar')
+  @RequirePermissions('logistica.lotes.aprobar')
   @Post(':id/aprobar')
   aprobar(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {
     return this.lotesService.aprobar(id, user);
   }
 
-  @RequirePermissions('logistica.lotes_aprobar')
+  @RequirePermissions('logistica.lotes.aprobar')
   @Post(':id/rechazar')
   rechazar(
     @Param('id', ParseIntPipe) id: number,
@@ -83,7 +83,7 @@ export class LotesController {
     return this.lotesService.rechazar(id, dto, user);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.lotes.ver')
   @Get(':id/pdf')
   async pdf(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const lote = await this.lotesService.findOne(id);

@@ -90,7 +90,12 @@ export class LotesList implements OnInit {
 
   protected readonly puedeAprobar = computed(() => {
     const user = this.authService.currentUser();
-    return !!user && (user.es_administrador || user.permisos.includes('logistica.lotes_aprobar'));
+    return !!user && (user.es_administrador || user.permisos.includes('logistica.lotes.aprobar'));
+  });
+
+  protected readonly puedeOperar = computed(() => {
+    const user = this.authService.currentUser();
+    return !!user && (user.es_administrador || user.permisos.includes('logistica.lotes.editar'));
   });
 
   protected readonly form = this.fb.nonNullable.group({
@@ -128,7 +133,7 @@ export class LotesList implements OnInit {
 
   protected readonly loteEditable = computed(() => {
     const estado = this.loteActivo()?.estados?.nombreEstado;
-    return estado === ESTADO_PENDIENTE || estado === ESTADO_RECHAZADO;
+    return this.puedeOperar() && (estado === ESTADO_PENDIENTE || estado === ESTADO_RECHAZADO);
   });
   protected readonly loteEnRevision = computed(() => this.loteActivo()?.estados?.nombreEstado === ESTADO_PENDIENTE_APROBACION);
 
@@ -175,7 +180,10 @@ export class LotesList implements OnInit {
   }
 
   protected puedeEditar(lote: Lote): boolean {
-    return lote.estados?.nombreEstado === ESTADO_PENDIENTE || lote.estados?.nombreEstado === ESTADO_RECHAZADO;
+    return (
+      this.puedeOperar() &&
+      (lote.estados?.nombreEstado === ESTADO_PENDIENTE || lote.estados?.nombreEstado === ESTADO_RECHAZADO)
+    );
   }
 
   protected puedeDespachar(lote: Lote): boolean {

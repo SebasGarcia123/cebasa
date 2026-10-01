@@ -207,22 +207,37 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Logística',
     items: [
-      { label: 'Fleteros', icon: 'pi pi-user', route: '/logistica/fletero', permission: 'logistica.ver' },
-      { label: 'Tipo de Lote', icon: 'pi pi-tag', route: '/logistica/tipo-lote', permission: 'logistica.ver' },
+      {
+        label: 'Fleteros',
+        icon: 'pi pi-user',
+        route: '/logistica/fletero',
+        permission: 'logistica.fleteros.editar',
+      },
+      {
+        label: 'Tipo de Lote',
+        icon: 'pi pi-tag',
+        route: '/logistica/tipo-lote',
+        permission: 'logistica.tipo_lote.editar',
+      },
       {
         label: 'Autoelevadores',
         icon: 'pi pi-cog',
         route: '/logistica/autoelevadores',
-        permission: 'logistica.ver',
+        permission: 'logistica.autoelevadores.editar',
       },
       {
         label: 'Control de Autoelevador',
         icon: 'pi pi-check-square',
         route: '/logistica/control-autoelevador',
-        permission: 'logistica.ver',
+        permission: 'logistica.control_autoelevador.editar',
       },
-      { label: 'Transportes', icon: 'pi pi-car', route: '/logistica/transporte', permission: 'logistica.ver' },
-      { label: 'Lotes', icon: 'pi pi-box', route: '/logistica/lotes', permission: 'logistica.ver' },
+      {
+        label: 'Transportes',
+        icon: 'pi pi-car',
+        route: '/logistica/transporte',
+        permission: 'logistica.transporte.editar',
+      },
+      { label: 'Lotes', icon: 'pi pi-box', route: '/logistica/lotes', permission: 'logistica.lotes.ver' },
       {
         label: 'Aprobación de Lotes de Producción',
         icon: 'pi pi-verified',
@@ -281,9 +296,19 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Usuarios',
     items: [
-      { label: 'Usuarios', icon: 'pi pi-user', route: '/usuarios/usuarios', permission: 'usuarios.ver' },
-      { label: 'Roles', icon: 'pi pi-id-card', route: '/usuarios/roles', permission: 'usuarios.ver' },
-      { label: 'Permisos', icon: 'pi pi-key', route: '/usuarios/permisos', permission: 'usuarios.ver' },
+      {
+        label: 'Usuarios',
+        icon: 'pi pi-user',
+        route: '/usuarios/usuarios',
+        permission: 'usuarios.usuarios.editar',
+      },
+      { label: 'Roles', icon: 'pi pi-id-card', route: '/usuarios/roles', permission: 'usuarios.roles.editar' },
+      {
+        label: 'Permisos',
+        icon: 'pi pi-key',
+        route: '/usuarios/permisos',
+        permission: 'usuarios.permisos.editar',
+      },
     ],
   },
 ];

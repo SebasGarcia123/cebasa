@@ -21,13 +21,13 @@ export class ServiciosAutoelevadorController {
     private readonly serviciosService: ServiciosAutoelevadorService,
   ) {}
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Get()
   findAll(@Param('idAutoelevador', ParseIntPipe) idAutoelevador: number) {
     return this.serviciosService.findAllForAutoelevador(idAutoelevador);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Post()
   create(
     @Param('idAutoelevador', ParseIntPipe) idAutoelevador: number,
@@ -36,7 +36,7 @@ export class ServiciosAutoelevadorController {
     return this.serviciosService.create(idAutoelevador, dto);
   }
 
-  @RequirePermissions('logistica.ver')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Get(':idServicio')
   findOne(
     @Param('idAutoelevador', ParseIntPipe) idAutoelevador: number,
@@ -45,7 +45,7 @@ export class ServiciosAutoelevadorController {
     return this.serviciosService.findOne(idAutoelevador, idServicio);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Patch(':idServicio')
   update(
     @Param('idAutoelevador', ParseIntPipe) idAutoelevador: number,
@@ -55,7 +55,7 @@ export class ServiciosAutoelevadorController {
     return this.serviciosService.update(idAutoelevador, idServicio, dto);
   }
 
-  @RequirePermissions('logistica.editar')
+  @RequirePermissions('logistica.autoelevadores.editar')
   @Delete(':idServicio')
   remove(
     @Param('idAutoelevador', ParseIntPipe) idAutoelevador: number,

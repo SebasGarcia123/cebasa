@@ -25,7 +25,7 @@ export class ItemPedidoInsumoController {
     return this.itemService.findAllForPedido(idPedido);
   }
 
-  @RequirePermissions('pedido_insumos.editar')
+  @RequirePermissions('pedido_insumos.solicitar')
   @Post()
   create(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -43,7 +43,7 @@ export class ItemPedidoInsumoController {
     return this.itemService.findOne(idPedido, idItem);
   }
 
-  @RequirePermissions('pedido_insumos.editar')
+  @RequirePermissions('pedido_insumos.solicitar')
   @Patch(':idItem')
   update(
     @Param('idPedido', ParseIntPipe) idPedido: number,
@@ -53,7 +53,7 @@ export class ItemPedidoInsumoController {
     return this.itemService.update(idPedido, idItem, dto);
   }
 
-  @RequirePermissions('pedido_insumos.editar')
+  @RequirePermissions('pedido_insumos.solicitar')
   @Delete(':idItem')
   remove(
     @Param('idPedido', ParseIntPipe) idPedido: number,

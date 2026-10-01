@@ -1,25 +1,19 @@
-.pedido-insumos__filtros {
+.devolucion-insumos__filtros {
   display: flex;
   align-items: flex-end;
   gap: 1.25rem;
   flex-wrap: wrap;
 }
 
-.pedido-insumos__field-fecha {
+.devolucion-insumos__field-fecha {
   max-width: 160px;
 }
 
-.pedido-insumos__filtro-todos {
+.devolucion-insumos__filtro-todos {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding-bottom: 0.5rem;
-}
-
-.pedido-insumos__confirmacion {
-  font-family: var(--font-family-body);
-  font-size: 0.9rem;
-  margin: 0 0 1.25rem;
 }
 
 // Grid en vez de <table>: con table-layout un <p-select> con una opción
@@ -27,7 +21,7 @@
 // tapaba la columna de Cantidad. Con grid, cada celda es un elemento
 // con min-width: 0 (ver abajo), así nunca puede crecer más que su
 // columna — el texto largo se trunca en vez de desbordar.
-.pedido-insumos__items-grid {
+.devolucion-insumos__items-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6.5rem 3rem;
   align-items: center;
@@ -35,7 +29,7 @@
   margin-top: 1rem;
 }
 
-.pedido-insumos__items-grid-header {
+.devolucion-insumos__items-grid-header {
   display: contents;
 
   span {
@@ -46,30 +40,26 @@
   }
 }
 
-.pedido-insumos__items-grid-row {
+.devolucion-insumos__items-grid-row {
   display: contents;
 
-  // Cada hijo (p-select, p-inputnumber, p-button) es un grid item de
-  // .items-grid gracias al display:contents de arriba. Sin min-width:0
-  // ninguno puede achicarse por debajo de su contenido, así que un
-  // nombre de insumo largo seguía empujando todo igual que con <table>.
   > * {
     min-width: 0;
     width: 100%;
   }
 }
 
-.pedido-insumos__agregar-fila {
+.devolucion-insumos__agregar-fila {
   margin-top: 0.25rem;
 }
 
-.pedido-insumos__ver-header {
+.devolucion-insumos__ver-header {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem 2.5rem;
   margin-bottom: 1.25rem;
 }
 
-.pedido-insumos__ver-items {
+.devolucion-insumos__ver-items {
   margin-bottom: 1.25rem;
 }

@@ -1940,6 +1940,54 @@ export interface paths {
         patch: operations["ItemControlController_update"];
         trace?: never;
     };
+    "/planificador-entregas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlanificadorEntregasController_obtenerTablero"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/planificador-entregas/pedidos/{id}/fecha-salida": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PlanificadorEntregasController_asignarFechaSalida"];
+        trace?: never;
+    };
+    "/planificador-entregas/orden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PlanificadorEntregasController_reordenar"];
+        trace?: never;
+    };
     "/proveedores": {
         parameters: {
             query?: never;
@@ -2299,9 +2347,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["PedidoInsumosController_findAll"];
+        get: operations["PedidoInsumosController_findParaProduccion"];
         put?: never;
         post: operations["PedidoInsumosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pedidos-insumos/para-logistica": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PedidoInsumosController_findParaLogistica"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2318,10 +2382,74 @@ export interface paths {
         get: operations["PedidoInsumosController_findOne"];
         put?: never;
         post?: never;
-        delete: operations["PedidoInsumosController_remove"];
+        delete?: never;
         options?: never;
         head?: never;
         patch: operations["PedidoInsumosController_update"];
+        trace?: never;
+    };
+    "/pedidos-insumos/{id}/anular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PedidoInsumosController_anular"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pedidos-insumos/{id}/cumplir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PedidoInsumosController_cumplir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pedidos-insumos/{id}/recibir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PedidoInsumosController_recibir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pedidos-insumos/{id}/para-revisar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PedidoInsumosController_paraRevisar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/pedidos-insumos/{idPedido}/items": {
@@ -2431,6 +2559,86 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["DiaNoLaborableController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devoluciones-insumos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DevolucionInsumosController_findParaProduccion"];
+        put?: never;
+        post: operations["DevolucionInsumosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devoluciones-insumos/para-logistica": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DevolucionInsumosController_findParaLogistica"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devoluciones-insumos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DevolucionInsumosController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["DevolucionInsumosController_update"];
+        trace?: never;
+    };
+    "/devoluciones-insumos/{id}/aprobar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DevolucionInsumosController_aprobar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devoluciones-insumos/{id}/rechazar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DevolucionInsumosController_rechazar"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2840,6 +3048,16 @@ export interface components {
             observacion?: string;
         };
         UpdateItemControlDto: Record<string, never>;
+        AsignarFechaSalidaDto: {
+            fecha_salida?: string | null;
+        };
+        OrdenPedidoDto: {
+            id_pedido: number;
+            orden_planificador: number;
+        };
+        ReordenarPedidosDto: {
+            ordenes: components["schemas"]["OrdenPedidoDto"][];
+        };
         CreateProveedorDto: {
             nombre_proveedor: string;
             direccion?: string;
@@ -2908,21 +3126,43 @@ export interface components {
             precio_compra: number;
         };
         UpdateCompraDetalleDto: Record<string, never>;
+        ItemPedidoInsumosInlineDto: {
+            id_insumo: number;
+            id_lineas: number;
+            cantidad_solicitada: number;
+        };
         CreatePedidoInsumosDto: {
-            id_usuario: number;
-            fecha_carga: string;
             fecha_necesidad: string;
-            motivo_rechazo?: string;
+            items: components["schemas"]["ItemPedidoInsumosInlineDto"][];
         };
         UpdatePedidoInsumosDto: {
-            id_estado?: number;
+            fecha_necesidad?: string;
+        };
+        CumplirItemDto: {
+            id_item_pedido_insumo: number;
+            cantidad_abastecida: number;
+            observaciones?: string;
+        };
+        CumplirPedidoInsumosDto: {
+            items: components["schemas"]["CumplirItemDto"][];
+        };
+        RecibirPedidoInsumosDto: {
+            /** @enum {string} */
+            planta?: "CASEROS" | "BARADERO";
+        };
+        ParaRevisarPedidoInsumosDto: {
+            motivo_rechazo: string;
         };
         CreateItemPedidoInsumoDto: {
             id_insumo: number;
+            id_lineas: number;
             cantidad_solicitada: number;
-            cantidad_abastecida?: number;
         };
-        UpdateItemPedidoInsumoDto: Record<string, never>;
+        UpdateItemPedidoInsumoDto: {
+            id_insumo?: number;
+            id_lineas?: number;
+            cantidad_solicitada?: number;
+        };
         CreateItemPlanProduccionDto: {
             fecha: string;
             id_lineas: number;
@@ -2939,6 +3179,24 @@ export interface components {
         CreateDiaNoLaborableDto: {
             fecha: string;
             motivo: string;
+        };
+        ItemDevolucionInsumosInlineDto: {
+            id_insumo: number;
+            id_lineas: number;
+            cantidad: number;
+        };
+        CreateDevolucionInsumosDto: {
+            items: components["schemas"]["ItemDevolucionInsumosInlineDto"][];
+        };
+        UpdateDevolucionInsumosDto: {
+            items: components["schemas"]["ItemDevolucionInsumosInlineDto"][];
+        };
+        AprobarDevolucionInsumosDto: {
+            /** @enum {string} */
+            planta?: "CASEROS" | "BARADERO";
+        };
+        RechazarDevolucionInsumosDto: {
+            motivo_rechazo: string;
         };
         AjustarStockDto: {
             id_deposito: number;
@@ -8133,6 +8391,67 @@ export interface operations {
             };
         };
     };
+    PlanificadorEntregasController_obtenerTablero: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlanificadorEntregasController_asignarFechaSalida: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AsignarFechaSalidaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlanificadorEntregasController_reordenar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReordenarPedidosDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ProveedorController_findAll: {
         parameters: {
             query?: never;
@@ -9100,9 +9419,13 @@ export interface operations {
             };
         };
     };
-    PedidoInsumosController_findAll: {
+    PedidoInsumosController_findParaProduccion: {
         parameters: {
-            query?: never;
+            query?: {
+                desde?: string;
+                hasta?: string;
+                verTodos?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -9114,7 +9437,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": Record<string, never>[];
                 };
             };
         };
@@ -9136,7 +9459,28 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    PedidoInsumosController_findParaLogistica: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>[];
+                };
             };
         };
     };
@@ -9161,25 +9505,6 @@ export interface operations {
             };
         };
     };
-    PedidoInsumosController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     PedidoInsumosController_update: {
         parameters: {
             query?: never;
@@ -9196,6 +9521,98 @@ export interface operations {
         };
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PedidoInsumosController_anular: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PedidoInsumosController_cumplir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CumplirPedidoInsumosDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    PedidoInsumosController_recibir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecibirPedidoInsumosDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    PedidoInsumosController_paraRevisar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParaRevisarPedidoInsumosDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9243,7 +9660,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };
@@ -9309,7 +9728,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };
@@ -9432,6 +9853,169 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DevolucionInsumosController_findParaProduccion: {
+        parameters: {
+            query?: {
+                desde?: string;
+                hasta?: string;
+                verTodos?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>[];
+                };
+            };
+        };
+    };
+    DevolucionInsumosController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDevolucionInsumosDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    DevolucionInsumosController_findParaLogistica: {
+        parameters: {
+            query?: {
+                desde?: string;
+                hasta?: string;
+                verTodos?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>[];
+                };
+            };
+        };
+    };
+    DevolucionInsumosController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    DevolucionInsumosController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDevolucionInsumosDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    DevolucionInsumosController_aprobar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AprobarDevolucionInsumosDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    DevolucionInsumosController_rechazar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RechazarDevolucionInsumosDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

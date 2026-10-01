@@ -1,15 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { IsInt, IsOptional } from 'class-validator';
-import { CreatePedidoInsumosDto } from './create-pedido-insumos.dto.js';
+import { IsDateString, IsOptional } from 'class-validator';
 
-// id_estado no está en CreatePedidoInsumosDto (el alta siempre arranca
-// "Activo"), pero sí se puede cambiar al editar entre Activo/Anulado.
-// PedidoInsumosService.update valida que el nombre resuelto sea uno de
-// los dos.
-export class UpdatePedidoInsumosDto extends PartialType(
-  CreatePedidoInsumosDto,
-) {
+// El estado ya no se edita a mano acá: lo maneja cada endpoint de
+// transición (cumplir/recibir/para-revisar/anular). Solo la fecha de
+// necesidad se puede corregir mientras el pedido siga editable.
+export class UpdatePedidoInsumosDto {
   @IsOptional()
-  @IsInt()
-  id_estado?: number;
+  @IsDateString()
+  fecha_necesidad?: string;
 }

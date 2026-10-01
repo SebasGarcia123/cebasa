@@ -213,10 +213,31 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'logistica/cumplir-pedidos-insumos',
+        loadComponent: () =>
+          import('./features/logistica/cumplir-pedidos-insumos/cumplir-pedidos-insumos-list').then(
+            (m) => m.CumplirPedidosInsumosList,
+          ),
+      },
+      {
+        path: 'logistica/devolucion-insumos',
+        loadComponent: () =>
+          import('./features/logistica/devolucion-insumos/devolucion-insumos-aprobar-list').then(
+            (m) => m.DevolucionInsumosAprobarList,
+          ),
+      },
+      {
         path: 'pedido-insumos/pedido-insumos',
         loadComponent: () =>
           import('./features/pedido-insumos/pedido-insumos/pedido-insumos-list').then(
             (m) => m.PedidoInsumosList,
+          ),
+      },
+      {
+        path: 'pedido-insumos/devolucion-insumos',
+        loadComponent: () =>
+          import('./features/pedido-insumos/devolucion-insumos/devolucion-insumos-list').then(
+            (m) => m.DevolucionInsumosList,
           ),
       },
       {

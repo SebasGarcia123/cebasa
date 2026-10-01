@@ -1,23 +1,27 @@
-import {
-  IsDateString,
-  IsInt,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayMinSize, IsArray, IsDateString, IsInt, Min, ValidateNested } from 'class-validator';
 
-export class CreatePedidoInsumosDto {
+class ItemPedidoInsumosInlineDto {
   @IsInt()
-  id_usuario: number;
+  id_insumo: number;
 
-  @IsDateString()
-  fecha_carga: string;
+  @IsInt()
+  id_lineas: number;
 
+  @Min(0.01)
+  cantidad_solicitada: number;
+}
+
+// id_usuario (quien solicita) y fecha_carga (hoy) se completan solos —
+// no se eligen a mano. El pedido se crea con sus ítems de una: no hay
+// alta de cabecera vacía a la que se le van sumando ítems después.
+export class CreatePedidoInsumosDto {
   @IsDateString()
   fecha_necesidad: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  motivo_rechazo?: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => ItemPedidoInsumosInlineDto)
+  items: ItemPedidoInsumosInlineDto[];
 }

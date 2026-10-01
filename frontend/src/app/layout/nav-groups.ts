@@ -187,6 +187,18 @@ export const NAV_GROUPS: NavGroup[] = [
         route: '/logistica/planificador-entregas',
         permission: 'planificador_entregas.ver',
       },
+      {
+        label: 'Cumplir Pedidos de Insumos',
+        icon: 'pi pi-send',
+        route: '/logistica/cumplir-pedidos-insumos',
+        permission: 'pedido_insumos.cumplir',
+      },
+      {
+        label: 'Aprobar Devoluciones de Insumos',
+        icon: 'pi pi-reply',
+        route: '/logistica/devolucion-insumos',
+        permission: 'devolucion_insumos.aprobar',
+      },
     ],
   },
   {
@@ -197,6 +209,12 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: 'pi pi-inbox',
         route: '/pedido-insumos/pedido-insumos',
         permission: 'pedido_insumos.ver',
+      },
+      {
+        label: 'Devolución de Insumos',
+        icon: 'pi pi-reply',
+        route: '/pedido-insumos/devolucion-insumos',
+        permission: 'devolucion_insumos.ver',
       },
       {
         label: 'Plan de Producción',

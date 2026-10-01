@@ -1,6 +1,15 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateItemPedidoInsumoDto } from './create-item-pedido-insumo.dto.js';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
-export class UpdateItemPedidoInsumoDto extends PartialType(
-  CreateItemPedidoInsumoDto,
-) {}
+export class UpdateItemPedidoInsumoDto {
+  @IsOptional()
+  @IsInt()
+  id_insumo?: number;
+
+  @IsOptional()
+  @IsInt()
+  id_lineas?: number;
+
+  @IsOptional()
+  @Min(0.01)
+  cantidad_solicitada?: number;
+}

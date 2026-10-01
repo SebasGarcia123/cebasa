@@ -3,12 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ItemPedidoInsumo } from '../models/item-pedido-insumo.model';
+import { components } from './schema';
 
-export interface ItemPedidoInsumoDto {
-  id_insumo: number;
-  cantidad_solicitada: number;
-  cantidad_abastecida?: number;
-}
+type CreateItemPedidoInsumoDto = components['schemas']['CreateItemPedidoInsumoDto'];
+type UpdateItemPedidoInsumoDto = components['schemas']['UpdateItemPedidoInsumoDto'];
 
 @Injectable({ providedIn: 'root' })
 export class ItemPedidoInsumoApiService {
@@ -23,11 +21,11 @@ export class ItemPedidoInsumoApiService {
     return this.http.get<ItemPedidoInsumo[]>(this.base(idPedido));
   }
 
-  create(idPedido: number, dto: ItemPedidoInsumoDto): Observable<ItemPedidoInsumo> {
+  create(idPedido: number, dto: CreateItemPedidoInsumoDto): Observable<ItemPedidoInsumo> {
     return this.http.post<ItemPedidoInsumo>(this.base(idPedido), dto);
   }
 
-  update(idPedido: number, idItem: number, dto: Partial<ItemPedidoInsumoDto>): Observable<ItemPedidoInsumo> {
+  update(idPedido: number, idItem: number, dto: UpdateItemPedidoInsumoDto): Observable<ItemPedidoInsumo> {
     return this.http.patch<ItemPedidoInsumo>(`${this.base(idPedido)}/${idItem}`, dto);
   }
 

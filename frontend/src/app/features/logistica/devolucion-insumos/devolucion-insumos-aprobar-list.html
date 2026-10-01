@@ -1,0 +1,212 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Devolución de Insumos</h1>
+  </div>
+
+  <div class="devolucion-insumos__filtros">
+    <div class="page__field devolucion-insumos__field-fecha">
+      <label for="desde">Desde</label>
+      <p-datepicker
+        inputId="desde"
+        [ngModel]="desde()"
+        (ngModelChange)="desde.set($event); onFiltroChange()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="page__field devolucion-insumos__field-fecha">
+      <label for="hasta">Hasta</label>
+      <p-datepicker
+        inputId="hasta"
+        [ngModel]="hasta()"
+        (ngModelChange)="hasta.set($event); onFiltroChange()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="devolucion-insumos__filtro-todos">
+      <p-checkbox
+        inputId="ver_todos"
+        [binary]="true"
+        [ngModel]="verTodos()"
+        (ngModelChange)="verTodos.set($event); onFiltroChange()"
+      />
+      <label for="ver_todos">Ver todos (incluye Aprobadas)</label>
+    </div>
+  </div>
+
+  <p-table [value]="devoluciones()" [loading]="loading()" dataKey="id_devolucion_insumos" [paginator]="true" [rows]="15">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha de carga</th>
+        <th scope="col">Solicitó</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 12rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-devolucion>
+      <tr>
+        <td>{{ devolucion.id_devolucion_insumos }}</td>
+        <td>{{ devolucion.fecha_carga | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ devolucion.usuarios?.nombre_usuario || '—' }}</td>
+        <td>{{ estadoDe(devolucion) }}</td>
+        <td>
+          <div class="page__actions">
+            <p-button icon="pi pi-eye" [text]="true" (onClick)="ver(devolucion)" pTooltip="Ver" />
+            @if (puedeDecidir(devolucion)) {
+              <p-button
+                icon="pi pi-check"
+                [text]="true"
+                severity="success"
+                (onClick)="abrirAprobar(devolucion)"
+                pTooltip="Aprobar"
+              />
+              <p-button
+                icon="pi pi-times"
+                [text]="true"
+                severity="danger"
+                (onClick)="abrirRechazar(devolucion)"
+                pTooltip="Rechazar"
+              />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No hay devoluciones de insumos para mostrar.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="verDialogVisible()"
+    (visibleChange)="verDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '700px' }"
+    header="Devolución de insumos"
+  >
+    @if (devolucionAVer(); as devolucion) {
+      <div class="devolucion-insumos__ver-header">
+        <div class="page__field">
+          <label>Fecha de carga</label>
+          <span>{{ devolucion.fecha_carga | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Solicitó</label>
+          <span>{{ devolucion.usuarios?.nombre_usuario || '—' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Estado</label>
+          <span>{{ estadoDe(devolucion) }}</span>
+        </div>
+        @if (devolucion.motivo_rechazo) {
+          <div class="page__field">
+            <label>Motivo de rechazo</label>
+            <span>{{ devolucion.motivo_rechazo }}</span>
+          </div>
+        }
+      </div>
+
+      <p-table [value]="devolucion.item_devolucion_insumo || []" dataKey="id_item_devolucion_insumo" class="devolucion-insumos__ver-items">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Insumo</th>
+            <th scope="col">Línea</th>
+            <th scope="col" style="width: 6rem">Unidad</th>
+            <th scope="col" style="width: 8rem">Cantidad</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td>{{ item.insumo?.nombre_insumo || '—' }}</td>
+            <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
+            <td>{{ item.insumo?.unidad_medida?.nombre_unidad_medida || '—' }}</td>
+            <td>{{ item.cantidad }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="4">Esta devolución no tiene ítems cargados.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cerrar" severity="secondary" [outlined]="true" (onClick)="cerrarVer()" />
+      </div>
+    }
+  </p-dialog>
+
+  <p-dialog
+    [visible]="aprobarDialogVisible()"
+    (visibleChange)="aprobarDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Aprobar devolución"
+  >
+    @if (devolucionAAprobar(); as devolucion) {
+      <p class="devolucion-insumos__confirmacion">
+        ¿Aprobar la devolución #{{ devolucion.id_devolucion_insumos }}? Esto mueve el stock de Producción a Logística.
+      </p>
+
+      @if (necesitaPlantaManual()) {
+        <div class="page__field">
+          <label>Planta</label>
+          <p-selectButton
+            [options]="plantasOpciones"
+            [ngModel]="plantaElegida()"
+            (ngModelChange)="plantaElegida.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [allowEmpty]="false"
+          />
+          <small>No se pudo determinar la planta de quien solicitó la devolución automáticamente. Elegila para continuar.</small>
+        </div>
+      }
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarAprobar()" />
+        <p-button
+          type="button"
+          label="Aprobar"
+          [loading]="aprobando()"
+          [disabled]="necesitaPlantaManual() && !plantaElegida()"
+          (onClick)="confirmarAprobar()"
+        />
+      </div>
+    }
+  </p-dialog>
+
+  <p-dialog
+    [visible]="rechazarDialogVisible()"
+    (visibleChange)="rechazarDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Rechazar devolución"
+  >
+    <form [formGroup]="rechazarForm" (ngSubmit)="confirmarRechazar()" class="page__form">
+      <div class="page__field">
+        <label for="motivo_rechazo">Motivo</label>
+        <textarea
+          id="motivo_rechazo"
+          pTextarea
+          formControlName="motivo_rechazo"
+          rows="4"
+          placeholder="Por qué se rechaza la devolución"
+        ></textarea>
+      </div>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarRechazar()" />
+        <p-button type="submit" label="Rechazar" severity="danger" [loading]="rechazando()" [disabled]="rechazarForm.invalid" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

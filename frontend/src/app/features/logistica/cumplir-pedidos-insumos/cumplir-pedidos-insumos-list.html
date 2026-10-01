@@ -1,0 +1,78 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Cumplir Pedidos de Insumos</h1>
+  </div>
+
+  <p-table [value]="pedidos()" [loading]="loading()" dataKey="id_pedido_insumos" [paginator]="true" [rows]="15">
+    <ng-template #header>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha de carga</th>
+        <th scope="col">Fecha de necesidad</th>
+        <th scope="col">Solicitó</th>
+        <th scope="col">Estado</th>
+        <th scope="col" style="width: 8rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-pedido>
+      <tr>
+        <td>{{ pedido.id_pedido_insumos }}</td>
+        <td>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ pedido.fecha_necesidad | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ pedido.usuarios?.nombre_usuario || '—' }}</td>
+        <td>
+          {{ pedido.estados?.nombreEstado || '—' }}
+          @if (esRechazado(pedido) && pedido.motivo_rechazo) {
+            <p-button icon="pi pi-info-circle" [text]="true" [rounded]="true" [pTooltip]="pedido.motivo_rechazo" />
+          }
+        </td>
+        <td>
+          <div class="page__actions">
+            <p-button label="Cumplir" icon="pi pi-send" [text]="true" (onClick)="abrirCumplir(pedido)" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6">No hay pedidos de insumos pendientes de abastecer.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [visible]="cumplirDialogVisible()"
+    (visibleChange)="cumplirDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '800px' }"
+    [header]="'Cumplir pedido #' + (pedidoACumplir()?.id_pedido_insumos ?? '')"
+  >
+    @if (pedidoACumplir(); as pedido) {
+      <div class="cumplir-pedidos-insumos__items-grid">
+        <div class="cumplir-pedidos-insumos__items-grid-header">
+          <span>Insumo</span>
+          <span>Línea</span>
+          <span>Unidad</span>
+          <span>Solicitado</span>
+          <span>Abastecido</span>
+          <span>Observaciones</span>
+        </div>
+        @for (fila of filas.controls; track fila; let i = $index) {
+          <div class="cumplir-pedidos-insumos__items-grid-row" [formGroup]="fila">
+            <span class="cumplir-pedidos-insumos__texto">{{ pedido.item_pedido_insumo?.[i]?.insumo?.nombre_insumo || '—' }}</span>
+            <span class="cumplir-pedidos-insumos__texto">{{ pedido.item_pedido_insumo?.[i]?.lineas?.descripcion_lineas || '—' }}</span>
+            <span class="cumplir-pedidos-insumos__texto">{{ pedido.item_pedido_insumo?.[i]?.insumo?.unidad_medida?.nombre_unidad_medida || '—' }}</span>
+            <span class="cumplir-pedidos-insumos__texto">{{ pedido.item_pedido_insumo?.[i]?.cantidad_solicitada }}</span>
+            <p-inputNumber formControlName="cantidad_abastecida" [min]="0" [minFractionDigits]="2" />
+            <input type="text" pInputText formControlName="observaciones" placeholder="Ej: sin stock" />
+          </div>
+        }
+      </div>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarCumplir()" />
+        <p-button type="button" label="Guardar" [loading]="guardando()" (onClick)="guardarCumplir()" />
+      </div>
+    }
+  </p-dialog>
+</div>

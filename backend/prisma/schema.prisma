@@ -324,6 +324,7 @@ model estados {
   compra              compra[]
   cotizacion          cotizacion[]
   deposito            deposito[]
+  devolucion_insumos  devolucion_insumos[]
   direcciones         direcciones[]
   fletero             fletero[]
   insumo              insumo[]
@@ -357,26 +358,27 @@ model fletero {
 }
 
 model insumo {
-  id_insumo             Int                     @id @default(autoincrement())
-  codigo_insumo         String                  @db.VarChar(50)
-  nombre_insumo         String                  @db.VarChar(100)
-  id_unidad_medida      Int
-  stock_minimo          Int                     @default(0)
-  stock_actual          Int                     @default(0)
+  id_insumo              Int                      @id @default(autoincrement())
+  codigo_insumo          String                   @db.VarChar(50)
+  nombre_insumo          String                   @db.VarChar(100)
+  id_unidad_medida       Int
+  stock_minimo           Int                      @default(0)
+  stock_actual           Int                      @default(0)
   // Algunos insumos no se llevan por stock (ej. servicios, intangibles):
   // no aparecen en la pantalla de Stock ni se les puede cargar un ajuste.
-  stockeable            Boolean                 @default(true)
-  id_estado             Int
-  compra_detalle        compra_detalle[]
-  estados               estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_insumo_estado")
-  unidad_medida         unidad_medida           @relation(fields: [id_unidad_medida], references: [id_unidad_medida], onUpdate: Restrict, map: "fk_insumo_unidad_medida")
-  item_pedido_insumo    item_pedido_insumo[]
-  movimiento_insumo     movimiento_insumo[]
-  receta_item           receta_item[]
-  requerimiento_detalle requerimiento_detalle[]
-  stock_insumo_deposito stock_insumo_deposito[]
-  ajuste_stock          ajuste_stock[]
-  item_lote             item_lote[]
+  stockeable             Boolean                  @default(true)
+  id_estado              Int
+  compra_detalle         compra_detalle[]
+  estados                estados                  @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_insumo_estado")
+  unidad_medida          unidad_medida            @relation(fields: [id_unidad_medida], references: [id_unidad_medida], onUpdate: Restrict, map: "fk_insumo_unidad_medida")
+  item_pedido_insumo     item_pedido_insumo[]
+  item_devolucion_insumo item_devolucion_insumo[]
+  movimiento_insumo      movimiento_insumo[]
+  receta_item            receta_item[]
+  requerimiento_detalle  requerimiento_detalle[]
+  stock_insumo_deposito  stock_insumo_deposito[]
+  ajuste_stock           ajuste_stock[]
+  item_lote              item_lote[]
 
   @@index([id_estado], map: "fk_insumo_estado")
   @@index([id_unidad_medida], map: "fk_insumo_unidad_medida")
@@ -428,13 +430,19 @@ model item_pedido_insumo {
   id_item_pedido_insumo Int                 @id @default(autoincrement())
   id_pedido_insumos     Int
   id_insumo             Int
+  id_lineas             Int
   cantidad_solicitada   Decimal             @db.Decimal(10, 2)
   cantidad_abastecida   Decimal             @default(0.00) @db.Decimal(10, 2)
+  // Lo carga Logística al "cumplir" el pedido, para justificar una
+  // cantidad_abastecida menor a la solicitada (ej. "sin stock").
+  observaciones         String?             @db.VarChar(255)
   insumo                insumo              @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_item_pedido_insumo_insumo")
+  lineas                lineas              @relation(fields: [id_lineas], references: [id_lineas], onUpdate: Restrict, map: "fk_item_pedido_insumo_lineas")
   pedido_insumos        pedido_insumos      @relation(fields: [id_pedido_insumos], references: [id_pedido_insumos], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_pedido_insumo_pedido")
   movimiento_insumo     movimiento_insumo[]
 
   @@index([id_insumo], map: "fk_item_pedido_insumo_insumo")
+  @@index([id_lineas], map: "fk_item_pedido_insumo_lineas")
   @@index([id_pedido_insumos], map: "fk_item_pedido_insumo_pedido")
 }
 
@@ -473,11 +481,13 @@ model item_prod {
 }
 
 model lineas {
-  id_lineas            Int                    @id @default(autoincrement())
-  descripcion_lineas   String                 @db.VarChar(100)
-  item_plan_produccion item_plan_produccion[]
-  item_prod            item_prod[]
-  pallet               pallet[]
+  id_lineas              Int                      @id @default(autoincrement())
+  descripcion_lineas     String                   @db.VarChar(100)
+  item_plan_produccion   item_plan_produccion[]
+  item_prod              item_prod[]
+  pallet                 pallet[]
+  item_pedido_insumo     item_pedido_insumo[]
+  item_devolucion_insumo item_devolucion_insumo[]
 }
 
 model lote_prod {
@@ -637,29 +647,32 @@ model movimiento_cuenta_corriente {
 }
 
 model movimiento_insumo {
-  id_movimiento_insumo  Int                 @id @default(autoincrement())
-  id_insumo             Int
-  id_tipo_movimiento    Int
-  cantidad              Decimal             @db.Decimal(10, 4)
-  fecha_movimiento      DateTime            @db.Date
-  id_deposito_origen    Int?
-  id_deposito_destino   Int?
-  observaciones         String?             @db.VarChar(255)
-  id_item_pedido_insumo Int?
-  motivo                String?             @db.VarChar(255)
-  id_estado             Int
-  deposito_destino      deposito?           @relation("movimiento_insumo_id_deposito_destinoTodeposito", fields: [id_deposito_destino], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_dep_destino")
-  deposito_origen       deposito?           @relation("movimiento_insumo_id_deposito_origenTodeposito", fields: [id_deposito_origen], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_dep_origen")
-  estados               estados             @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_mov_insumo_estado")
-  insumo                insumo              @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_mov_insumo_insumo")
-  item_pedido_insumo    item_pedido_insumo? @relation(fields: [id_item_pedido_insumo], references: [id_item_pedido_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_item_pedido_insumo")
-  tipo_movimiento       tipo_movimiento     @relation(fields: [id_tipo_movimiento], references: [id_tipo_movimiento], onUpdate: Restrict, map: "fk_mov_insumo_tipo")
+  id_movimiento_insumo      Int                     @id @default(autoincrement())
+  id_insumo                 Int
+  id_tipo_movimiento        Int
+  cantidad                  Decimal                 @db.Decimal(10, 4)
+  fecha_movimiento          DateTime                @db.Date
+  id_deposito_origen        Int?
+  id_deposito_destino       Int?
+  observaciones             String?                 @db.VarChar(255)
+  id_item_pedido_insumo     Int?
+  id_item_devolucion_insumo Int?
+  motivo                    String?                 @db.VarChar(255)
+  id_estado                 Int
+  deposito_destino          deposito?               @relation("movimiento_insumo_id_deposito_destinoTodeposito", fields: [id_deposito_destino], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_dep_destino")
+  deposito_origen           deposito?               @relation("movimiento_insumo_id_deposito_origenTodeposito", fields: [id_deposito_origen], references: [id_deposito], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_dep_origen")
+  estados                   estados                 @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_mov_insumo_estado")
+  insumo                    insumo                  @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_mov_insumo_insumo")
+  item_pedido_insumo        item_pedido_insumo?     @relation(fields: [id_item_pedido_insumo], references: [id_item_pedido_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_item_pedido_insumo")
+  item_devolucion_insumo    item_devolucion_insumo? @relation(fields: [id_item_devolucion_insumo], references: [id_item_devolucion_insumo], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_insumo_item_devolucion_insumo")
+  tipo_movimiento           tipo_movimiento         @relation(fields: [id_tipo_movimiento], references: [id_tipo_movimiento], onUpdate: Restrict, map: "fk_mov_insumo_tipo")
 
   @@index([id_deposito_destino], map: "fk_mov_insumo_dep_destino")
   @@index([id_deposito_origen], map: "fk_mov_insumo_dep_origen")
   @@index([id_estado], map: "fk_mov_insumo_estado")
   @@index([id_insumo], map: "fk_mov_insumo_insumo")
   @@index([id_item_pedido_insumo], map: "fk_mov_insumo_item_pedido_insumo")
+  @@index([id_item_devolucion_insumo], map: "fk_mov_insumo_item_devolucion_insumo")
   @@index([id_tipo_movimiento], map: "fk_mov_insumo_tipo")
 }
 
@@ -706,6 +719,40 @@ model pedido_insumos {
 
   @@index([id_estado], map: "fk_pedido_insumos_estado")
   @@index([id_usuario], map: "fk_pedido_insumos_usuario")
+}
+
+// Camino inverso de pedido_insumos: Producción devuelve a Logística lo
+// que le sobró. Lo carga el operario o jefe de Producción, lo aprueba
+// o rechaza el jefe de Logística (si rechaza, vuelve editable acá con
+// un motivo, igual que pedido_insumos con Rechazado).
+model devolucion_insumos {
+  id_devolucion_insumos  Int                      @id @default(autoincrement())
+  id_usuario             Int
+  fecha_carga            DateTime                 @db.Date
+  id_estado              Int
+  motivo_rechazo         String?                  @db.VarChar(255)
+  item_devolucion_insumo item_devolucion_insumo[]
+  estados                estados                  @relation(fields: [id_estado], references: [id_estado], onUpdate: Restrict, map: "fk_devolucion_insumos_estado")
+  usuarios               usuarios                 @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "fk_devolucion_insumos_usuario")
+
+  @@index([id_estado], map: "fk_devolucion_insumos_estado")
+  @@index([id_usuario], map: "fk_devolucion_insumos_usuario")
+}
+
+model item_devolucion_insumo {
+  id_item_devolucion_insumo Int                 @id @default(autoincrement())
+  id_devolucion_insumos     Int
+  id_insumo                 Int
+  id_lineas                 Int
+  cantidad                  Decimal             @db.Decimal(10, 2)
+  insumo                    insumo              @relation(fields: [id_insumo], references: [id_insumo], onUpdate: Restrict, map: "fk_item_devolucion_insumo_insumo")
+  lineas                    lineas              @relation(fields: [id_lineas], references: [id_lineas], onUpdate: Restrict, map: "fk_item_devolucion_insumo_lineas")
+  devolucion_insumos        devolucion_insumos  @relation(fields: [id_devolucion_insumos], references: [id_devolucion_insumos], onDelete: Cascade, onUpdate: Restrict, map: "fk_item_devolucion_insumo_devolucion")
+  movimiento_insumo         movimiento_insumo[]
+
+  @@index([id_insumo], map: "fk_item_devolucion_insumo_insumo")
+  @@index([id_lineas], map: "fk_item_devolucion_insumo_lineas")
+  @@index([id_devolucion_insumos], map: "fk_item_devolucion_insumo_devolucion")
 }
 
 model pedidos {
@@ -1103,6 +1150,7 @@ model usuarios {
   id_estado            Int
   control_autoelevador control_autoelevador[]
   pedido_insumos       pedido_insumos[]
+  devolucion_insumos   devolucion_insumos[]
   pedidos              pedidos[]
   plan_produccion      plan_produccion[]
   reclamos             reclamos[]

@@ -1,24 +1,54 @@
 <div class="page">
   <div class="page__header">
     <h1>Pedido de Insumos</h1>
-    <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
+    <p-button label="Nuevo pedido" icon="pi pi-plus" (onClick)="abrirNuevo()" />
   </div>
 
-  <p-table
-    [value]="pedidos()"
-    [loading]="loading()"
-    dataKey="id_pedido_insumos"
-    [paginator]="true"
-    [rows]="10"
-  >
+  <div class="pedido-insumos__filtros">
+    <div class="page__field pedido-insumos__field-fecha">
+      <label for="desde">Desde</label>
+      <p-datepicker
+        inputId="desde"
+        [ngModel]="desde()"
+        (ngModelChange)="desde.set($event); onFiltroChange()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="page__field pedido-insumos__field-fecha">
+      <label for="hasta">Hasta</label>
+      <p-datepicker
+        inputId="hasta"
+        [ngModel]="hasta()"
+        (ngModelChange)="hasta.set($event); onFiltroChange()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="pedido-insumos__filtro-todos">
+      <p-checkbox
+        inputId="ver_todos"
+        [binary]="true"
+        [ngModel]="verTodos()"
+        (ngModelChange)="verTodos.set($event); onFiltroChange()"
+      />
+      <label for="ver_todos">Ver todos (incluye Recibidos y Anulados)</label>
+    </div>
+  </div>
+
+  <p-table [value]="pedidos()" [loading]="loading()" dataKey="id_pedido_insumos" [paginator]="true" [rows]="15">
     <ng-template #header>
       <tr>
         <th scope="col">#</th>
         <th scope="col">Fecha de carga</th>
-        <th scope="col">Fecha necesidad</th>
+        <th scope="col">Fecha de necesidad</th>
         <th scope="col">Solicitó</th>
         <th scope="col">Estado</th>
-        <th scope="col" style="width: 10rem"></th>
+        <th scope="col" style="width: 12rem"></th>
       </tr>
     </ng-template>
     <ng-template #body let-pedido>
@@ -27,189 +57,237 @@
         <td>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' }}</td>
         <td>{{ pedido.fecha_necesidad | date: 'dd/MM/yyyy' }}</td>
         <td>{{ pedido.usuarios?.nombre_usuario || '—' }}</td>
-        <td>{{ pedido.estados?.nombreEstado || '—' }}</td>
+        <td>{{ estadoDe(pedido) }}</td>
         <td>
           <div class="page__actions">
-            <p-button
-              icon="pi pi-list"
-              [text]="true"
-              (onClick)="openItems(pedido)"
-              pTooltip="Insumos"
-            />
-            <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" />
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              (onClick)="confirmDelete(pedido)"
-            />
+            <p-button icon="pi pi-eye" [text]="true" (onClick)="ver(pedido)" pTooltip="Ver pedido" />
+            @if (puedeAnular(pedido)) {
+              <p-button
+                icon="pi pi-ban"
+                [text]="true"
+                severity="danger"
+                (onClick)="confirmarAnular(pedido)"
+                pTooltip="Anular"
+              />
+            }
+            @if (puedeDecidir(pedido)) {
+              <p-button
+                icon="pi pi-check"
+                [text]="true"
+                severity="success"
+                (onClick)="abrirRecibir(pedido)"
+                pTooltip="Recibir"
+              />
+              <p-button
+                icon="pi pi-undo"
+                [text]="true"
+                severity="warn"
+                (onClick)="abrirParaRevisar(pedido)"
+                pTooltip="Para revisar"
+              />
+            }
           </div>
         </td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6">No hay pedidos de insumos cargados todavía.</td>
+        <td colspan="6">No hay pedidos de insumos para mostrar.</td>
       </tr>
     </ng-template>
   </p-table>
 
   <p-dialog
-    [visible]="dialogVisible()"
-    (visibleChange)="dialogVisible.set($event)"
+    [visible]="nuevoDialogVisible()"
+    (visibleChange)="nuevoDialogVisible.set($event)"
     [modal]="true"
-    [style]="{ width: '420px' }"
-    [header]="editingId() ? 'Editar pedido de insumos' : 'Nuevo pedido de insumos'"
+    [style]="{ width: '95vw', maxWidth: '700px' }"
+    header="Nuevo pedido de insumos"
   >
-    <form [formGroup]="form" (ngSubmit)="save()" class="page__form">
-      <div class="page__field">
-        <label for="fecha_carga">Fecha de carga</label>
-        <p-datepicker
-          inputId="fecha_carga"
-          formControlName="fecha_carga"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-        />
-      </div>
+    <div class="page__field pedido-insumos__field-fecha">
+      <label for="fecha_necesidad">Fecha de necesidad</label>
+      <p-datepicker
+        inputId="fecha_necesidad"
+        [formControl]="fechaNecesidad"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        appendTo="body"
+      />
+    </div>
 
-      <div class="page__field">
-        <label for="fecha_necesidad">Fecha de necesidad</label>
-        <p-datepicker
-          inputId="fecha_necesidad"
-          formControlName="fecha_necesidad"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-        />
+    <div class="pedido-insumos__items-grid">
+      <div class="pedido-insumos__items-grid-header">
+        <span>Insumo</span>
+        <span>Línea</span>
+        <span>Cantidad</span>
+        <span></span>
       </div>
-
-      @if (editingId()) {
-        <div class="page__field">
-          <label for="id_estado">Estado</label>
+      @for (fila of filas.controls; track fila; let i = $index) {
+        <div class="pedido-insumos__items-grid-row" [formGroup]="fila">
           <p-select
-            inputId="id_estado"
-            formControlName="id_estado"
-            [options]="estadosPedidoInsumos()"
-            optionLabel="nombreEstado"
-            optionValue="id_estado"
-            placeholder="Seleccionar estado"
-            [appendTo]="'body'"
+            formControlName="id_insumo"
+            [options]="insumos()"
+            optionLabel="nombre_insumo"
+            optionValue="id_insumo"
+            [filter]="true"
+            filterBy="codigo_insumo,nombre_insumo"
+            placeholder="Seleccionar insumo"
+            appendTo="body"
           />
+          <p-select
+            formControlName="id_lineas"
+            [options]="lineas()"
+            optionLabel="descripcion_lineas"
+            optionValue="id_lineas"
+            placeholder="Línea"
+            appendTo="body"
+          />
+          <p-inputNumber formControlName="cantidad_solicitada" [min]="0.01" [minFractionDigits]="2" />
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="quitarFila(i)" [disabled]="filas.length === 1" />
         </div>
       }
+    </div>
 
-      <div class="page__field">
-        <label for="motivo_rechazo">Motivo de rechazo (si corresponde)</label>
-        <input id="motivo_rechazo" type="text" pInputText formControlName="motivo_rechazo" />
-      </div>
+    <div class="pedido-insumos__agregar-fila">
+      <p-button type="button" label="Agregar ítem" icon="pi pi-plus" [text]="true" (onClick)="agregarFila()" />
+    </div>
 
-      <div class="page__form-actions">
-        <p-button
-          type="button"
-          label="Cancelar"
-          severity="secondary"
-          [outlined]="true"
-          (onClick)="closeDialog()"
-        />
-        <p-button type="submit" label="Guardar" [loading]="saving()" [disabled]="form.invalid" />
-      </div>
-    </form>
+    <div class="page__form-actions">
+      <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarNuevo()" />
+      <p-button type="button" label="Guardar" [loading]="guardando()" (onClick)="guardarNuevo()" />
+    </div>
   </p-dialog>
 
   <p-dialog
-    [visible]="itemsDialogVisible()"
-    (visibleChange)="itemsDialogVisible.set($event)"
+    [visible]="verDialogVisible()"
+    (visibleChange)="verDialogVisible.set($event)"
     [modal]="true"
-    [style]="{ width: '520px' }"
-    header="Insumos del pedido"
+    [style]="{ width: '95vw', maxWidth: '700px' }"
+    header="Pedido de insumos"
   >
-    <p-table [value]="items()" [loading]="itemsLoading()" dataKey="id_item_pedido_insumo">
-      <ng-template #header>
-        <tr>
-          <th scope="col">Insumo</th>
-          <th scope="col">Cantidad solicitada</th>
-          <th scope="col">Cantidad abastecida</th>
-          <th scope="col" style="width: 6rem"></th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-item>
-        <tr>
-          <td>{{ item.insumo?.nombre_insumo || '—' }}</td>
-          <td>{{ item.cantidad_solicitada }}</td>
-          <td>{{ item.cantidad_abastecida }}</td>
-          <td>
-            <div class="page__actions">
-              <p-button icon="pi pi-pencil" [text]="true" (onClick)="editItem(item)" />
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                severity="danger"
-                (onClick)="removeItem(item)"
-              />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="4">Todavía no hay insumos cargados.</td>
-        </tr>
-      </ng-template>
-    </p-table>
+    @if (pedidoAVer(); as pedido) {
+      <div class="pedido-insumos__ver-header">
+        <div class="page__field">
+          <label>Fecha de carga</label>
+          <span>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Fecha de necesidad</label>
+          <span>{{ pedido.fecha_necesidad | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Solicitó</label>
+          <span>{{ pedido.usuarios?.nombre_usuario || '—' }}</span>
+        </div>
+        <div class="page__field">
+          <label>Estado</label>
+          <span>{{ estadoDe(pedido) }}</span>
+        </div>
+        @if (pedido.motivo_rechazo) {
+          <div class="page__field">
+            <label>Motivo de revisión</label>
+            <span>{{ pedido.motivo_rechazo }}</span>
+          </div>
+        }
+      </div>
 
-    <form
-      [formGroup]="itemForm"
-      (ngSubmit)="saveItem()"
-      class="page__form pedido-insumos__item-form"
-    >
-      <div class="page__field">
-        <label for="item_insumo">Insumo</label>
-        <p-select
-          inputId="item_insumo"
-          formControlName="id_insumo"
-          [options]="insumos()"
-          optionLabel="nombre_insumo"
-          optionValue="id_insumo"
-          [filter]="true"
-          filterBy="codigo_insumo,nombre_insumo"
-          placeholder="Seleccionar insumo"
-          [appendTo]="'body'"
+      <p-table [value]="pedido.item_pedido_insumo || []" dataKey="id_item_pedido_insumo" class="pedido-insumos__ver-items">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Insumo</th>
+            <th scope="col">Línea</th>
+            <th scope="col" style="width: 6rem">Unidad</th>
+            <th scope="col" style="width: 8rem">Solicitado</th>
+            <th scope="col" style="width: 8rem">Abastecido</th>
+            <th scope="col">Observaciones</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td>{{ item.insumo?.nombre_insumo || '—' }}</td>
+            <td>{{ item.lineas?.descripcion_lineas || '—' }}</td>
+            <td>{{ item.insumo?.unidad_medida?.nombre_unidad_medida || '—' }}</td>
+            <td>{{ item.cantidad_solicitada }}</td>
+            <td>{{ item.cantidad_abastecida }}</td>
+            <td>{{ item.observaciones || '—' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6">Este pedido no tiene ítems cargados.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cerrar" severity="secondary" [outlined]="true" (onClick)="cerrarVer()" />
+      </div>
+    }
+  </p-dialog>
+
+  <p-dialog
+    [visible]="recibirDialogVisible()"
+    (visibleChange)="recibirDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Recibir pedido"
+  >
+    @if (pedidoARecibir(); as pedido) {
+      <p class="pedido-insumos__confirmacion">
+        ¿Confirmar la recepción del pedido #{{ pedido.id_pedido_insumos }}? Esto mueve el stock abastecido de
+        Logística a Producción.
+      </p>
+
+      @if (necesitaPlantaManual()) {
+        <div class="page__field">
+          <label>Planta</label>
+          <p-selectButton
+            [options]="plantasOpciones"
+            [ngModel]="plantaElegida()"
+            (ngModelChange)="plantaElegida.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [allowEmpty]="false"
+          />
+          <small>No se pudo determinar la planta de quien solicitó el pedido automáticamente. Elegila para continuar.</small>
+        </div>
+      }
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarRecibir()" />
+        <p-button
+          type="button"
+          label="Recibir"
+          [loading]="recibiendo()"
+          [disabled]="necesitaPlantaManual() && !plantaElegida()"
+          (onClick)="confirmarRecibir()"
         />
       </div>
+    }
+  </p-dialog>
+
+  <p-dialog
+    [visible]="motivoDialogVisible()"
+    (visibleChange)="motivoDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    header="Enviar para revisar"
+  >
+    <form [formGroup]="motivoForm" (ngSubmit)="confirmarParaRevisar()" class="page__form">
       <div class="page__field">
-        <label for="cantidad_solicitada">Cantidad solicitada</label>
-        <p-inputNumber
-          inputId="cantidad_solicitada"
-          formControlName="cantidad_solicitada"
-          [min]="0.01"
-          [minFractionDigits]="2"
-        />
-      </div>
-      <div class="page__field">
-        <label for="cantidad_abastecida">Cantidad abastecida</label>
-        <p-inputNumber
-          inputId="cantidad_abastecida"
-          formControlName="cantidad_abastecida"
-          [min]="0"
-          [minFractionDigits]="2"
-        />
+        <label for="motivo_rechazo">Motivo</label>
+        <textarea
+          id="motivo_rechazo"
+          pTextarea
+          formControlName="motivo_rechazo"
+          rows="4"
+          placeholder="Por qué se devuelve el pedido a Logística"
+        ></textarea>
       </div>
 
       <div class="page__form-actions">
-        @if (editingItemId()) {
-          <p-button
-            type="button"
-            label="Cancelar edición"
-            severity="secondary"
-            [outlined]="true"
-            (onClick)="cancelItemEdit()"
-          />
-        }
-        <p-button
-          type="submit"
-          [label]="editingItemId() ? 'Guardar insumo' : 'Agregar insumo'"
-          [loading]="itemsSaving()"
-          [disabled]="itemForm.invalid"
-        />
+        <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cerrarMotivo()" />
+        <p-button type="submit" label="Enviar" [loading]="enviandoMotivo()" [disabled]="motivoForm.invalid" />
       </div>
     </form>
   </p-dialog>

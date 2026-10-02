@@ -48,6 +48,23 @@ export class CargaPedidosList implements OnInit {
   protected readonly pedidos = signal<PedidoACargar[]>([]);
   protected readonly loading = signal(false);
 
+  // La pantalla solo lista pedidos Facturados: el pedido se factura
+  // antes de subirlo al camión. Que la leyenda lo diga evita que uno
+  // crea que la pantalla está fallando cuando en realidad el pedido
+  // todavía no se facturó.
+  protected readonly leyendaVacia = computed(() => {
+    const elegida = this.fecha();
+    const hoy = new Date();
+    const esHoy =
+      elegida.getFullYear() === hoy.getFullYear() &&
+      elegida.getMonth() === hoy.getMonth() &&
+      elegida.getDate() === hoy.getDate();
+    const cuando = esHoy
+      ? 'hoy'
+      : `el ${String(elegida.getDate()).padStart(2, '0')}/${String(elegida.getMonth() + 1).padStart(2, '0')}/${elegida.getFullYear()}`;
+    return `No hay pedidos facturados prometidos para ${cuando}.`;
+  });
+
   // --- Modo carga ---
   protected readonly pedidoEnCarga = signal<PedidoACargar | null>(null);
   protected readonly pallets = signal<CargaPallet[]>([]);

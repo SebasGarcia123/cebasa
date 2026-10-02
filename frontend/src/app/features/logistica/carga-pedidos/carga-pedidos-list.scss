@@ -18,6 +18,13 @@
   font-weight: 600;
 }
 
+.carga__vacio {
+  font-family: var(--font-family-body);
+  font-size: 1.0625rem;
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+}
+
 .carga__en-curso {
   margin-left: 0.5rem;
   font-size: 0.75rem;

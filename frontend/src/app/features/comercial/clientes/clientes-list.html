@@ -4,16 +4,28 @@
     <p-button label="Nuevo" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
-  <div class="page__field clientes__buscador">
-    <label for="buscar_cliente">Buscar por nombre</label>
-    <input
-      id="buscar_cliente"
-      type="text"
-      pInputText
-      [ngModel]="busqueda()"
-      (ngModelChange)="busqueda.set($event)"
-      placeholder="Escribí parte del nombre"
-    />
+  <div class="clientes__filtros">
+    <div class="page__field clientes__buscador">
+      <label for="buscar_cliente">Buscar por nombre</label>
+      <input
+        id="buscar_cliente"
+        type="text"
+        pInputText
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        placeholder="Escribí parte del nombre"
+      />
+    </div>
+
+    <div class="clientes__filtro-anulados">
+      <p-checkbox
+        inputId="ver_anulados"
+        [binary]="true"
+        [ngModel]="verAnulados()"
+        (ngModelChange)="verAnulados.set($event)"
+      />
+      <label for="ver_anulados">Ver anulados</label>
+    </div>
   </div>
 
   <p-table

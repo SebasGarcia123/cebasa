@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
 import {
-  COL_DERECHA_X,
-  FIRMA_DESDE_ABAJO,
   MARGEN_DER,
   MARGEN_IZQ,
   formatearFechaAR,
@@ -84,7 +82,6 @@ export class DocumentoPdfService {
   }
 
   private renderDocumento(doc: PDFKit.PDFDocument, documento: DocumentoParaPdf): void {
-    const anchoDerecha = MARGEN_DER - COL_DERECHA_X;
     const areaUtilY = doc.page.height - MARGEN_IZQ;
     let ejeY = renderEncabezadoEmpresa(doc, TITULOS[documento.tipo], documento.numero);
 
@@ -129,20 +126,6 @@ export class DocumentoPdfService {
       width: MARGEN_DER - MARGEN_IZQ,
       align: 'right',
     });
-
-    // Firma, a 4cm del pie de la hoja por default (o más abajo/en hoja
-    // nueva si el contenido de arriba no da lugar) — mismo criterio
-    // relativo que remito-pdf.
-    const yFirmaPorDefecto = doc.page.height - FIRMA_DESDE_ABAJO;
-    let yFirma = Math.max(doc.y + 40, yFirmaPorDefecto);
-    if (yFirma > areaUtilY) {
-      doc.addPage();
-      yFirma = yFirmaPorDefecto;
-    }
-    doc.moveTo(MARGEN_IZQ, yFirma - 15).lineTo(MARGEN_DER, yFirma - 15).stroke();
-    doc.fontSize(9).font('Helvetica');
-    doc.text('Firma autorizada: ___________________________', MARGEN_IZQ, yFirma, { width: 260 });
-    doc.text('Aclaración: _____________________', COL_DERECHA_X, yFirma, { width: anchoDerecha });
   }
 
   private renderConcepto(doc: PDFKit.PDFDocument, documento: ReciboParaPdf | NotaParaPdf, ejeY: number): number {

@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ClientesApiService } from '../../../core/api/clientes-api.service';
@@ -28,6 +29,7 @@ const ESTADOS_CLIENTE = new Set(['Activo', 'Cancelado']);
     DialogModule,
     InputTextModule,
     SelectModule,
+    CheckboxModule,
     TooltipModule,
   ],
   templateUrl: './clientes-list.html',
@@ -46,14 +48,19 @@ export class ClientesList implements OnInit {
   protected readonly estados = signal<Estado[]>([]);
   protected readonly loading = signal(false);
 
-  // Buscador por nombre: filtra en memoria, sin volver al backend.
+  // Buscador por nombre y el tilde de "ver anulados": por default se
+  // ocultan los Cancelados (no hace falta verlos para el uso diario),
+  // pero hay que poder encontrarlos para reactivarlos editándolos.
   protected readonly busqueda = signal('');
+  protected readonly verAnulados = signal(false);
   protected readonly clientesFiltrados = computed(() => {
     const texto = this.busqueda().trim().toLowerCase();
-    if (!texto) {
-      return this.clientes();
-    }
-    return this.clientes().filter((c) => c.nombre_cli.toLowerCase().includes(texto));
+    return this.clientes().filter((c) => {
+      if (!this.verAnulados() && c.estados?.nombreEstado === 'Cancelado') {
+        return false;
+      }
+      return !texto || c.nombre_cli.toLowerCase().includes(texto);
+    });
   });
 
   protected readonly saving = signal(false);

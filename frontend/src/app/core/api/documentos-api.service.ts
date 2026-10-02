@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pedido } from '../models/pedido.model';
+import { Factura } from '../models/factura.model';
 import { components } from './schema';
 
 export type CreateFacturaDto = components['schemas']['CreateFacturaDto'];
@@ -21,6 +22,12 @@ export class DocumentosApiService {
 
   private base(idCliente: number): string {
     return `${this.baseUrl}/clientes/${idCliente}/documentos`;
+  }
+
+  // Facturas emitidas: opciones del desplegable cuando se emite una
+  // nota de crédito o débito, que siempre corrigen una factura.
+  facturas(idCliente: number): Observable<Factura[]> {
+    return this.http.get<Factura[]>(`${this.base(idCliente)}/facturas`);
   }
 
   pedidosFacturables(idCliente: number): Observable<Pedido[]> {

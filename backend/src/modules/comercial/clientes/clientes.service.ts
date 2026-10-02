@@ -38,6 +38,23 @@ export class ClientesService {
     return cliente;
   }
 
+  // Pedidos del cliente para su pantalla de detalle. Trae los ítems en
+  // la misma respuesta para que el "Ver" del detalle no tenga que pegar
+  // contra /pedidos/:id, que exige el permiso de otra pantalla
+  // (comercial.pedidos.ver) y dejaría el detalle a medias para quien
+  // solo administra clientes.
+  async pedidosDelCliente(id: number) {
+    await this.findOne(id);
+    return this.prisma.pedidos.findMany({
+      where: { id_cliente: id },
+      include: {
+        estados: true,
+        item_pedido: { include: { productos: { include: { tipo_producto: true } } } },
+      },
+      orderBy: { fecha_carga: 'desc' },
+    });
+  }
+
   async update(id: number, dto: UpdateClienteDto) {
     await this.findOne(id);
 

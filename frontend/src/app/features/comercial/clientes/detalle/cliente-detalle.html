@@ -1,0 +1,331 @@
+<div class="page">
+  <div class="page__header">
+    <div class="detalle__titulo">
+      <p-button icon="pi pi-arrow-left" [text]="true" (onClick)="volver()" pTooltip="Volver a Clientes" />
+      <h1>{{ cliente()?.nombre_cli || 'Cliente' }}</h1>
+    </div>
+    <div class="detalle__acciones">
+      <p-selectButton
+        [options]="vistas"
+        [ngModel]="vista()"
+        (ngModelChange)="vista.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+      />
+      @if (vista() === 'cuenta' && cuentaCorriente()) {
+        <p-button label="Nuevo documento" icon="pi pi-file-plus" (onClick)="abrirNuevoDocumento()" />
+      }
+    </div>
+  </div>
+
+  @if (vista() === 'pedidos') {
+    <p-table [value]="pedidos()" [loading]="loading()" dataKey="id_pedido" [paginator]="true" [rows]="15">
+      <ng-template #header>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Fecha de carga</th>
+          <th scope="col">Estado</th>
+          <th scope="col" style="width: 13rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-pedido>
+        <tr>
+          <td>{{ pedido.id_pedido }}</td>
+          <td>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+          <td>{{ estadoDe(pedido) }}</td>
+          <td>
+            <div class="page__actions">
+              <p-button icon="pi pi-eye" [text]="true" (onClick)="ver(pedido)" pTooltip="Ver pedido" />
+              @if (puedeFacturar(pedido)) {
+                <p-button
+                  label="Facturar"
+                  icon="pi pi-file"
+                  [text]="true"
+                  [loading]="docSaving()"
+                  (onClick)="facturar(pedido)"
+                />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">Este cliente todavía no tiene pedidos.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  } @else {
+    @if (!cuentaCorriente()) {
+      <div class="detalle__sin-cuenta">
+        <p>Este cliente todavía no tiene cuenta corriente.</p>
+        <p-button label="Crear cuenta corriente" (onClick)="crearCuentaCorriente()" [loading]="ctaCteSaving()" />
+      </div>
+    } @else {
+      <div class="detalle__cuenta-header">
+        <div class="detalle__saldo">
+          <span class="detalle__saldo-label">Saldo actual</span>
+          <strong class="detalle__saldo-valor">{{ cuentaCorriente()!.saldo_actual | number: '1.2-2' }}</strong>
+        </div>
+        <form [formGroup]="limiteForm" (ngSubmit)="guardarLimite()" class="detalle__limite">
+          <div class="page__field">
+            <label for="limite_credito">Límite de crédito</label>
+            <p-inputNumber
+              inputId="limite_credito"
+              formControlName="limite_credito"
+              mode="currency"
+              currency="ARS"
+              locale="es-AR"
+            />
+          </div>
+          <p-button type="submit" label="Guardar" [loading]="ctaCteSaving()" [disabled]="limiteForm.invalid" />
+        </form>
+      </div>
+
+      <p-table [value]="movimientos()" dataKey="id_movimiento_cta_cte" [paginator]="true" [rows]="15">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Fecha</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Referencia</th>
+            <th scope="col" style="width: 10rem">Monto</th>
+            <th scope="col" style="width: 10rem">Saldo</th>
+            <th scope="col" style="width: 6rem"></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-mov>
+          <tr>
+            <td>{{ mov.fecha | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+            <td>{{ mov.tipo_documento?.descripcion || '—' }}</td>
+            <td>
+              @if (mov.id_factura) {
+                Factura #{{ mov.id_factura }}
+              } @else if (mov.id_recibo) {
+                Recibo #{{ mov.id_recibo }}
+              } @else if (mov.id_nota_credito) {
+                Nota de crédito #{{ mov.id_nota_credito }}
+              } @else if (mov.id_nota_debito) {
+                Nota de débito #{{ mov.id_nota_debito }}
+              } @else {
+                —
+              }
+            </td>
+            <td>{{ mov.monto | number: '1.2-2' }}</td>
+            <td>{{ mov.saldo_resultante | number: '1.2-2' }}</td>
+            <td>
+              <div class="page__actions">
+                @if (esMovimientoManual(mov)) {
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    severity="danger"
+                    (onClick)="eliminarMovimiento(mov)"
+                    pTooltip="Eliminar movimiento manual"
+                  />
+                } @else {
+                  <p-button
+                    icon="pi pi-file-pdf"
+                    [text]="true"
+                    (onClick)="verDocumento(mov)"
+                    pTooltip="Ver documento"
+                  />
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6">Todavía no se emitieron documentos para este cliente.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  }
+
+  <p-dialog
+    [visible]="verDialogVisible()"
+    (visibleChange)="verDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '700px' }"
+    header="Pedido"
+  >
+    @if (pedidoAVer(); as pedido) {
+      <div class="detalle__ver-header">
+        <div class="page__field">
+          <label>Pedido</label>
+          <span>#{{ pedido.id_pedido }}</span>
+        </div>
+        <div class="page__field">
+          <label>Fecha de carga</label>
+          <span>{{ pedido.fecha_carga | date: 'dd/MM/yyyy' : 'UTC' }}</span>
+        </div>
+        @if (pedido.fecha_prometido) {
+          <div class="page__field">
+            <label>Fecha prometida</label>
+            <span>{{ pedido.fecha_prometido | date: 'dd/MM/yyyy' : 'UTC' }}</span>
+          </div>
+        }
+        <div class="page__field">
+          <label>Estado</label>
+          <span>{{ estadoDe(pedido) }}</span>
+        </div>
+      </div>
+
+      <p-table [value]="pedido.item_pedido || []" dataKey="id_item_pedido">
+        <ng-template #header>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Producto</th>
+            <th scope="col" style="width: 9rem">Bolsones</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td>{{ item.productos?.codigo_producto || '—' }}</td>
+            <td>{{ item.productos?.descripcion_producto || '—' }}</td>
+            <td>{{ item.cantidad_bolsones }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="3">Este pedido no tiene productos cargados.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="page__form-actions">
+        <p-button type="button" label="Cerrar" severity="secondary" [outlined]="true" (onClick)="cerrarVer()" />
+      </div>
+    }
+  </p-dialog>
+
+  <p-dialog
+    [visible]="docDialogVisible()"
+    (visibleChange)="docDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '95vw', maxWidth: '520px' }"
+    header="Nuevo documento"
+  >
+    <form [formGroup]="documentoForm" (ngSubmit)="generarDocumento()" class="page__form">
+      <div class="page__field">
+        <label for="doc_tipo">Tipo de documento</label>
+        <p-select
+          inputId="doc_tipo"
+          [ngModel]="tipoDocumento()"
+          (ngModelChange)="elegirTipo($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [options]="tiposDocumento"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar"
+          appendTo="body"
+        />
+      </div>
+
+      @switch (tipoDocumento()) {
+        @case ('factura') {
+          <div class="page__field">
+            <label for="doc_pedido">Pedido a facturar</label>
+            <p-select
+              inputId="doc_pedido"
+              formControlName="id_pedido"
+              [options]="pedidosFacturables()"
+              optionLabel="id_pedido"
+              optionValue="id_pedido"
+              placeholder="Seleccionar pedido pendiente"
+              appendTo="body"
+            >
+              <ng-template let-pedido #selectedItem>
+                #{{ pedido.id_pedido }} — {{ pedido.fecha_carga | date: 'dd/MM/yyyy' : 'UTC' }}
+              </ng-template>
+              <ng-template let-pedido #item>
+                #{{ pedido.id_pedido }} — {{ pedido.fecha_carga | date: 'dd/MM/yyyy' : 'UTC' }}
+              </ng-template>
+            </p-select>
+            @if (pedidosFacturables().length === 0) {
+              <small>Este cliente no tiene pedidos Pendientes para facturar.</small>
+            }
+            <small>El monto se calcula solo, a partir de los productos del pedido.</small>
+          </div>
+        }
+        @case ('recibo') {
+          <div class="page__field">
+            <label for="doc_monto">Monto</label>
+            <p-inputNumber inputId="doc_monto" formControlName="monto" mode="currency" currency="ARS" locale="es-AR" />
+          </div>
+          <div class="page__field">
+            <label for="doc_medio_pago">Medio de pago</label>
+            <p-select
+              inputId="doc_medio_pago"
+              formControlName="medio_pago"
+              [options]="mediosPago"
+              placeholder="Seleccionar"
+              appendTo="body"
+            />
+          </div>
+          <div class="page__field">
+            <label for="doc_observaciones">Observaciones (opcional)</label>
+            <textarea id="doc_observaciones" pTextarea formControlName="observaciones" rows="2"></textarea>
+          </div>
+        }
+        @default {
+          @if (tipoDocumento()) {
+            <div class="page__field">
+              <label for="doc_factura">Factura que corrige</label>
+              <p-select
+                inputId="doc_factura"
+                formControlName="id_factura"
+                [options]="facturas()"
+                optionLabel="id_factura"
+                optionValue="id_factura"
+                placeholder="Seleccionar factura"
+                appendTo="body"
+              >
+                <ng-template let-f #selectedItem>
+                  #{{ f.id_factura }} — {{ f.monto | number: '1.2-2' }}
+                </ng-template>
+                <ng-template let-f #item>
+                  #{{ f.id_factura }} — {{ f.fecha | date: 'dd/MM/yyyy' : 'UTC' }} — {{ f.monto | number: '1.2-2' }}
+                </ng-template>
+              </p-select>
+              @if (facturas().length === 0) {
+                <small>Este cliente no tiene facturas emitidas, así que todavía no se puede emitir una nota.</small>
+              }
+            </div>
+            <div class="page__field">
+              <label for="doc_monto_nota">Monto</label>
+              <p-inputNumber
+                inputId="doc_monto_nota"
+                formControlName="monto"
+                mode="currency"
+                currency="ARS"
+                locale="es-AR"
+                [max]="facturaElegida() ? +facturaElegida()!.monto : null"
+              />
+              @if (facturaElegida(); as f) {
+                <small>Tope: {{ f.monto | number: '1.2-2' }} (el monto de la factura).</small>
+              }
+            </div>
+            <div class="page__field">
+              <label for="doc_motivo">Motivo</label>
+              <textarea id="doc_motivo" pTextarea formControlName="motivo" rows="2"></textarea>
+            </div>
+          }
+        }
+      }
+
+      <div class="page__form-actions">
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="cerrarNuevoDocumento()"
+        />
+        <p-button type="submit" label="Emitir" [loading]="docSaving()" [disabled]="!documentoValido()" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

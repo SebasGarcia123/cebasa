@@ -277,12 +277,36 @@ export class DocumentosService {
   }
 
   // Nota de crédito: reduce la deuda del cliente (Crédito).
+  // La factura que corrige la nota tiene que ser de este mismo cliente,
+  // y la nota no puede superar lo que esa factura facturó.
+  private async assertFacturaCorregible(idCliente: number, idFactura: number, monto: number): Promise<void> {
+    const factura = await this.prisma.factura.findUnique({ where: { id_factura: idFactura } });
+    if (!factura) {
+      throw new NotFoundException(`Factura ${idFactura} no encontrada`);
+    }
+    if (factura.id_cliente !== idCliente) {
+      throw new BadRequestException('La factura no pertenece a este cliente');
+    }
+    if (monto > Number(factura.monto)) {
+      throw new BadRequestException(
+        `La nota no puede superar el monto de la factura (${Number(factura.monto).toFixed(2)})`,
+      );
+    }
+  }
+
   async generarNotaCredito(idCliente: number, dto: CreateNotaDto) {
+    await this.assertFacturaCorregible(idCliente, dto.id_factura, dto.monto);
     const idTipoDocumento = await this.tipoDocumentoId(TIPO_DOC_NOTA_CREDITO);
 
     const idNota = await this.prisma.$transaction(async (tx) => {
       const nota = await tx.nota_credito.create({
-        data: { fecha: new Date(), id_cliente: idCliente, monto: dto.monto, motivo: dto.motivo },
+        data: {
+          fecha: new Date(),
+          id_cliente: idCliente,
+          id_factura: dto.id_factura,
+          monto: dto.monto,
+          motivo: dto.motivo,
+        },
       });
       await this.registrarMovimiento(tx, idCliente, idTipoDocumento, -dto.monto, { id_nota_credito: nota.id_nota_credito });
       return nota.id_nota_credito;
@@ -293,11 +317,18 @@ export class DocumentosService {
 
   // Nota de débito: aumenta la deuda del cliente (Débito).
   async generarNotaDebito(idCliente: number, dto: CreateNotaDto) {
+    await this.assertFacturaCorregible(idCliente, dto.id_factura, dto.monto);
     const idTipoDocumento = await this.tipoDocumentoId(TIPO_DOC_NOTA_DEBITO);
 
     const idNota = await this.prisma.$transaction(async (tx) => {
       const nota = await tx.nota_debito.create({
-        data: { fecha: new Date(), id_cliente: idCliente, monto: dto.monto, motivo: dto.motivo },
+        data: {
+          fecha: new Date(),
+          id_cliente: idCliente,
+          id_factura: dto.id_factura,
+          monto: dto.monto,
+          motivo: dto.motivo,
+        },
       });
       await this.registrarMovimiento(tx, idCliente, idTipoDocumento, dto.monto, { id_nota_debito: nota.id_nota_debito });
       return nota.id_nota_debito;
@@ -350,6 +381,16 @@ export class DocumentosService {
     return this.prisma.pedidos.findMany({
       where: { id_cliente: idCliente, estados: { nombreEstado: ESTADO_PENDIENTE } },
       orderBy: { fecha_carga: 'desc' },
+    });
+  }
+
+  // Facturas emitidas al cliente: opciones del desplegable cuando se
+  // emite una nota de crédito o débito (que siempre corrigen una) y
+  // referencia para mostrar el tope de monto en pantalla.
+  async facturasDelCliente(idCliente: number) {
+    return this.prisma.factura.findMany({
+      where: { id_cliente: idCliente },
+      orderBy: { fecha: 'desc' },
     });
   }
 

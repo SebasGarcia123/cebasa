@@ -46,3 +46,12 @@
   color: var(--color-danger);
   font-weight: 600;
 }
+
+.clientes__buscador {
+  max-width: 320px;
+}
+
+// La fila entera abre el detalle del cliente.
+.clientes__fila {
+  cursor: pointer;
+}

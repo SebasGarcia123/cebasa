@@ -22,6 +22,14 @@ export class DocumentosController {
     return this.documentosService.pedidosFacturables(idCliente);
   }
 
+  // Facturas ya emitidas: son las opciones del desplegable cuando se
+  // emite una nota de crédito o de débito, que siempre corrigen una.
+  @RequirePermissions('comercial.clientes.editar')
+  @Get('facturas')
+  facturas(@Param('idCliente', ParseIntPipe) idCliente: number) {
+    return this.documentosService.facturasDelCliente(idCliente);
+  }
+
   @RequirePermissions('comercial.clientes.editar')
   @Post('factura')
   async generarFactura(

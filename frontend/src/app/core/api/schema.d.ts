@@ -452,6 +452,22 @@ export interface paths {
         patch: operations["ClientesController_update"];
         trace?: never;
     };
+    "/clientes/{id}/pedidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_pedidos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/clientes/{idCliente}/cuenta-corriente": {
         parameters: {
             query?: never;
@@ -508,6 +524,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["DocumentosController_pedidosFacturables"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/clientes/{idCliente}/documentos/facturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentosController_facturas"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2856,6 +2888,7 @@ export interface components {
             observaciones?: string;
         };
         CreateNotaDto: {
+            id_factura: number;
             monto: number;
             motivo: string;
         };
@@ -4428,6 +4461,27 @@ export interface operations {
             };
         };
     };
+    ClientesController_pedidos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>[];
+                };
+            };
+        };
+    };
     CuentaCorrienteController_findOne: {
         parameters: {
             query?: never;
@@ -4638,6 +4692,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    DocumentosController_facturas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idCliente: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };

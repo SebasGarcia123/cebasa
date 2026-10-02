@@ -35,6 +35,13 @@ export class ClientesController {
     return this.clientesService.findOne(id);
   }
 
+  // Pedidos del cliente, con sus ítems, para la pantalla de detalle.
+  @RequirePermissions('comercial.clientes.editar')
+  @Get(':id/pedidos')
+  pedidos(@Param('id', ParseIntPipe) id: number) {
+    return this.clientesService.pedidosDelCliente(id);
+  }
+
   @RequirePermissions('comercial.clientes.editar')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateClienteDto) {

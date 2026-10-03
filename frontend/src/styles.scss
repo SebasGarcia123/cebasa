@@ -45,16 +45,23 @@ h6 {
 // del árbol de cualquier componente, así que solo un selector global
 // sin scope lo alcanza (un ::ng-deep dentro de un componente no
 // aplicaría, porque Angular le agrega un atributo de encapsulación que
-// este nodo nunca tiene). Por default el texto envuelve en varias
-// líneas (white-space: pre-line + word-break: break-word) dentro de un
-// ancho máximo chico: con una etiqueta corta como "Ver remito" eso se
-// veía como una letra por línea, como una columna vertical. Se fuerza
-// una sola línea horizontal sin cortes.
+// este nodo nunca tiene).
+//
+// PrimeNG ya intenta ubicarlo a la derecha del botón y, si no entra,
+// prueba a la izquierda, arriba y abajo en ese orden (ver Tooltip.align
+// en primeng/tooltip) — pero esa cuenta depende del ANCHO de la caja:
+// cuanto más ancha, menos probable que alguna de las cuatro posiciones
+// entre cerca de un borde de la pantalla, y termina clipeada. Por eso
+// se la deja angosta a propósito (en vez del intento anterior de
+// agrandarla y forzar una sola línea, que iba en la dirección
+// contraria) y se permite el salto de línea normal por palabra —nunca
+// por letra suelta, que es lo que se veía como una columna vertical.
 .p-tooltip {
-  max-width: 24rem;
+  max-width: 14rem;
 }
 
 .p-tooltip-text {
-  white-space: nowrap;
+  white-space: normal;
   word-break: normal;
+  overflow-wrap: break-word;
 }

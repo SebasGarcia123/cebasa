@@ -106,11 +106,6 @@ export class PedidosService {
     });
   }
 
-  async remove(id: number) {
-    await this.assertEditable(id);
-    return this.prisma.pedidos.delete({ where: { id_pedido: id } });
-  }
-
   // Anular: motivo si estaba Pendiente, nro de nota de débito si ya
   // estaba Facturado (la nota de débito en sí se emite por fuera del
   // sistema por ahora, acá solo queda la referencia).

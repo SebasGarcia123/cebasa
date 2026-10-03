@@ -6,6 +6,7 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -19,7 +20,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MessageService } from 'primeng/api';
 import { PedidosApiService } from '../../../core/api/pedidos-api.service';
 import { ItemPedidoApiService } from '../../../core/api/item-pedido-api.service';
 import { ClientesApiService } from '../../../core/api/clientes-api.service';
@@ -32,7 +34,9 @@ import { Producto } from '../../../core/models/producto.model';
 
 const ESTADO_PENDIENTE = 'Pendiente';
 const ESTADO_FACTURADO = 'Facturado';
+const ESTADO_CARGADO = 'Cargado';
 const ESTADO_DESPACHADO = 'Despachado';
+const ESTADO_ANULADO = 'Anulado';
 
 type ItemPedidoForm = FormGroup<{
   id_item_pedido: FormControl<number | null>;
@@ -46,6 +50,7 @@ type ItemPedidoForm = FormGroup<{
   selector: 'app-pedidos-list',
   imports: [
     DatePipe,
+    FormsModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -56,6 +61,7 @@ type ItemPedidoForm = FormGroup<{
     InputNumberModule,
     TextareaModule,
     TooltipModule,
+    CheckboxModule,
   ],
   templateUrl: './pedidos-list.html',
   styleUrl: './pedidos-list.scss',
@@ -67,13 +73,47 @@ export class PedidosList implements OnInit {
   private readonly productosApi = inject(ProductosApiService);
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
   protected readonly pedidos = signal<Pedido[]>([]);
   protected readonly clientes = signal<Cliente[]>([]);
   protected readonly productos = signal<Producto[]>([]);
   protected readonly loading = signal(false);
+
+  // Filtros: nombre de cliente, rango de fecha de carga y un check para
+  // ver los Anulados (ocultos por default, igual que "ver anulados" en
+  // Clientes).
+  protected readonly busquedaNombre = signal('');
+  protected readonly fechaDesde = signal<Date | null>(null);
+  protected readonly fechaHasta = signal<Date | null>(null);
+  protected readonly verEliminados = signal(false);
+
+  protected readonly pedidosFiltrados = computed(() => {
+    const texto = this.busquedaNombre().trim().toLowerCase();
+    const desde = this.fechaDesde();
+    const hasta = this.fechaHasta();
+
+    return this.pedidos().filter((pedido) => {
+      if (!this.verEliminados() && pedido.estados?.nombreEstado === ESTADO_ANULADO) {
+        return false;
+      }
+      if (texto && !(pedido.clientes?.nombre_cli ?? '').toLowerCase().includes(texto)) {
+        return false;
+      }
+      const fecha = this.soloFecha(new Date(pedido.fecha_carga));
+      if (desde && fecha < this.soloFecha(desde)) {
+        return false;
+      }
+      if (hasta && fecha > this.soloFecha(hasta)) {
+        return false;
+      }
+      return true;
+    });
+  });
+
+  private soloFecha(fecha: Date): number {
+    return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
+  }
 
   // Un cliente cancelado no puede recibir pedidos nuevos (el backend lo
   // rechaza igual, pero ni se lo ofrecemos en el selector).
@@ -227,6 +267,20 @@ export class PedidosList implements OnInit {
     return this.puedeOperar() && pedido.estados?.nombreEstado === ESTADO_PENDIENTE;
   }
 
+  // Único botón para "sacar de circulación" un pedido en cualquiera de
+  // sus tres estados no terminales: antes existían Eliminar (borrado
+  // físico, solo en Pendiente) y Anular (motivo o nota de débito según
+  // el estado) por separado, lo que no tenía sentido. Ahora Eliminar
+  // hace lo que hacía Anular — el pedido queda en estado Anulado, nunca
+  // se borra de la base.
+  protected puedeEliminar(pedido: Pedido): boolean {
+    const estado = pedido.estados?.nombreEstado;
+    return (
+      this.puedeFacturar() &&
+      (estado === ESTADO_PENDIENTE || estado === ESTADO_FACTURADO || estado === ESTADO_CARGADO)
+    );
+  }
+
   protected agregarItem(): void {
     this.itemsFormArray.push(this.crearFilaItem());
   }
@@ -364,80 +418,55 @@ export class PedidosList implements OnInit {
     });
   }
 
-  protected readonly anularDialogVisible = signal(false);
-  protected readonly anularSaving = signal(false);
-  private pedidoAAnular: Pedido | null = null;
+  protected readonly eliminarDialogVisible = signal(false);
+  protected readonly eliminarSaving = signal(false);
+  private pedidoAEliminar: Pedido | null = null;
 
-  protected readonly anularForm = this.fb.nonNullable.group({
+  protected readonly eliminarForm = this.fb.nonNullable.group({
     motivo: [''],
     nro_nota_debito: [''],
   });
 
-  // Cargado: pide motivo. Facturado: pide n° de nota de débito (la nota
-  // en sí se emite por fuera del sistema, acá solo queda la referencia).
+  // Pendiente: pide motivo. Facturado o Cargado (ya facturado): pide
+  // n° de nota de débito (la nota en sí se emite por fuera del sistema,
+  // acá solo queda la referencia) — ver PedidosService.anular.
   protected requiereNotaDebito(): boolean {
-    return this.pedidoAAnular?.estados?.nombreEstado === ESTADO_FACTURADO;
+    const estado = this.pedidoAEliminar?.estados?.nombreEstado;
+    return estado === ESTADO_FACTURADO || estado === ESTADO_CARGADO;
   }
 
-  abrirAnular(pedido: Pedido): void {
-    this.pedidoAAnular = pedido;
-    this.anularForm.reset();
-    this.anularDialogVisible.set(true);
+  abrirEliminar(pedido: Pedido): void {
+    this.pedidoAEliminar = pedido;
+    this.eliminarForm.reset();
+    this.eliminarDialogVisible.set(true);
   }
 
-  cerrarAnular(): void {
-    this.anularDialogVisible.set(false);
+  cerrarEliminar(): void {
+    this.eliminarDialogVisible.set(false);
   }
 
-  confirmarAnular(): void {
-    if (!this.pedidoAAnular || this.anularSaving()) {
+  confirmarEliminar(): void {
+    if (!this.pedidoAEliminar || this.eliminarSaving()) {
       return;
     }
-    const raw = this.anularForm.getRawValue();
+    const raw = this.eliminarForm.getRawValue();
     const dto = this.requiereNotaDebito() ? { nro_nota_debito: raw.nro_nota_debito } : { motivo: raw.motivo };
     if (!dto.motivo && !dto.nro_nota_debito) {
       return;
     }
 
-    this.anularSaving.set(true);
-    this.api.anular(this.pedidoAAnular.id_pedido, dto).subscribe({
+    this.eliminarSaving.set(true);
+    this.api.anular(this.pedidoAEliminar.id_pedido, dto).subscribe({
       next: () => {
-        this.anularSaving.set(false);
-        this.anularDialogVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Anulado', detail: 'El pedido fue anulado' });
+        this.eliminarSaving.set(false);
+        this.eliminarDialogVisible.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'El pedido fue eliminado' });
         this.load();
       },
       error: (error: HttpErrorResponse) => {
-        this.anularSaving.set(false);
-        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo anular el pedido';
+        this.eliminarSaving.set(false);
+        const detail = typeof error.error?.message === 'string' ? error.error.message : 'No se pudo eliminar el pedido';
         this.messageService.add({ severity: 'error', summary: 'Error', detail });
-      },
-    });
-  }
-
-  confirmDelete(pedido: Pedido): void {
-    this.confirmationService.confirm({
-      header: 'Confirmar eliminación',
-      message: `¿Eliminar el pedido #${pedido.id_pedido}?`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { severity: 'danger', label: 'Eliminar' },
-      rejectButtonProps: { severity: 'secondary', label: 'Cancelar', outlined: true },
-      accept: () => this.remove(pedido.id_pedido),
-    });
-  }
-
-  private remove(id: number): void {
-    this.api.remove(id).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Pedido eliminado' });
-        this.load();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo eliminar (puede tener datos relacionados)',
-        });
       },
     });
   }

@@ -6,8 +6,56 @@
     }
   </div>
 
+  <div class="pedidos__filtros">
+    <div class="page__field pedidos__field-nombre">
+      <label for="busqueda_nombre">Cliente</label>
+      <input
+        id="busqueda_nombre"
+        type="text"
+        pInputText
+        [ngModel]="busquedaNombre()"
+        (ngModelChange)="busquedaNombre.set($event)"
+        placeholder="Buscar por nombre"
+      />
+    </div>
+
+    <div class="page__field pedidos__field-fecha">
+      <label for="fecha_desde">Desde</label>
+      <p-datepicker
+        inputId="fecha_desde"
+        [ngModel]="fechaDesde()"
+        (ngModelChange)="fechaDesde.set($event)"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="page__field pedidos__field-fecha">
+      <label for="fecha_hasta">Hasta</label>
+      <p-datepicker
+        inputId="fecha_hasta"
+        [ngModel]="fechaHasta()"
+        (ngModelChange)="fechaHasta.set($event)"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+      />
+    </div>
+
+    <div class="pedidos__filtro-eliminados">
+      <p-checkbox
+        inputId="ver_eliminados"
+        [binary]="true"
+        [ngModel]="verEliminados()"
+        (ngModelChange)="verEliminados.set($event)"
+      />
+      <label for="ver_eliminados">Ver eliminados</label>
+    </div>
+  </div>
+
   <p-table
-    [value]="pedidos()"
+    [value]="pedidosFiltrados()"
     [loading]="loading()"
     dataKey="id_pedido"
     [paginator]="true"
@@ -32,24 +80,15 @@
           <div class="page__actions">
             @if (puedeEditar(pedido)) {
               <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(pedido)" pTooltip="Editar" />
+            }
+            @if (puedeEliminar(pedido)) {
               <p-button
                 icon="pi pi-trash"
                 [text]="true"
                 severity="danger"
-                (onClick)="confirmDelete(pedido)"
+                (onClick)="abrirEliminar(pedido)"
                 pTooltip="Eliminar"
               />
-            }
-            @if (puedeFacturar()) {
-              @if (pedido.estados?.nombreEstado === 'Pendiente' || pedido.estados?.nombreEstado === 'Facturado') {
-                <p-button
-                  icon="pi pi-ban"
-                  [text]="true"
-                  severity="danger"
-                  (onClick)="abrirAnular(pedido)"
-                  pTooltip="Anular"
-                />
-              }
             }
             @if (puedeVerRemito(pedido)) {
               <p-button icon="pi pi-file-pdf" [text]="true" (onClick)="verRemito(pedido)" pTooltip="Ver remito" />
@@ -209,13 +248,13 @@
   </p-dialog>
 
   <p-dialog
-    [visible]="anularDialogVisible()"
-    (visibleChange)="anularDialogVisible.set($event)"
+    [visible]="eliminarDialogVisible()"
+    (visibleChange)="eliminarDialogVisible.set($event)"
     [modal]="true"
     [style]="{ width: '420px' }"
-    header="Anular pedido"
+    header="Eliminar pedido"
   >
-    <form [formGroup]="anularForm" (ngSubmit)="confirmarAnular()" class="page__form">
+    <form [formGroup]="eliminarForm" (ngSubmit)="confirmarEliminar()" class="page__form">
       @if (requiereNotaDebito()) {
         <div class="page__field">
           <label for="nro_nota_debito">N° de nota de débito</label>
@@ -234,9 +273,9 @@
           label="Cancelar"
           severity="secondary"
           [outlined]="true"
-          (onClick)="cerrarAnular()"
+          (onClick)="cerrarEliminar()"
         />
-        <p-button type="submit" label="Anular pedido" severity="danger" [loading]="anularSaving()" />
+        <p-button type="submit" label="Eliminar pedido" severity="danger" [loading]="eliminarSaving()" />
       </div>
     </form>
   </p-dialog>

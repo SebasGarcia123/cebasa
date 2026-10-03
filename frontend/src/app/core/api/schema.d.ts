@@ -702,7 +702,7 @@ export interface paths {
         get: operations["PedidosController_findOne"];
         put?: never;
         post?: never;
-        delete: operations["PedidosController_remove"];
+        delete?: never;
         options?: never;
         head?: never;
         patch: operations["PedidosController_update"];
@@ -4946,25 +4946,6 @@ export interface operations {
                 content: {
                     "application/json": Record<string, never>;
                 };
-            };
-        };
-    };
-    PedidosController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

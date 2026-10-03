@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -49,11 +48,10 @@ export class PedidosController {
     return this.pedidosService.update(id, dto);
   }
 
-  @RequirePermissions('comercial.pedidos.editar')
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.pedidosService.remove(id);
-  }
+  // No existe un borrado físico de pedidos: cancelar uno (Pendiente,
+  // Facturado o Cargado) siempre pasa por anular (ver más abajo), que
+  // deja el registro con motivo o nota de débito según corresponda, en
+  // vez de un "Eliminar" por un lado y un "Anular" por otro.
 
   // Despachar/anular-desde-facturado son responsabilidad de Logística,
   // no de quien carga el pedido: permiso propio en vez de

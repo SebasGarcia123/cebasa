@@ -1,3 +1,25 @@
+.pedidos__filtros {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pedidos__field-nombre {
+  max-width: 260px;
+}
+
+.pedidos__field-fecha {
+  max-width: 160px;
+}
+
+.pedidos__filtro-eliminados {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
 .pedidos__header-fields {
   display: flex;
   flex-wrap: wrap;

@@ -40,3 +40,21 @@ h6 {
   font-weight: 600;
   margin: 0;
 }
+
+// El tooltip de PrimeNG (pTooltip) se inyecta directo en <body>, fuera
+// del árbol de cualquier componente, así que solo un selector global
+// sin scope lo alcanza (un ::ng-deep dentro de un componente no
+// aplicaría, porque Angular le agrega un atributo de encapsulación que
+// este nodo nunca tiene). Por default el texto envuelve en varias
+// líneas (white-space: pre-line + word-break: break-word) dentro de un
+// ancho máximo chico: con una etiqueta corta como "Ver remito" eso se
+// veía como una letra por línea, como una columna vertical. Se fuerza
+// una sola línea horizontal sin cortes.
+.p-tooltip {
+  max-width: 24rem;
+}
+
+.p-tooltip-text {
+  white-space: nowrap;
+  word-break: normal;
+}
